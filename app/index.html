@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="canvassTrac">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head 
+         content must come *after* these tags -->
+  
+    <link rel="icon" 
+      type="image/png" 
+      href="images/favicon.png">
+    
+    <title>CanvassTrac</title>    
+        <!-- Bootstrap -->
+<!-- build:css styles/main.css -->
+    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="bower_components/ng-dialog/css/ngDialog.min.css" rel="stylesheet">
+    <link href="bower_components/ng-dialog/css/ngDialog-theme-plain.min.css" rel="stylesheet">
+    <link href="bower_components/ng-dialog/css/ngDialog-theme-default.min.css" rel="stylesheet">
+	<link href="bower_components/bootstrap-social/bootstrap-social.css" rel="stylesheet">
+<!--	<link href="bower_components/nya-bootstrap-select/dist/css/nya-bs-select.min.css" rel="stylesheet">-->
+    <link href="styles/mystyles.css" rel="stylesheet">
+<!-- endbuild -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  
+  
+
+</head>
+
+<body>
+    
+  
+    <div ui-view="header"></div>
+    <div ui-view="content"></div>
+    <div ui-view="footer"></div>
+    
+
+<!-- build:js scripts/main.js -->
+    <script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
+	<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+  
+    <script src="bower_components/ng-dialog/js/ngDialog.min.js"></script>
+
+
+<!--    <script src="bower_components/jquery/dist/jquery.min.js"></script>-->
+<!--    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+<!--    <script src="bower_components/nya-bootstrap-select/dist/js/nya-bs-select.min.js"></script>-->
+    <script src="app.config.js"></script>
+
+    <script src="scripts/ngdialog.factory.js"></script>
+  
+    <!-- common client scripts -->
+    <script src="canvasstrac-client-common/client.module.js"></script>
+    <script src="canvasstrac-client-common/util/store.util.js"></script>
+    <script src="canvasstrac-client-common/util/miscutil.factory.js"></script>
+    <script src="canvasstrac-client-common/util/schema.factory.js"></script>
+    <script src="canvasstrac-client-common/util/resource.factory.js"></script>
+    <script src="canvasstrac-client-common/util/pager.service.js"></script>
+  
+    <script src="canvasstrac-client-common/login/auth.factory.js"></script>
+    <!-- address functionality -->
+    <script src="canvasstrac-client-common/address/address.factory.js"></script>
+    <!-- people functionality -->
+    <script src="canvasstrac-client-common/people/people.factory.js"></script>
+    <!-- users functionality -->
+    <script src="canvasstrac-client-common/users/role.factory.js"></script>
+    <script src="canvasstrac-client-common/users/user.factory.js"></script>
+    <!-- survey functionality -->
+    <script src="canvasstrac-client-common/surveys/survey.factory.js"></script>
+    <!-- elections functionality -->
+    <script src="canvasstrac-client-common/elections/election.factory.js"></script>
+    <script src="canvasstrac-client-common/elections/votingsystem.factory.js"></script>
+    <!-- canvass functionality -->
+    <script src="canvasstrac-client-common/canvasses/canvass.factory.js"></script>
+  
+    <!-- application-specific scripts -->
+    <script src="app.module.js"></script>
+    <script src="scripts/controllers.js"></script>
+    <script src="scripts/services.js"></script>
+    <script src="scripts/util.factory.js"></script>
+    <!-- layout functionality -->
+    <script src="layout/header.controller.js"></script>
+    <script src="layout/state.factory.js"></script>
+    <!-- login/register functionality -->
+    <script src="login/login.controller.js"></script>
+    <!-- people functionality -->
+    <script src="people/personfilter.controller.js"></script>
+    <!-- users functionality -->
+    <script src="users/user.controller.js"></script>
+    <!-- elections functionality -->
+    <script src="elections/election.controller.js"></script>
+    <!-- canvass functionality -->
+    <script src="canvasses/canvassdash.controller.js"></script>
+    <script src="canvasses/canvass.controller.js"></script>
+    <script src="canvasses/canvass.canvass.controller.js"></script>
+    <script src="canvasses/canvass.survey.controller.js"></script>
+    <script src="canvasses/canvass.address.controller.js"></script>
+    <script src="canvasses/canvass.unassigned.address.controller.js"></script>
+    <script src="canvasses/canvass.assigned.address.controller.js"></script>
+    <script src="canvasses/canvass.canvasser.controller.js"></script>
+    <script src="canvasses/canvass.unassigned.canvasser.controller.js"></script>
+    <script src="canvasses/canvass.assigned.canvasser.controller.js"></script>
+    <script src="canvasses/canvass.assignment.controller.js"></script>
+    <script src="canvasses/canvass.assignment.address.controller.js"></script>
+    <script src="canvasses/canvass.assignment.canvasser.controller.js"></script>
+    <script src="canvasses/assignmentfilter.controller.js"></script>
+    <!-- survey functionality -->
+    <script src="surveys/question.controller.js"></script>
+    <!-- address functionality -->
+    <script src="address/addressfilter.controller.js"></script>
+<!-- endbuild -->
+
+
+</body>
+
+</html>

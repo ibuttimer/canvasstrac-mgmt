@@ -1,0 +1,143 @@
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" ui-sref="app"><img src="images/logo.png" height=30 width=41></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li ui-sref-active-eq="active"><a ui-sref="app">
+          <span class="glyphicon glyphicon-home"
+           aria-hidden="true"></span> Home</a>
+        </li>
+        
+<!--        <li ng-class="{active: stateIs('app.aboutus')}"><a ui-sref="app.aboutus">-->
+        <li ui-sref-active="active"><a ui-sref="app.aboutus">
+          <span class="glyphicon glyphicon-info-sign"
+           aria-hidden="true"></span> About</a>
+        </li>
+        
+         <li ng-class="{active: stateIs('app.contactus')}"><a ui-sref="app.contactus">
+         <i class="fa fa-envelope-o"></i> Contact</a></li>
+
+        <li role="presentation" class="dropdown" ng-class="{active: menuStateIs('app.cfg')}" uib-dropdown is-open="status.cfgIsOpen">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+           role="button" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle ng-disabled="disabled">
+              <span class="fa fa-cog" aria-hidden="true"></span> Configutation <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+            <li class="dropdown-header">Voting Systems</li>
+              <li role="menuitem"><a ui-sref="app.cfg.votingsystems">Voting Systems</a></li>
+              <li role="menuitem"><a ui-sref="app.cfg.newvotingsystem">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li role="separator" class="divider"></li>
+            <li class="dropdown-header">Roles</li>
+              <li role="menuitem"><a ui-sref="app.cfg.roles">Roles</a></li>
+              <li role="menuitem"><a ui-sref="app.cfg.newrole">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li class="dropdown-header">Users</li>
+              <li role="menuitem"><a ui-sref="app.cfg.users">Users</a></li>
+              <li role="menuitem"><a ui-sref="app.cfg.newuser">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+          </ul>
+        </li>
+        
+        <li role="presentation" class="dropdown" ng-class="{active: menuStateIs('app.campaign')}" uib-dropdown is-open="status.cmpgnIsOpen">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+           role="button" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle ng-disabled="disabled">
+            <span class="fa fa-pencil-square" aria-hidden="true"></span> Campaign <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+            <li class="dropdown-header">Elections</li>
+              <li role="menuitem"><a ui-sref="app.campaign.elections">Elections</a></li>
+              <li role="menuitem"><a ui-sref="app.campaign.newelection">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li class="dropdown-header">Candidates</li>
+              <li role="menuitem"><a ui-sref="app.campaign.candidates">Candidates</a></li>
+              <li role="menuitem"><a ui-sref="app.campaign.newcandidate">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li class="dropdown-header">Canvass</li>
+              <li role="menuitem"><a ui-sref="app.campaign.canvass">Canvass</a></li>
+              <li role="menuitem"><a ui-sref="app.campaign.newcanvass">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+          </ul>
+        </li>
+
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li ng-if="!loggedIn"><a ng-click="openLogin()">
+          <span class="glyphicon glyphicon-log-in"></span> Login</a>
+        </li>
+        <li ng-if="loggedIn">
+          <a>{{username}}</a>
+        </li>
+        <li ng-if="loggedIn">
+          <a ng-click="logOut()">
+          <span class="glyphicon glyphicon-log-in"></span> Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>         
+
+<!--
+<header class="jumbotron">
+
+    <div class="container">
+        <div class="row row-header">
+            <div class="col-xs-12 col-sm-8">
+                <h1>Ristorante con Fusion</h1>
+                <p style="padding:40px;"></p>
+                <p>We take inspiration from the World's best cuisines, and create
+                 a unique fusion experience. Our lipsmacking creations will 
+                 tickle your culinary senses!</p>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+            <p style="padding:20px;"></p>
+            <img src="images/logo.png" class="img-responsive">
+            </div>
+            <div class="col-xs-12 col-sm-2">
+            </div>
+        </div>
+    </div>
+</header>
+-->
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      <ul class="breadcrumb">
+        <li ng-if="stateIsNot('app')"><a href="#">Home</a></li>
+        <li class="active" ng-if="stateIs('app')">Home</li>
+
+        <li ng-if="stateIncludes('app.cfg')"><a href="#">Configuration</a></li>
+        <li class="active" ng-if="stateIs('app.cfg')">Configuration</li>
+
+        <li ng-if="stateIncludes('app.campaign')"><a href="#">Campaign</a></li>
+        <li class="active" ng-if="stateIs('app.campaign')">Campaign</li>
+
+        <li class="active" ng-if="stateIs('app.cfg.users')">Users</li>
+        <li class="active" ng-if="stateIs('app.cfg.newuser')">New User</li>
+        <li class="active" ng-if="stateIs('app.cfg.viewuser')">View User</li>
+        <li class="active" ng-if="stateIs('app.cfg.edituser')">Update User</li>
+        
+        <li class="active" ng-if="stateIs('app.campaign.elections')">Elections</li>
+        <li class="active" ng-if="stateIs('app.campaign.newelection')">New Election</li>
+        <li class="active" ng-if="stateIs('app.campaign.viewelection')">View Election</li>
+        <li class="active" ng-if="stateIs('app.campaign.editelection')">Update Election</li>
+        
+        <li class="active" ng-if="stateIs('app.campaign.canvass')">Canvass</li>
+        <li class="active" ng-if="stateIs('app.campaign.newcanvass')">New Canvass</li>
+        <li class="active" ng-if="stateIs('app.campaign.viewcanvass')">View Canvass</li>
+        <li class="active" ng-if="stateIs('app.campaign.editcanvass')">Update Canvass</li>
+        
+        
+        <li class="active" ng-if="stateIs('app.aboutus')">About Us</li>
+      </ul>
+    </div>
+    <div class="col-xs-12">
+      <h3 ng-if="stateIs('app.aboutus')">About Us</h3>
+      <hr>
+    </div>
+  </div>
+</div>
+
