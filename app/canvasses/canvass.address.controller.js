@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -11,9 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAddressController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerService', 'storeFactory', 'resourceFactory', 'CANVASS'];
+CanvassAddressController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES'];
 
-function CanvassAddressController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerService, storeFactory, resourceFactory, CANVASS) {
+function CanvassAddressController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, resourceFactory, RES) {
 
   console.log('CanvassAddressController id', $stateParams.id);
 
@@ -24,8 +25,9 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
   $scope.perPageOpt = [5, 10, 15, 20];
   $scope.perPage = 10;
   
-  setupGroup(CANVASS.ASSIGNED_ADDR, 'Assigned');
-  setupGroup(CANVASS.UNASSIGNED_ADDR, 'Unassigned');
+
+  setupGroup(RES.ASSIGNED_ADDR, 'Assigned');
+  setupGroup(RES.UNASSIGNED_ADDR, 'Unassigned');
 
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
@@ -40,14 +42,18 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
   -------------------------- */
   
   function setupGroup(id, label) {
-    $scope[id] = addressFactory.newList(id, label, storeFactory.CREATE_INIT);
+
+    $scope[id] = addressFactory.newList(id, {
+      title: label,
+      flags: storeFactory.CREATE_INIT
+    });
     $scope[id].sortBy = $scope.sortOptions[0];
     
-    var filter = CANVASS.getFilterName(id);
+    var filter = RES.getFilterName(id);
     $scope[filter] = storeFactory.newObj(filter, addressFactory.newFilter, storeFactory.CREATE_INIT);
 
-    var pager = CANVASS.getPagerName(id);
-    $scope[pager] = pagerService.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    var pager = RES.getPagerName(id);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
 
     setFilter(id, $scope[filter]);
     addressFactory.setPager(id, $scope[pager]);
@@ -55,7 +61,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
   
   function setFilter (id , filter) {
     // unassignedAddrFilterStr or assignedAddrFilterStr
-    var filterStr = CANVASS.getFilterStrName(id);
+    var filterStr = RES.getFilterStrName(id);
     if (!filter) {
       filter = addressFactory.newFilter();
     }
@@ -88,7 +94,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
         }
 
         if (resList.pager) {
-          pagerService.updatePager(resList.pager.id, sortList);
+          pagerFactory.updatePager(resList.pager.id, sortList);
         }
       }
     }
@@ -100,7 +106,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
-      if (resList.id === CANVASS.UNASSIGNED_ADDR) {
+      if (resList.id === RES.UNASSIGNED_ADDR) {
         resList.setList([]);  // clear list of addresses
       }
       resList.applyFilter();
@@ -121,7 +127,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
           
           var resList = setFilter(data.value.action, filter);
           if (resList) {
-            if (resList.id === CANVASS.UNASSIGNED_ADDR) {
+            if (resList.id === RES.UNASSIGNED_ADDR) {
               // request filtered addresses from server
               requestAddresses(resList, filter);
             } else {

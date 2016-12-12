@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 var cfgMenu = ['app.cfg.votingsystems', 'app.cfg.newvotingsystem', 'app.cfg.roles', 'app.cfg.newrole',

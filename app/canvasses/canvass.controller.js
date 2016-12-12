@@ -1,44 +1,18 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
 
-  .constant('CANVASS', (function() {
-    return {
-      DASHSTATE: 'app.campaign.canvass',
-      NEWSTATR: 'app.campaign.newcanvass',
-      VIEWSTATE: 'app.campaign.viewcanvass',
-      EDITSTATE: 'app.campaign.editcanvass',
-      
-      WORK: 'work',
-      BACKUP: 'backup',
-      
-      ASSIGNED_ADDR: 'assignedAddr',    // addresses assigned to canvass
-      UNASSIGNED_ADDR: 'unassignedAddr',// addresses not assigned to canvass
-      ASSIGNED_CANVASSER: 'assignedCanvasser',  // canvassers assigned to canvass
-      UNASSIGNED_CANVASSER: 'unassignedCanvasser',// canvassers not assigned to canvass
-      ALLOCATED_ADDR: 'allocatedAddr',          // addresses allocated to canvass
-      ALLOCATED_CANVASSER: 'allocatedCanvasser',// canvassers allocated to canvass
-      getPagerName: function (base) {
-        // eg assignedAddrPager
-        return base + 'Pager';
-      },
-      getFilterName: function (base) {
-        // eg assignedAddrFilter
-        return base + 'Filter';
-      },
-      getFilterStrName: function (base) {
-        // eg assignedAddrFilterStr
-        return base + 'FilterStr';
-      },
-
-      PROCESS_NEW: 0,        // new object mode
-      PROCESS_UPDATE: 1,     // update existing object mode
-      PROCESS_UPDATE_NEW: 2  // update with new object mode
-
-    };
+  .constant('LABELS', (function () {
+    return ['label-primary',
+      'label-success',
+      'label-info',
+      'label-warning',
+      'label-danger'
+      ];
   })())
-
+  .value('LABELIDX', 0)
   .controller('CanvassController', CanvassController);
 
 
@@ -46,16 +20,16 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerService', 'storeFactory', 'CANVASS', 'roleFactory', 'ROLES'];
+CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX'];
 
-function CanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerService, storeFactory, CANVASS, roleFactory, ROLES) {
+function CanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX) {
 
   console.log('CanvassController id', $stateParams.id);
 
-  $scope.dashState = CANVASS.DASHSTATE;
-  $scope.newState = CANVASS.NEWSTATR;
-  $scope.viewState = CANVASS.VIEWSTATE;
-  $scope.editState = CANVASS.EDITSTATE;
+  $scope.dashState = STATES.CANVASS;
+  $scope.newState = STATES.CANVASS_NEW;
+  $scope.viewState = STATES.CANVASS_VIEW;
+  $scope.editState = STATES.CANVASS_EDIT;
   $scope.tabs = {
     CANVASS_TAB: 0,
     SURVEY_TAB: 1,
@@ -106,13 +80,13 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   $scope.buildQuery = buildQuery;
   $scope.requestCanvasserRole = requestCanvasserRole;
 
+  canvassFactory.setLabeller(labeller);
+
   initItem(); // perform basic init of objects
   if ($stateParams.id) {
     initItem($stateParams.id);  // init objects for id
   }
 
-  
-  
   /* function implementation
   -------------------------- */
 
@@ -164,37 +138,37 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   function processForm() {
     if ($state.is($scope.newState) || $state.is($scope.editState)) {
       // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
-      var canvass = canvassFactory.getCanvass(CANVASS.WORK),
-        action = ($state.is($scope.newState) ? CANVASS.PROCESS_NEW : CANVASS.PROCESS_UPDATE),
+      var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
+        action = ($state.is($scope.newState) ? RES.PROCESS_NEW : RES.PROCESS_UPDATE),
         resList;
       switch ($scope.activeTab) {
         case $scope.tabs.CANVASS_TAB:
           processCanvass(action, nextTab);
           break;
         case $scope.tabs.SURVEY_TAB:
-          if (!canvass.survey && (action === CANVASS.PROCESS_UPDATE)) {
-            action = CANVASS.PROCESS_UPDATE_NEW; // no previous survey so change to new mode
+          if (!canvass.survey && (action === RES.PROCESS_UPDATE)) {
+            action = RES.PROCESS_UPDATE_NEW; // no previous survey so change to new mode
           }
           processSurvey(action, nextTab);
           break;
         case $scope.tabs.ADDRESS_TAB:
           // generate addreess list for host
-          resList = addressFactory.getList(CANVASS.ASSIGNED_ADDR);
+          resList = addressFactory.getList(RES.ASSIGNED_ADDR);
           if (resList) {
             canvass.addresses = extractIds(resList);
           }
-          processCanvass(CANVASS.PROCESS_UPDATE, requestAssignmentsNextTab);
+          processCanvass(RES.PROCESS_UPDATE, requestAssignmentsNextTab);
           break;
         case $scope.tabs.CANVASSER_TAB:
           // generate canvasser list for host
-          resList = userFactory.getList(CANVASS.ASSIGNED_CANVASSER);
+          resList = userFactory.getList(RES.ASSIGNED_CANVASSER);
           if (resList) {
             canvass.canvassers = extractIds(resList);
           }
-          processCanvass(CANVASS.PROCESS_UPDATE, requestAssignmentsNextTab);
+          processCanvass(RES.PROCESS_UPDATE, requestAssignmentsNextTab);
           break;
         case $scope.tabs.ASSIGNMENT_TAB:
-          processAllocations(CANVASS.PROCESS_UPDATE, gotoDash);
+          processAllocations(RES.PROCESS_UPDATE, gotoDash);
           break;
       }
     } else if ($state.is($scope.viewState)) {
@@ -210,13 +184,13 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   }
 
   function initCanvass() {
-    $scope.canvass = canvassFactory.newCanvass(CANVASS.WORK, storeFactory.CREATE_INIT);
-    $scope.backupCanvass = canvassFactory.duplicateCanvass(CANVASS.BACKUP, CANVASS.WORK, storeFactory.DUPLICATE_OR_EXIST);
+    $scope.canvass = canvassFactory.newObj(RES.ACTIVE_CANVASS, storeFactory.CREATE_INIT);
+    $scope.backupCanvass = canvassFactory.duplicateObj(RES.BACKUP_CANVASS, RES.ACTIVE_CANVASS, storeFactory.DUPLICATE_OR_EXIST);
   }
 
   function initSurvey() {
-    $scope.survey = surveyFactory.newSurvey(CANVASS.WORK, storeFactory.CREATE_INIT);
-    $scope.backupSurvey = surveyFactory.duplicateSurvey(CANVASS.BACKUP, CANVASS.WORK, storeFactory.DUPLICATE_OR_EXIST);
+    $scope.survey = surveyFactory.newObj(RES.ACTIVE_SURVEY, storeFactory.CREATE_INIT);
+    $scope.backupSurvey = surveyFactory.duplicateObj(RES.BACKUP_SURVEY, RES.ACTIVE_SURVEY, storeFactory.DUPLICATE_OR_EXIST);
   }
 
 
@@ -231,7 +205,9 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
           // success function
           function (response) {
             initTab($scope.tabs.ALL_TABS);
-            processCanvassRsp(response, storeFactory.CREATE_INIT,  requestAssignments);
+            processCanvassRsp(response,
+                  (storeFactory.CREATE_INIT | storeFactory.APPLY_FILTER),
+                  requestAssignments);
             if (!$scope.canvass.survey) {
               initSurvey();
             }
@@ -246,23 +222,50 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   }
 
   function processCanvassRsp (response, flags, next) {
-    $scope.canvass = canvassFactory.readCanvassRsp(response, 
-                [CANVASS.WORK, CANVASS.BACKUP],
-                [CANVASS.ASSIGNED_ADDR, CANVASS.ALLOCATED_ADDR],  // lists to store addr in
-                [CANVASS.ASSIGNED_CANVASSER, CANVASS.ALLOCATED_CANVASSER], // list to store canvassers in
-                flags, next);
+
+    $scope.canvass = canvassFactory.readCanvassRsp(response, {
+          objId: [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
+          addrId: [RES.ASSIGNED_ADDR, RES.ALLOCATED_ADDR],
+          userId: [RES.ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER],
+          //resultsId: RES.CANVASS_RESULT,
+          flags: flags,
+          next: next,
+          surveyArgs: {
+            objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
+            flags: flags
+          },
+          electionArgs: {
+            objId: RES.ACTIVE_ELECTION, // id of election object to save response data to
+            flags: flags
+          }
+        });
+  }
+
+  function labeller () {
+    return LABELS[LABELIDX++ % LABELS.length];
   }
   
   function processCanvassAllocationRsp (response, flags, next) {
-    $scope.canvass = canvassFactory.readCanvassAllocationRsp(response,
-                CANVASS.ALLOCATED_ADDR,  // lists to store addr in
-                CANVASS.ALLOCATED_CANVASSER, // list to store canvassers in
-                flags, next);
+
+    if (typeof flags !== 'number') {
+      next = flags;
+      flags = storeFactory.NOFLAG;
+    }
+    if (typeof next !== 'function') {
+      next = undefined;
+    }
+    canvassFactory.readCanvassAllocationRsp(response,{
+      addrId: RES.ALLOCATED_ADDR,
+      userId: RES.ALLOCATED_CANVASSER,
+      labeller: labeller,
+      flags: flags,
+      next: next
+    });
   }
   
   function requestAssignments (next) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
-    var canvass = canvassFactory.getCanvass(CANVASS.WORK),
+    var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
       resource = canvassFactory.getCanvassAllocation();
 
     resource.query({canvass: canvass._id}).$promise.then(
@@ -293,9 +296,9 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   
   function getErrorFxn(action) {
     var errorFxn;
-    if ((action === CANVASS.PROCESS_NEW) || (action === CANVASS.PROCESS_UPDATE_NEW)) {
+    if ((action === RES.PROCESS_NEW) || (action === RES.PROCESS_UPDATE_NEW)) {
       errorFxn = creationError;
-    } else if (action === CANVASS.PROCESS_UPDATE) {
+    } else if (action === RES.PROCESS_UPDATE) {
       errorFxn = updateError;
     }
     return errorFxn;
@@ -303,16 +306,16 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   
   function processCanvass(action, next) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
-    var canvass = canvassFactory.getCanvass(CANVASS.WORK),
-      backupCanvass = canvassFactory.getCanvass(CANVASS.BACKUP),
+    var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
+      backupCanvass = canvassFactory.getObj(RES.BACKUP_CANVASS),
       resource = canvassFactory.getCanvasses(),
       promise;
 
     console.log('processCanvass', canvass);
     
-    if (action === CANVASS.PROCESS_NEW) {
+    if (action === RES.PROCESS_NEW) {
       promise = resource.save(canvass).$promise;
-    } else if (action === CANVASS.PROCESS_UPDATE) {
+    } else if (action === RES.PROCESS_UPDATE) {
       var modified = !angular.equals(backupCanvass, canvass);
 
       console.log('updateCanvass', modified);
@@ -330,7 +333,9 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
       promise.then(
         // success function
         function (response) {
-          processCanvassRsp(response, next);
+          processCanvassRsp(response,
+                            (storeFactory.CREATE_INIT | storeFactory.APPLY_FILTER),
+                            next);
         },
         // error function
         errorFxn
@@ -341,8 +346,8 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   function processAllocations(action, next) {
 
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
-    var canvass = canvassFactory.getCanvass(CANVASS.WORK),
-      canvassers = userFactory.getList(CANVASS.ALLOCATED_CANVASSER),
+    var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
+      canvassers = userFactory.getList(RES.ALLOCATED_CANVASSER),
       resource = canvassFactory.getCanvassAllocation(),
       newAllocs = [],
       promises = [];
@@ -400,17 +405,17 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
 
   function processSurvey(action) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
-    var canvass = canvassFactory.getCanvass(CANVASS.WORK),
-      survey = surveyFactory.getSurvey(CANVASS.WORK),
-      backupSurvey = surveyFactory.getSurvey(CANVASS.BACKUP),
+    var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
+      survey = surveyFactory.getObj(RES.ACTIVE_SURVEY),
+      backupSurvey = surveyFactory.getObj(RES.BACKUP_SURVEY),
       resource = surveyFactory.getSurveys(),
       promise;
     
     console.log('processSurvey', survey);
 
-    if ((action === CANVASS.PROCESS_NEW) || (action === CANVASS.PROCESS_UPDATE_NEW)) {
+    if ((action === RES.PROCESS_NEW) || (action === RES.PROCESS_UPDATE_NEW)) {
       promise = resource.save(survey).$promise;
-    } else if (action === CANVASS.PROCESS_UPDATE) {
+    } else if (action === RES.PROCESS_UPDATE) {
       var modified = !angular.equals(backupSurvey, survey);
 
       console.log('updateSurvey', modified);
@@ -428,11 +433,14 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
       promise.then(
         // success function
         function (response) {
-          survey = surveyFactory.readSurveyRsp(response, [CANVASS.WORK, CANVASS.BACKUP], nextTab);
+          survey = surveyFactory.readSurveyRsp(response, {
+              objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
+              next: nextTab
+            });
           if (!canvass.survey) {
             // link survey to canvass (TODO should really be in the original request)
             canvass.survey = survey._id;
-            processCanvass(CANVASS.PROCESS_UPDATE);
+            processCanvass(RES.PROCESS_UPDATE);
           }
         },
         // error function

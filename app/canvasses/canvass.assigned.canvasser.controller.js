@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -11,13 +12,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignedCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'userFactory', 'CANVASS', 'UTIL'];
+CanvassAssignedCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'userFactory', 'RES', 'UTIL'];
 
-function CanvassAssignedCanvasserController($scope, $rootScope, $state, $stateParams, userFactory, CANVASS, UTIL) {
+function CanvassAssignedCanvasserController($scope, $rootScope, $state, $stateParams, userFactory, RES, UTIL) {
 
   console.log('CanvassAssignedCanvasserController id', $stateParams.id);
 
-  $scope.list = userFactory.getList(CANVASS.ASSIGNED_CANVASSER);
+  $scope.list = userFactory.getList(RES.ASSIGNED_CANVASSER);
   $scope.pager = $scope.list.pager;
   $scope.reqAll = false; // disable request all button
   $scope.SET_SEL = UTIL.SET_SEL;

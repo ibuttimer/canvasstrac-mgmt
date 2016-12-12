@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -127,7 +128,7 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
           $scope.election = entry;
           break;
         }
-        // fall thru to clear
+        /* falls through */
       default:
         initItem();
         break;

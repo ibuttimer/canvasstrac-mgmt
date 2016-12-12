@@ -36,11 +36,14 @@ var gulp = require('gulp'),
     .argv,
   gulpif = require('gulp-if'),
   gulpIgnore = require('gulp-ignore'),
-  ngannotate = require('gulp-ng-annotate');
+  ngannotate = require('gulp-ng-annotate'),
+  replace = require('gulp-replace-task'),
+  fs = require('fs');
 
 var basePaths = {
     src: 'app/',
     dest: 'dist/',
+    config: 'config/',
     bower: 'bower_components/'
   };
 var paths = {
@@ -110,6 +113,29 @@ gulp.task('clean', function () {
        );
 });
 
+gulp.task('replace', function () {
+  // based on http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
+
+  // Get the environment from the command line
+  var env = argv.env || 'localdev';
+
+  // Read the settings from the right file
+  var filename = env + '.json';
+  var settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8'));
+
+  // Replace each placeholder with the correct value for the variable.
+  gulp.src(basePaths.config + 'app.config.js')
+  .pipe(replace({
+    patterns: [ { match: 'baseURL', replacement: settings.baseURL },
+        { match: 'basePort',  replacement: settings.basePort },
+        { match: 'apiKey', replacement: settings.apiKey },
+        { match: 'DEV_MODE', replacement: settings.DEV_MODE },
+        { match: 'DEV_USER', replacement: settings.DEV_USER },
+        { match: 'DEV_PASSWORD', replacement: settings.DEV_PASSWORD }
+      ]
+    }))
+    .pipe(gulp.dest(basePaths.src));
+});
 
 gulp.task('usemin', ['jshint'], function () {
   
@@ -225,7 +251,7 @@ gulp.task('browser-sync', ['default'], function () {
 });
 
 // Default task
-gulp.task('default', ['clean'], function () {
+gulp.task('default', ['clean', 'replace'], function () {
   gulp.start('copyfonts', 
              'usemin', 
              'imagemin',

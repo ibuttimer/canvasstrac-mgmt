@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -108,7 +109,7 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, elect
           $scope.canvass = entry;
           break;
         }
-        // fall thru to clear
+        /* falls through */
       default:
         initCanvass();
         break;

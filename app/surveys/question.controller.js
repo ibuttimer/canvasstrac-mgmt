@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -9,9 +10,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-QuestionController.$inject = ['$scope', 'surveyFactory', 'NgDialogFactory', 'questionTypes'];
+QuestionController.$inject = ['$scope', 'questionFactory', 'NgDialogFactory', 'questionTypes'];
 
-function QuestionController($scope, surveyFactory, NgDialogFactory, questionTypes) {
+function QuestionController($scope, questionFactory, NgDialogFactory, questionTypes) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
@@ -72,8 +73,9 @@ function QuestionController($scope, surveyFactory, NgDialogFactory, questionType
     console.log(item, value);
     if ((item === 'qtype') || (item === 'init')) {
       var typeId = value.type.type,
-        showNumOpts = surveyFactory.showQuestionOptions(typeId),
-        showRankingNum = surveyFactory.showRankingNumber(typeId);
+        showNumOpts = (questionFactory.showQuestionOptions(typeId) &&
+          !questionFactory.hasPresetQuestionOptions(typeId)),
+        showRankingNum = questionFactory.showRankingNumber(typeId);
 
       if (!showNumOpts) {
         value.numoptions = 0;

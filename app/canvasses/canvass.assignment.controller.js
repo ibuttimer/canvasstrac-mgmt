@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -23,9 +24,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerService', 'storeFactory', 'CANVASS', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL'];
+CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL'];
 
-function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerService, storeFactory, CANVASS, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL) {
+function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL) {
 
   console.log('CanvassAssignmentController id', $stateParams.id);
 
@@ -34,8 +35,8 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   $scope.perPageOpt = [5, 10, 15, 20];
   $scope.perPage = 10;
 
-  setupGroup(CANVASS.ALLOCATED_ADDR, 'Addresses', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
-  setupGroup(CANVASS.ALLOCATED_CANVASSER, 'Canvassers', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
+  setupGroup(RES.ALLOCATED_ADDR, 'Addresses', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
+  setupGroup(RES.ALLOCATED_CANVASSER, 'Canvassers', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterList = filterList;
@@ -51,7 +52,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   
   function getFactory(id) {
     var factory;
-    if (id === CANVASS.ALLOCATED_ADDR) {
+    if (id === RES.ALLOCATED_ADDR) {
       factory = addressFactory;
     } else {
       factory = userFactory;
@@ -62,7 +63,10 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   function setupGroup(id, label, assignmentChoices, assignmentLabel,  nameFields) {
     var factory = getFactory(id);
     
-    $scope[id] = factory.newList(id, label, storeFactory.CREATE_INIT);
+    $scope[id] = factory.newList(id, {
+      titile: label,
+      flags: storeFactory.CREATE_INIT
+    });
     $scope[id].sortOptions = factory.getSortOptions();
     $scope[id].sortBy = $scope[id].sortOptions[0];
     $scope[id].assignmentChoices = assignmentChoices;
@@ -70,13 +74,13 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     $scope[id].factory = factory;
     $scope[id].nameFields = nameFields;
 
-    var filter = CANVASS.getFilterName(id);
+    var filter = RES.getFilterName(id);
     $scope[filter] = storeFactory.newObj(filter, function () {
         return newFilter(factory);
       }, storeFactory.CREATE_INIT);
 
-    var pager = CANVASS.getPagerName(id);
-    $scope[pager] = pagerService.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    var pager = RES.getPagerName(id);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
 
     setFilter(id, $scope[filter]);
     factory.setPager(id, $scope[pager]);
@@ -168,7 +172,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   function setFilter (id , filter) {
     var factory = getFactory(id),
       // allocatedAddrFilterStr or allocatedCanvasserFilterStr
-      filterStr = CANVASS.getFilterStrName(id),
+      filterStr = RES.getFilterStrName(id),
       filterStrPrefix;
     if (!filter) {
       filter = newFilter(factory);
@@ -187,7 +191,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     $scope[filterStr] = filter.toString(filterStrPrefix);
 
     // add canvasser restriction to filter
-    if ((id === CANVASS.ALLOCATED_CANVASSER) && $scope.canvasser) {
+    if ((id === RES.ALLOCATED_CANVASSER) && $scope.canvasser) {
       filter.role = $scope.canvasser._id;
     }
     
@@ -218,7 +222,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
         }
 
         if (resList.pager) {
-          pagerService.updatePager(resList.pager.id, sortList);
+          pagerFactory.updatePager(resList.pager.id, sortList);
         }
       }
     }
@@ -229,7 +233,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
-//      if (resList.id === CANVASS.UNASSIGNED_CANVASSER) {
+//      if (resList.id === RES.UNASSIGNED_CANVASSER) {
 //        resList.setList([]);  // clear list of addresses
 //      }
       resList.applyFilter();
@@ -259,7 +263,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
           
           var resList = setFilter(data.value.action, filter);
           if (resList) {
-            if (resList.id === CANVASS.UNASSIGNED_CANVASSER) {
+            if (resList.id === RES.UNASSIGNED_CANVASSER) {
               // request filtered addresses from server
               $scope.equestCanvassers(resList, filter);
             } else {
@@ -284,6 +288,9 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
       clrSel = true;
       for (aidx = 0; aidx < addrList.length; ++aidx) {
         addr = addrList[aidx];
+
+        unlinkAddress(addr);  // unlink addr from previous
+
         for (cidx = 0; cidx < cnvsList.length; ++cidx) {
           canvasser = cnvsList[cidx];
           canvassFactory.linkCanvasserToAddr(canvasser, addr);
@@ -291,35 +298,34 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
       }
     } else if (action === 'unalloc') {
       clrSel = true;
-      var elementIdTest = function (element) {
-          return (element._id === this);
-        };
-      
+
       // unallocate all addresses allocated to selected canvassers
-      for (cidx = 0; cidx < cnvsList.length; ++cidx) {
-        canvasser = cnvsList[cidx];
-        canvassFactory.unlinkAddrListFromCanvasser(canvasser, $scope.allocatedAddr.list);
-      }
+      cnvsList.forEach(function (unallocCnvsr) {
+        canvassFactory.unlinkAddrListFromCanvasser(unallocCnvsr, $scope.allocatedAddr.list);
+      });
       // unallocate all selected addresses
-      for (aidx = 0; aidx < addrList.length; ++aidx) {
-        addr = addrList[aidx];
-        if (addr.canvasser) {
-          var allocCnvsrList = $scope.allocatedCanvasser.list;
-          canvasser = allocCnvsrList.find(elementIdTest, addr.canvasser);
-          if (canvasser) {
-            canvassFactory.unlinkAddrFromCanvasser(canvasser, addr);
-          }
-        }
-      }
+      addrList.forEach(function (unallocAddr) {
+        unlinkAddress(unallocAddr);
+      });
     } else if (action === 'show') {
-      // show allocations
+      // TODO show allocations
     }
 
     if (clrSel) {
       $scope.setItemSel($scope.allocatedAddr, UTIL.CLR_SEL);
       $scope.setItemSel($scope.allocatedCanvasser, UTIL.CLR_SEL);
     }
-  
+  }
+
+  function unlinkAddress (addr) {
+    if (addr.canvasser) {
+      var canvasser = $scope.allocatedCanvasser.findInList(function (element) {
+          return (element._id === addr.canvasser);
+        });
+      if (canvasser) {
+        canvassFactory.unlinkAddrFromCanvasser(canvasser, addr);
+      }
+    }
   }
 }
 

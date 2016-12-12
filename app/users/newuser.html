@@ -167,7 +167,7 @@
     </div>
     <div class="col-sm-4">
       <div class="btn-group-vertical" role="group">
-        <button type="button" class="btn btn-default" ui-sref="newState">New</button>
+        <button type="button" class="btn btn-default" ui-sref="{{newState}}">New</button>
         <button type="button" class="btn btn-default" ng-if="stateIsNot(viewState)" ng-click="viewUser()">View</button>
         <button type="button" class="btn btn-default" ng-if="stateIsNot(editState)" ng-click="editUser()">Update</button>
         <button type="button" class="btn btn-default" ng-if="stateIsNot(newState)">Delete</button>

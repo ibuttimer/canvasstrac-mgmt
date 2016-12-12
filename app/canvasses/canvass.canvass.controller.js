@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -10,9 +11,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassCanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'CANVASS'];
+CanvassCanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'RES'];
 
-function CanvassCanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, CANVASS) {
+function CanvassCanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, RES) {
 
   console.log('CanvassCanvassController id', $stateParams.id);
 
@@ -34,7 +35,7 @@ function CanvassCanvassController($scope, $rootScope, $state, $stateParams, $fil
     );
   
 
-  $scope.canvass = canvassFactory.getCanvass(CANVASS.WORK);
+  $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
 
   /* function implementation
   -------------------------- */

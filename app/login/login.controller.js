@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -12,9 +13,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-LoginController.$inject = ['$scope', '$rootScope', 'NgDialogFactory', 'authFactory'];
+LoginController.$inject = ['$scope', '$rootScope', 'NgDialogFactory', 'authFactory', 'CONFIG'];
 
-function LoginController($scope, $rootScope, NgDialogFactory, authFactory) {
+function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFIG) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.doLogin = doLogin;
@@ -22,6 +23,11 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory) {
   $scope.openRegister = openRegister;
 
   $scope.loginData = authFactory.getUserinfo();
+
+  $scope.devmode = CONFIG.DEV_MODE;
+  if (CONFIG.DEV_MODE) {
+    $scope.devCredentials = devCredentials;
+  }
 
   /* function implementation
     -------------------------- */
@@ -54,6 +60,15 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory) {
   function openRegister() {
     NgDialogFactory.open({ template: 'login/register.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'RegisterController' });
   }
+
+  // Quick hack for dev mode to enter user credentials
+  function devCredentials() {
+    // HACK username/password for dev
+    $scope.loginData.username = CONFIG.DEV_USER;
+    $scope.loginData.password = CONFIG.DEV_PASSWORD;
+  }
+
+
 
 }
 

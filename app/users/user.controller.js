@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -45,16 +46,16 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'STATES'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, STATES) {
 
-  console.log('id', $stateParams.id);
-  
-  $scope.dashState = 'app.cfg.users';
-  $scope.newState = 'app.cfg.newuser';
-  $scope.viewState = 'app.cfg.viewuser';
-  $scope.editState = 'app.cfg.edituser';
+  console.log('UserController id', $stateParams.id);
+
+  $scope.dashState = STATES.USERS;
+  $scope.newState = STATES.USERS_NEW;
+  $scope.viewState = STATES.USERS_VIEW;
+  $scope.editState = STATES.USERS_EDIT;
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.userFilterOps = ['And', 'Or'];
@@ -142,7 +143,7 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
           $scope.user = user;
           break;
         }
-        // fall thru to clear
+        /* falls through */
       default:
         $scope.initUser();
         break;

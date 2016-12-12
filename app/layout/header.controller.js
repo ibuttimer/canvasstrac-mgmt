@@ -1,10 +1,6 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
-
-//var cfgMenu = ['app.cfg.votingsystems', 'app.cfg.newvotingsystem', 'app.cfg.roles', 'app.cfg.newrole',
-//              'app.cfg.users', 'app.cfg.newuser'],
-//    campaignMenu = ['app.campaign.elections', 'app.campaign.newelection', 'app.campaign.candidates', 'app.campaign.newcandidate',
-//                    'app.campaign.canvass', 'app.campaign.newcanvass'];
 
 angular.module('canvassTrac')
 

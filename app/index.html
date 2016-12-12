@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="canvassTrac">
 
-<head>
+  <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,7 +21,7 @@
     <link href="bower_components/ng-dialog/css/ngDialog.min.css" rel="stylesheet">
     <link href="bower_components/ng-dialog/css/ngDialog-theme-plain.min.css" rel="stylesheet">
     <link href="bower_components/ng-dialog/css/ngDialog-theme-default.min.css" rel="stylesheet">
-	<link href="bower_components/bootstrap-social/bootstrap-social.css" rel="stylesheet">
+	  <link href="bower_components/bootstrap-social/bootstrap-social.css" rel="stylesheet">
 <!--	<link href="bower_components/nya-bootstrap-select/dist/css/nya-bs-select.min.css" rel="stylesheet">-->
     <link href="styles/mystyles.css" rel="stylesheet">
 <!-- endbuild -->
@@ -36,11 +36,10 @@
   
   
 
-</head>
+  </head>
 
-<body>
-    
-  
+  <body>
+
     <div ui-view="header"></div>
     <div ui-view="content"></div>
     <div ui-view="footer"></div>
@@ -48,13 +47,13 @@
 
 <!-- build:js scripts/main.js -->
     <script src="bower_components/angular/angular.min.js"></script>
-	<script src="bower_components/angular-animate/angular-animate.min.js"></script>
-	<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	 <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+	 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
-  
     <script src="bower_components/ng-dialog/js/ngDialog.min.js"></script>
+    <script src="bower_components/ngCordova/dist/ng-cordova.js"></script>
 
 
 <!--    <script src="bower_components/jquery/dist/jquery.min.js"></script>-->
@@ -68,10 +67,11 @@
     <script src="canvasstrac-client-common/client.module.js"></script>
     <script src="canvasstrac-client-common/util/store.util.js"></script>
     <script src="canvasstrac-client-common/util/miscutil.factory.js"></script>
-    <script src="canvasstrac-client-common/util/schema.factory.js"></script>
+    <script src="canvasstrac-client-common/util/schema.provider.js"></script>
     <script src="canvasstrac-client-common/util/resource.factory.js"></script>
-    <script src="canvasstrac-client-common/util/pager.service.js"></script>
-  
+    <script src="canvasstrac-client-common/util/pager.factory.js"></script>
+    <script src="canvasstrac-client-common/util/console.service.js"></script>
+
     <!-- login/register functionality -->
     <script src="canvasstrac-client-common/login/auth.factory.js"></script>
     <!-- address functionality -->
@@ -83,11 +83,13 @@
     <script src="canvasstrac-client-common/users/user.factory.js"></script>
     <!-- survey functionality -->
     <script src="canvasstrac-client-common/surveys/survey.factory.js"></script>
+    <script src="canvasstrac-client-common/surveys/question.factory.js"></script>
     <!-- elections functionality -->
     <script src="canvasstrac-client-common/elections/election.factory.js"></script>
     <script src="canvasstrac-client-common/elections/votingsystem.factory.js"></script>
     <!-- canvass functionality -->
     <script src="canvasstrac-client-common/canvasses/canvass.factory.js"></script>
+    <script src="canvasstrac-client-common/canvasses/canvassresult.factory.js"></script>
   
     <!-- application-specific scripts -->
     <script src="app.module.js"></script>
@@ -127,6 +129,6 @@
 <!-- endbuild -->
 
 
-</body>
+  </body>
 
 </html>

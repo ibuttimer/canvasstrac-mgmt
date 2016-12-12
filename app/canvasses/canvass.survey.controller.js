@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
 angular.module('canvassTrac')
@@ -10,9 +11,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'UTIL', 'CANVASS'];
+CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'questionFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'UTIL', 'RES'];
 
-function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, UTIL, CANVASS) {
+function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, questionFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, UTIL, RES) {
 
   console.log('CanvassSurveyController id', $stateParams.id);
 
@@ -23,11 +24,11 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
   $scope.questionSelAll = questionSelAll;
   $scope.confirmDeleteQuestion = confirmDeleteQuestion;
   $scope.openQuestion = openQuestion;
-  $scope.getQuestionTypeName = surveyFactory.getQuestionTypeName;
-  $scope.showQuestionOptions = surveyFactory.showQuestionOptions;
+  $scope.getQuestionTypeName = questionFactory.getQuestionTypeName;
+  $scope.showQuestionOptions = questionFactory.showQuestionOptions;
 
-  $scope.canvass = canvassFactory.getCanvass(CANVASS.WORK);
-  $scope.survey = surveyFactory.getSurvey(CANVASS.WORK);
+  $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
+  $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
 
   
   /* function implementation
@@ -75,7 +76,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
           delParams[entry._id] = true;
         });
 
-        surveyFactory.getQuestions().delete(delParams)
+        questionFactory.getQuestions().delete(delParams)
           .$promise.then(
             // success function
             function (response) {
@@ -84,7 +85,9 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
                 .$promise.then(
                   // success function
                   function (response) {
-                    surveyFactory.readSurveyRsp(response, [CANVASS.WORK, CANVASS.BACKUP]);
+                    surveyFactory.readSurveyRsp(response, {
+                      objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY]
+                    });
                   },
                   // error function
                   function (response) {
@@ -113,7 +116,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
         if ($scope.survey.questions[i].isSelected) {
           qdata = angular.copy($scope.survey.questions[i]);
           // change qdata.type to a question type object as expected by dialog
-          qdata.type = surveyFactory.getQuestionTypeObj(qdata.type);
+          qdata.type = questionFactory.getQuestionTypeObj(qdata.type);
           // set numoptions as that's not part of the model but needed by dialog
           qdata.numoptions = 0;
           if (qdata.type.showOptions && qdata.options) {
@@ -129,14 +132,14 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
                 	data: {action: action, question: qdata},
 									resolve: {
 										questionTypes: function depFactory() {
-											return surveyFactory.getQuestionTypes();
+											return questionFactory.getQuestionTypes();
 										}
 									}});
 
     dialog.closePromise.then(function (data) {
       if (!NgDialogFactory.isNgDialogCancel(data.value)) {
 
-        var resource = surveyFactory.getQuestions();
+        var resource = questionFactory.getQuestions();
 
         // dialog returns question type object, only need the type value for the server
         data.value.question.type = data.value.question.type.type;
@@ -151,7 +154,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
                 }
                 $scope.survey.questions.push(response._id);
 
-                $scope.processSurvey(CANVASS.PROCESS_UPDATE);
+                $scope.processSurvey(RES.PROCESS_UPDATE);
               },
               // error function
               function (response) {
@@ -168,7 +171,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
                   $scope.survey.questions.push(response._id);
                 }
 
-                $scope.processSurvey(CANVASS.PROCESS_UPDATE);
+                $scope.processSurvey(RES.PROCESS_UPDATE);
               },
               // error function
               function (response) {
