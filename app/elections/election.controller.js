@@ -6,11 +6,11 @@ angular.module('canvassTrac')
 
   .controller('ElectionController', ElectionController)
 
-  .filter('filterElection', function () {
+  .filter('filterElection', ['UTIL', function (UTIL) {
     return function (input, name, op, system) {
       
       if (!op) {
-        op = 'Or';
+        op = UTIL.OP_OR;
       }
       var out = [];
       if (name || system) {
@@ -29,8 +29,8 @@ angular.module('canvassTrac')
           } else {
             systemOk = false;
           }
-          if (((op === 'Or') && (nameOk || systemOk)) ||
-              ((op === 'And') && (nameOk && systemOk))) {
+          if (((op === UTIL.OP_OR) && (nameOk || systemOk)) ||
+              ((op === UTIL.OP_AND) && (nameOk && systemOk))) {
             out.push(election);
           }
         });
@@ -39,25 +39,25 @@ angular.module('canvassTrac')
       }
       return out;
     };
-  });
+  }]);
 
 /* Manually Identify Dependencies
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory'];
+ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'STATES', 'UTIL'];
 
-function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, NgDialogFactory, stateFactory, utilFactory) {
+function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, NgDialogFactory, stateFactory, utilFactory, STATES, UTIL) {
 
   console.log('id', $stateParams.id);
   
-  $scope.dashState = 'app.campaign.elections';
-  $scope.newState = 'app.campaign.newelection';
-  $scope.viewState = 'app.campaign.viewelection';
-  $scope.editState = 'app.campaign.editelection';
-  $scope.filterOps = ['And', 'Or'];
+  $scope.dashState = STATES.ELECTION;
+  $scope.newState = STATES.ELECTION_NEW;
+  $scope.viewState = STATES.ELECTION_VIEW;
+  $scope.editState = STATES.ELECTION_EDIT;
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
+  $scope.filterOps = UTIL.OP_LIST;
   $scope.initFilter = initFilter;
   $scope.toggleSelection = toggleSelection;
   $scope.getTitle = getTitle;
@@ -105,23 +105,11 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
     $scope.filterText = undefined;
     $scope.filterSystem = undefined;
     $scope.filterOp = undefined;
-    $scope.selectedCnt = 0;
-    
-    angular.forEach($scope.elections, function (entry) {
-      if (entry.isSelected) {
-        delete entry.isSelected;
-      }
-    });
+    $scope.selectedCnt = utilFactory.initSelected($scope.elections);
   }
   
   function toggleSelection(entry) {
-    if (!entry.isSelected) {
-      entry.isSelected = true;
-      $scope.selectedCnt += 1;
-    } else {
-      entry.isSelected = false;
-      $scope.selectedCnt -= 1;
-    }
+    $scope.selectedCnt = utilFactory.toggleSelection(entry, $scope.selectedCnt);
     switch ($scope.selectedCnt) {
       case 1:
         if (entry.isSelected) {
@@ -277,13 +265,7 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
   }
 
   function dashDelete() {
-    var selectedList = [];
-
-    angular.forEach($scope.elections, function (entry) {
-      if (entry.isSelected) {
-        selectedList.push(entry);
-      }
-    });
+    var selectedList = utilFactory.getSelectedList($scope.elections);
     confirmDelete(selectedList);
   }
 

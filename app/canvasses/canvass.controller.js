@@ -149,7 +149,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
           if (!canvass.survey && (action === RES.PROCESS_UPDATE)) {
             action = RES.PROCESS_UPDATE_NEW; // no previous survey so change to new mode
           }
-          processSurvey(action, nextTab);
+          processSurvey(action);
           break;
         case $scope.tabs.ADDRESS_TAB:
           // generate addreess list for host

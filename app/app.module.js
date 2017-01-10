@@ -1,22 +1,25 @@
 /*jslint node: true */
+/*global angular */
 'use strict';
 
-angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon'])
+angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordova', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon'])
 
-  .config(function ($stateProvider, $urlRouterProvider) {
+  .config(function ($stateProvider, $urlRouterProvider, STATES) {
+
+    var appPath = '/',
+      otherwisePath = appPath;
 
     $stateProvider
       // route for the home page
-      .state('app', {
-        url: '/',
+      .state(STATES.APP, {
+        url: appPath,
         views: {
           'header': {
             templateUrl : 'layout/header.html',
             controller  : 'HeaderController'
           },
           'content': {
-            templateUrl : 'views/home.html',
-//            controller  : 'IndexController'
+            templateUrl : 'views/home.html'
           },
           'footer': {
             templateUrl : 'layout/footer.html'
@@ -25,7 +28,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the aboutus page
-      .state('app.aboutus', {
+      .state(STATES.ABOUTUS, {
         url: 'aboutus',
         views: {
           'content@': {
@@ -36,7 +39,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new voting systems page
-      .state('app.cfg', {
+      .state(STATES.CONFIG, {
         url: 'cfg',
         views: {
           'content@': {
@@ -47,7 +50,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the voting systems page
-      .state('app.cfg.votingsystems', {
+      .state(STATES.VOTINGSYS, {
         url: '/votingsystems',
         views: {
           'content@': {
@@ -58,7 +61,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new voting systems page
-      .state('app.cfg.newvotingsystem', {
+      .state(STATES.VOTINGSYS_NEW, {
         url: '/newvotingsystem',
         views: {
           'content@': {
@@ -69,7 +72,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the roles page
-      .state('app.cfg.roles', {
+      .state(STATES.ROLES, {
         url: '/roles',
         views: {
           'content@': {
@@ -80,7 +83,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new role page
-      .state('app.cfg.newrole', {
+      .state(STATES.ROLES_NEW, {
         url: '/newrole',
         views: {
           'content@': {
@@ -91,7 +94,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the users page
-      .state('app.cfg.users', {
+      .state(STATES.USERS, {
         url: '/users',
         views: {
           'content@': {
@@ -102,7 +105,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the view user page
-      .state('app.cfg.viewuser', {
+      .state(STATES.USERS_VIEW, {
         url: '/viewuser/:id',
         views: {
           'content@': {
@@ -113,7 +116,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the edit user page
-      .state('app.cfg.edituser', {
+      .state(STATES.USERS_EDIT, {
         url: '/edituser/:id',
         views: {
           'content@': {
@@ -124,7 +127,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new user page
-      .state('app.cfg.newuser', {
+      .state(STATES.USERS_NEW, {
         url: '/newuser',
         views: {
           'content@': {
@@ -135,7 +138,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the elections page
-      .state('app.campaign', {
+      .state(STATES.CAMPAIGN, {
         url: 'campaign',
         views: {
           'content@': {
@@ -148,7 +151,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       /* vvvv ELections vvvv */
 
       // route for the elections page
-      .state('app.campaign.elections', {
+      .state(STATES.ELECTION, {
         url: '/elections',
         views: {
           'content@': {
@@ -159,7 +162,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the view election page
-      .state('app.campaign.viewelection', {
+      .state(STATES.ELECTION_VIEW, {
         url: '/viewelection/:id',
         views: {
           'content@': {
@@ -170,7 +173,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the edit election page
-      .state('app.campaign.editelection', {
+      .state(STATES.ELECTION_EDIT, {
         url: '/editelection/:id',
         views: {
           'content@': {
@@ -181,7 +184,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new election page
-      .state('app.campaign.newelection', {
+      .state(STATES.ELECTION_NEW, {
         url: '/newelection',
         views: {
           'content@': {
@@ -195,7 +198,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       /* vvvv Candidates vvvv */
 
       // route for the candidates page
-      .state('app.campaign.candidates', {
+      .state(STATES.CANDIDATE, {
         url: '/candidates',
         views: {
           'content@': {
@@ -206,7 +209,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the new candidate page
-      .state('app.campaign.newcandidate', {
+      .state(STATES.CANDIDATE_VIEW, {
         url: '/newcandidate',
         views: {
           'content@': {
@@ -220,7 +223,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       /* vvvv Canvasses vvvv */
 
       // route for the canvass page
-      .state('app.campaign.canvass', {
+      .state(STATES.CANVASS, {
         url: '/canvass',
         views: {
           'content@': {
@@ -231,7 +234,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the view election page
-      .state('app.campaign.viewcanvass', {
+      .state(STATES.CANVASS_VIEW, {
         url: '/viewcanvass/:id',
         views: {
           'content@': {
@@ -242,7 +245,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
 
       // route for the edit election page
-      .state('app.campaign.editcanvass', {
+      .state(STATES.CANVASS_EDIT, {
         url: '/editcanvass/:id',
         views: {
           'content@': {
@@ -254,7 +257,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
 
 
       // route for the new canvass page
-      .state('app.campaign.newcanvass', {
+      .state(STATES.CANVASS_NEW, {
         url: '/newcanvass',
         views: {
           'content@': {
@@ -266,7 +269,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
 
       /* ^^^^ Canvasses ^^^^ */
 
-      .state('app.login', {
+      .state(STATES.LOGIN, {
         url: 'login',
         onEnter: ['$stateParams', '$state', '$uibModal', function ($stateParams, $state, $uibModal) {
           
@@ -280,7 +283,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
       })
     
       // route for the contactus page
-      .state('app.contactus', {
+      .state(STATES.CONTACTUS, {
         url: 'contactus',
         views: {
           'content@': {
@@ -290,5 +293,5 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
         }
       });
 
-    $urlRouterProvider.otherwise('/');
+    $urlRouterProvider.otherwise(otherwisePath);
   });

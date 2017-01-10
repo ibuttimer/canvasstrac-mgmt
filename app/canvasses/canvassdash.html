@@ -32,7 +32,7 @@
     </div>
     <div class="col-sm-8">
       <div class="list-group">
-        <button type="button" class="list-group-item" ng-repeat="canvass in canvasses | filterElection: filterText : filterOp : filterSystem" ng-class="{active: canvass.isSelected}" ng-click="toggleCanvassSel(canvass)">
+        <button type="button" class="list-group-item" ng-repeat="canvass in canvasses | filterCanvass: filterText : filterOp : filterElection" ng-class="{active: canvass.isSelected}" ng-click="toggleCanvassSel(canvass)">
           <div class="row">
             <div class="col-sm-8">
               <p>{{canvass.name}}</p>
@@ -53,9 +53,9 @@
     <div class="col-sm-4">
       <div class="btn-group-vertical" role="group">
         <button type="button" class="btn btn-default" ui-sref="{{newState}}">New</button>
-        <button type="button" class="btn btn-default" ng-disabled="selCanvassCnt != 1" ng-click="viewItem()">View</button>
-        <button type="button" class="btn btn-default" ng-disabled="selCanvassCnt != 1" ng-click="editItem()">Update</button>
-        <button type="button" class="btn btn-default" ng-disabled="selCanvassCnt < 1" ng-click="dashDelete()">Delete</button>
+        <button type="button" class="btn btn-default" ng-disabled="selectedCnt != 1" ng-click="viewItem()">View</button>
+        <button type="button" class="btn btn-default" ng-disabled="selectedCnt != 1" ng-click="editItem()">Update</button>
+        <button type="button" class="btn btn-default" ng-disabled="selectedCnt < 1" ng-click="dashDelete()">Delete</button>
       </div>
     </div>
   </div>

@@ -5,11 +5,16 @@
 angular.module('canvassTrac')
 
   .constant('UTIL', (function() {
+    var and = 'And',
+      or = 'Or';
     return {
       SET_SEL: 's',
       CLR_SEL: 'c',
-      TOGGLE_SEL: 't'
+      TOGGLE_SEL: 't',
 
+      OP_AND: and,
+      OP_OR: or,
+      OP_LIST: [and, or]
     };
   })())
 

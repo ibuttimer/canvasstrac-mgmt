@@ -40,3 +40,5 @@ bower_components
 
 # Editor configs
 .brackets.json
+/config/localdev.json
+/app/app.config.js

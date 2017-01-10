@@ -181,7 +181,7 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
       },
       // error function
       function (response) {
-        NgDialogFactory.error(response, 'Unable to retrieve ' + name);
+        NgDialogFactory.error(response, 'Unable to retrieve canvassers');
       }
                                     
                                     );

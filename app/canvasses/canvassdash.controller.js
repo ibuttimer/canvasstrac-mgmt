@@ -6,32 +6,32 @@ angular.module('canvassTrac')
 
   .controller('CanvassDashController', CanvassDashController)
 
-  .filter('filterCanvass', function () {
-    return function (input, name, op, system) {
+  .filter('filterCanvass', ['UTIL', function (UTIL) {
+    return function (input, name, op, election) {
       
       if (!op) {
-        op = 'Or';
+        op = UTIL.OP_OR;
       }
       var out = [];
-      if (name || system) {
-        // filter by name & system values for 
-        angular.forEach(input, function (election) {
+      if (name || election) {
+        // filter by name & election values for
+        angular.forEach(input, function (canvass) {
           var nameOk,
-            systemOk;
+            electionOk;
 
           if (name) {
-            nameOk = (election.name.toLowerCase().indexOf(name.toLowerCase()) >= 0);
+            nameOk = (canvass.name.toLowerCase().indexOf(name.toLowerCase()) >= 0);
           } else {
             nameOk = false;
           }
-          if (system) {
-            systemOk = (election.system._id === system);
+          if (election) {
+            electionOk = (canvass.election._id === election);
           } else {
-            systemOk = false;
+            electionOk = false;
           }
-          if (((op === 'Or') && (nameOk || systemOk)) ||
-              ((op === 'And') && (nameOk && systemOk))) {
-            out.push(election);
+          if (((op === UTIL.OP_OR) && (nameOk || electionOk)) ||
+              ((op === UTIL.OP_AND) && (nameOk && electionOk))) {
+            out.push(canvass);
           }
         });
       } else {
@@ -39,28 +39,29 @@ angular.module('canvassTrac')
       }
       return out;
     };
-  });
+  }]);
 
 /* Manually Identify Dependencies
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'electionFactory', 'utilFactory', 'NgDialogFactory', 'stateFactory'];
+CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'electionFactory', 'utilFactory', 'NgDialogFactory', 'stateFactory', 'STATES', 'UTIL'];
 
-function CanvassDashController($scope, $rootScope, $state, canvassFactory, electionFactory, utilFactory, NgDialogFactory, stateFactory) {
+function CanvassDashController($scope, $rootScope, $state, canvassFactory, electionFactory, utilFactory, NgDialogFactory, stateFactory, STATES, UTIL) {
 
-  $scope.dashState = 'app.campaign.canvass';
-  $scope.newState = 'app.campaign.newcanvass';
-  $scope.viewState = 'app.campaign.viewcanvass';
-  $scope.editState = 'app.campaign.editcanvass';
-  $scope.filterOps = ['And', 'Or'];
+  $scope.dashState = STATES.CANVASS;
+  $scope.newState = STATES.CANVASS_NEW;
+  $scope.viewState = STATES.CANVASS_VIEW;
+  $scope.editState = STATES.CANVASS_EDIT;
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
+  $scope.filterOps = UTIL.OP_LIST;
   $scope.initFilter = initFilter;
   $scope.toggleCanvassSel = toggleCanvassSel;
   $scope.viewItem = viewItem;
   $scope.editItem = editItem;
   $scope.deleteItem = deleteItem;
+  $scope.dashDelete = dashDelete;
   $scope.confirmDeleteCanvass = confirmDeleteCanvass;
   $scope.gotoDash = gotoDash;
   $scope.stateIs = stateFactory.stateIs;
@@ -96,14 +97,13 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, elect
     $scope.filterText = undefined;
     $scope.filterElection = undefined;
     $scope.filterOp = undefined;
-    $scope.selCanvassCnt = 0;
-    utilFactory.initSelected($scope.canvasses);
+    $scope.selectedCnt = utilFactory.initSelected($scope.canvasses);
   }
   
   
   function toggleCanvassSel(entry) {
-    $scope.selCanvassCnt = utilFactory.toggleSelection(entry, $scope.selCanvassCnt);
-    switch ($scope.selCanvassCnt) {
+    $scope.selectedCnt = utilFactory.toggleSelection(entry, $scope.selectedCnt);
+    switch ($scope.selectedCnt) {
       case 1:
         if (entry.isSelected) {
           $scope.canvass = entry;
@@ -166,6 +166,12 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, elect
   function gotoDash () {
     $state.go($scope.dashState);
   }
+
+  function dashDelete() {
+    var selectedList = utilFactory.getSelectedList($scope.canvasses);
+    confirmDeleteCanvass(selectedList);
+  }
+
 
   function confirmDelete (dialogOpts, onClose) {
 

@@ -26,6 +26,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
   $scope.openQuestion = openQuestion;
   $scope.getQuestionTypeName = questionFactory.getQuestionTypeName;
   $scope.showQuestionOptions = questionFactory.showQuestionOptions;
+  $scope.onSurveyChange = onSurveyChange;
 
   $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
   $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
@@ -154,7 +155,13 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
                 }
                 $scope.survey.questions.push(response._id);
 
-                $scope.processSurvey(RES.PROCESS_UPDATE);
+                var surveyProc;
+                if (!$scope.survey._id) {
+                  surveyProc = RES.PROCESS_UPDATE_NEW;
+                } else {
+                  surveyProc = RES.PROCESS_UPDATE;
+                }
+                $scope.processSurvey(surveyProc);
               },
               // error function
               function (response) {
@@ -187,6 +194,12 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
 
   }
 
+  function onSurveyChange () {
+    /* save the updated survey to the store, as processSurvey in the parent
+      controller doesn't see the changes to name & description.
+      Something to do with scopes? */
+    surveyFactory.setObj(RES.ACTIVE_SURVEY, $scope.survey);
+  }
   
   
 }

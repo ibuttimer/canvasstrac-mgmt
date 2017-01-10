@@ -53,7 +53,7 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFI
   }
 
   function doFacebookLogin() {
-    authFactory.loginByFacebook(loginSuccess, loginFailure);
+    authFactory.loginByFacebook($scope.loginData, loginSuccess, loginFailure);
     NgDialogFactory.close();
   }
 

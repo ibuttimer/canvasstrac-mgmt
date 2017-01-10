@@ -147,9 +147,9 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
       // success function
       function (response) {
         if (!response.length) {
-          NgDialogFactory.message('No ' + name + ' found', 'No addresses matched the specified criteria');
+          NgDialogFactory.message('No addresses found', 'No addresses matched the specified criteria');
         }
-        
+
         requestAddressCount();
       },
       // error function

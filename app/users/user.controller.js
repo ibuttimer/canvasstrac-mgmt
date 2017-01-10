@@ -6,11 +6,11 @@ angular.module('canvassTrac')
 
   .controller('UserController', UserController)
 
-  .filter('filterUser', function () {
+  .filter('filterUser', ['UTIL', function (UTIL) {
     return function (input, name, op, role) {
       
       if (!op) {
-        op = 'Or';
+        op = UTIL.OP_OR;
       }
       var out = [];
       if (name || role) {
@@ -30,8 +30,8 @@ angular.module('canvassTrac')
           } else {
             roleOk = false;
           }
-          if (((op === 'Or') && (nameOk || roleOk)) ||
-              ((op === 'And') && (nameOk && roleOk))) {
+          if (((op === UTIL.OP_OR) && (nameOk || roleOk)) ||
+              ((op === UTIL.OP_AND) && (nameOk && roleOk))) {
             out.push(user);
           }
         });
@@ -40,15 +40,15 @@ angular.module('canvassTrac')
       }
       return out;
     };
-  });
+  }]);
 
 /* Manually Identify Dependencies
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'STATES'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'STATES', 'UTIL'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, STATES) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, STATES, UTIL) {
 
   console.log('UserController id', $stateParams.id);
 
@@ -58,7 +58,7 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
   $scope.editState = STATES.USERS_EDIT;
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
-  $scope.userFilterOps = ['And', 'Or'];
+  $scope.userFilterOps = UTIL.OP_LIST;
   $scope.initUserFilter = initUserFilter;
   $scope.toggleSelection = toggleSelection;
   $scope.getTitle = getTitle;
@@ -74,8 +74,8 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
   $scope.stateIncludes = stateFactory.stateIncludes;
   $scope.menuStateIs = stateFactory.menuStateIs;
   
-  $scope.initUserFilter();
-  $scope.initUser($stateParams.id);
+  initUserFilter();
+  initUser($stateParams.id);
 
   // get list of roles selecting name field, _id field is always provided
   $scope.roles = roleFactory.getRoles().query({fields: 'name'})
@@ -120,32 +120,20 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
     $scope.userFilterRole = undefined;
     $scope.userFilterOp = undefined;
     $scope.userSelectList = undefined;
-    $scope.selectedCnt = 0;
-
-    angular.forEach($scope.users, function (user) {
-      if (user.isSelected) {
-        delete user.isSelected;
-      }
-    });
+    $scope.selectedCnt = utilFactory.initSelected($scope.users);
   }
   
-  function toggleSelection(user) {
-    if (!user.isSelected) {
-      user.isSelected = true;
-      $scope.selectedCnt += 1;
-    } else {
-      user.isSelected = false;
-      $scope.selectedCnt -= 1;
-    }
+  function toggleSelection(entry) {
+    $scope.selectedCnt = utilFactory.toggleSelection(entry, $scope.selectedCnt);
     switch ($scope.selectedCnt) {
       case 1:
-        if (user.isSelected) {
-          $scope.user = user;
+        if (entry.isSelected) {
+          $scope.user = entry;
           break;
         }
         /* falls through */
       default:
-        $scope.initUser();
+        initUser();
         break;
     }
   }
