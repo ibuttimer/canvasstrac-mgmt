@@ -42,3 +42,4 @@ bower_components
 .brackets.json
 /config/localdev.json
 /app/app.config.js
+/app/styles/appstyles.css

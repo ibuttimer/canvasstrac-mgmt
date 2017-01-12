@@ -17,6 +17,7 @@
 var gulp = require('gulp'),
   print = require('gulp-print'),
   minifycss = require('gulp-minify-css'),
+  less = require('gulp-less'),
   jshint = require('gulp-jshint'),
   stylish = require('jshint-stylish'),
   uglify = require('gulp-uglify'),
@@ -38,6 +39,7 @@ var gulp = require('gulp'),
   gulpIgnore = require('gulp-ignore'),
   ngannotate = require('gulp-ng-annotate'),
   replace = require('gulp-replace-task'),
+  path = require('path'),
   fs = require('fs');
 
 var basePaths = {
@@ -72,6 +74,10 @@ var paths = {
       dest: basePaths.dest + 'bower_components/'
     }
   };
+paths.less = {
+  src: basePaths.src + 'less/',
+  dest: paths.styles.src
+};
 
 //canvasses
 //election
@@ -84,6 +90,7 @@ var paths = {
 /* for glob functionality see https://github.com/isaacs/node-glob */
 
 var appFiles = {
+  less: paths.less.src + '**/*.less',
   styles: paths.styles.src + '**/*.css',
   views: paths.views.src + '**/*.html',
   images: paths.images.src + '**/*',
@@ -135,6 +142,14 @@ gulp.task('replace', function () {
       ]
     }))
     .pipe(gulp.dest(basePaths.src));
+});
+
+// Less css preprocessor
+gulp.task('less', function () {
+
+  return gulp.src(appFiles.less)
+    .pipe(less())
+    .pipe(gulp.dest(paths.less.dest));
 });
 
 gulp.task('usemin', ['jshint'], function () {
@@ -251,7 +266,7 @@ gulp.task('browser-sync', ['default'], function () {
 });
 
 // Default task
-gulp.task('default', ['clean', 'replace'], function () {
+gulp.task('default', ['clean', 'replace', 'less'], function () {
   gulp.start('copyfonts', 
              'usemin', 
              'imagemin',
