@@ -49,6 +49,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         }
       })
 
+    /* TODO voting systems config
       // route for the voting systems page
       .state(STATES.VOTINGSYS, {
         url: '/votingsystems',
@@ -70,7 +71,9 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
           }
         }
       })
+    */
 
+    /* TODO roles config
       // route for the roles page
       .state(STATES.ROLES, {
         url: '/roles',
@@ -92,6 +95,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
           }
         }
       })
+    */
 
       // route for the users page
       .state(STATES.USERS, {
