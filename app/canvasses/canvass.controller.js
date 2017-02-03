@@ -20,9 +20,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX'];
+CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
 
-function CanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX) {
+function CanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
 
   console.log('CanvassController id', $stateParams.id);
 
@@ -36,23 +36,30 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     ADDRESS_TAB: 2,
     CANVASSER_TAB: 3,
     ASSIGNMENT_TAB: 4,
-    ALL_TABS: 5
+    RESULT_TAB: 5,
+    ALL_TABS: 6
   };
   $scope.firstTab = $scope.tabs.CANVASS_TAB;
-  $scope.lastTab = $scope.tabs.ASSIGNMENT_TAB;
+  if (showTab($scope.tabs.RESULT_TAB)) {
+    $scope.lastTab = $scope.tabs.RESULT_TAB;
+  } else {
+    $scope.lastTab = $scope.tabs.ASSIGNMENT_TAB;
+  }
   $scope.activeTab = $scope.firstTab;
   
-  var TAB_BITS = [
-      (1 << $scope.tabs.CANVASS_TAB),
-      (1 << $scope.tabs.SURVEY_TAB),
-      (1 << $scope.tabs.ADDRESS_TAB),
-      (1 << $scope.tabs.CANVASSER_TAB),
-      (1 << $scope.tabs.ASSIGNMENT_TAB),
-      0x1f
-    ];
+  var TAB_BITS = [0];
+  for (var prop in $scope.tabs) {
+    var bit = (1 << $scope.tabs[prop]);
+    if ($scope.tabs[prop] !== $scope.tabs.ALL_TABS) {
+      TAB_BITS.push(bit);
+      TAB_BITS[0] += bit;
+    }
+  }
+  TAB_BITS.push(TAB_BITS.shift());  // first shall be last
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
+  $scope.showTab = showTab;
   $scope.initTab = initTab;
   $scope.formatDate = utilFactory.formatDate;
   $scope.processForm = processForm;
@@ -77,7 +84,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   $scope.toggleItemSel = toggleItemSel;
   $scope.setItemSel = setItemSel;
   $scope.confirmDelete = confirmDelete;
-  $scope.buildQuery = buildQuery;
   $scope.requestCanvasserRole = requestCanvasserRole;
 
   canvassFactory.setLabeller(labeller);
@@ -94,30 +100,41 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     if (tab < TAB_BITS.length) {
       var bit = TAB_BITS[tab];
 
-      if ((bit & TAB_BITS[$scope.tabs.CANVASS_TAB]) !== 0) {
-        // cnavass tab specific init
-      }
-      if ((bit & TAB_BITS[$scope.tabs.SURVEY_TAB]) !== 0) {
-        // survey tab specific init
-        if ($scope.survey) {
-          utilFactory.initSelected($scope.survey.questions);
+      Object.getOwnPropertyNames($scope.tabs).forEach(function (prop) {
+        if ($scope.tabs[prop] !== $scope.tabs.ALL_TABS) {  // skip all tabs
+          if ((bit & TAB_BITS[$scope.tabs[prop]]) !== 0) {
+            switch ($scope.tabs[prop]) {
+              case $scope.tabs.CANVASS_TAB:
+                // canvass tab specific init
+                break;
+              case $scope.tabs.SURVEY_TAB:
+                // survey tab specific init
+                if ($scope.survey) {
+                  utilFactory.initSelected($scope.survey.questions);
+                }
+                break;
+              case $scope.tabs.ADDRESS_TAB:
+                // address tab specific init
+                break;
+              case $scope.tabs.CANVASSER_TAB:
+                // canvasser tab specific init
+                break;
+              case $scope.tabs.ASSIGNMENT_TAB:
+                // assignment tab specific init
+                break;
+              case $scope.tabs.RESULT_TAB:
+                // result tab specific init
+                break;
+            }
+          }
         }
-      }
-      if ((bit & TAB_BITS[$scope.tabs.ADDRESS_TAB]) !== 0) {
-        // address tab specific init
-      }
-      if ((bit & TAB_BITS[$scope.tabs.CANVASSER_TAB]) !== 0) {
-        // canvasser tab specific init
-      }
-      if ((bit & TAB_BITS[$scope.tabs.ASSIGNMENT_TAB]) !== 0) {
-        // assignment tab specific init
-      }
+      });
     }
   }
   
   
   
-  function getTitle() {
+  function getTitle () {
     $scope.editDisabled = true;
     var title;
     if ($state.is($scope.newState)) {
@@ -135,6 +152,17 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   }
 
   
+  function showTab (tab) {
+    var show = true;
+    if ($state.is($scope.newState) || $state.is($scope.editState)) {
+      if (tab === $scope.tabs.RESULT_TAB) {
+        show = false; // no results in new mode
+      }
+    }
+    return show;
+  }
+
+
   function processForm() {
     if ($state.is($scope.newState) || $state.is($scope.editState)) {
       // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
@@ -183,21 +211,69 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     }
   }
 
-  function initCanvass() {
-    $scope.canvass = canvassFactory.newObj(RES.ACTIVE_CANVASS, storeFactory.CREATE_INIT);
-    $scope.backupCanvass = canvassFactory.duplicateObj(RES.BACKUP_CANVASS, RES.ACTIVE_CANVASS, storeFactory.DUPLICATE_OR_EXIST);
+  function init () {
+
+    var resources = createResources(resourceFactory.standardiseArgs(getCanvassRspOptions()));
+
+    $scope.canvass = resources[RES.ACTIVE_CANVASS];
+    $scope.backupCanvass = resources[RES.BACKUP_CANVASS];
+
+    $scope.survey = resources[RES.ACTIVE_SURVEY];
+    $scope.backupSurvey = resources[RES.BACKUP_SURVEY];
   }
 
-  function initSurvey() {
-    $scope.survey = surveyFactory.newObj(RES.ACTIVE_SURVEY, storeFactory.CREATE_INIT);
-    $scope.backupSurvey = surveyFactory.duplicateObj(RES.BACKUP_SURVEY, RES.ACTIVE_SURVEY, storeFactory.DUPLICATE_OR_EXIST);
-  }
+  function createResources (options, resources) {
 
+    var srcId,
+      result;
+
+    if (!resources) {
+      resources = {};
+    }
+
+    options.objId.forEach(function (id) {
+
+      switch (options.storage) {
+        case RESOURCE_CONST.STORE_OBJ:
+          if (!srcId) {
+            result = options.factory.newObj(id, storeFactory.CREATE_INIT);
+          } else {
+            result = options.factory.duplicateObj(id, srcId, storeFactory.DUPLICATE_OR_EXIST);
+          }
+          break;
+        case RESOURCE_CONST.STORE_LIST:
+          if (!srcId) {
+            result = options.factory.newList(id, {
+              title: id,
+              flags: storeFactory.CREATE_INIT
+            });
+          } else {
+            result = options.factory.duplicateList(id, srcId, storeFactory.DUPLICATE_OR_EXIST);
+          }
+          break;
+        default:
+          result = undefined;
+      }
+      if (result) {
+        resources[id] = result;
+      }
+      if (!srcId) {
+        srcId = id;
+      }
+    });
+
+    if (options.subObj) {
+      options.subObj.forEach(function (subObj) {
+        createResources(subObj, resources);
+      });
+    }
+
+    return resources;
+  }
 
   function initItem(id) {
     if (!id) {
-      initCanvass();
-      initSurvey();
+      init();
       initTab($scope.tabs.ALL_TABS);
     } else {
       $scope.canvass = canvassFactory.getCanvasses().get({id: id})
@@ -208,9 +284,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
             processCanvassRsp(response,
                   (storeFactory.CREATE_INIT | storeFactory.APPLY_FILTER),
                   requestAssignments);
-            if (!$scope.canvass.survey) {
-              initSurvey();
-            }
           },
           // error function
           function (response) {
@@ -223,22 +296,101 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
 
   function processCanvassRsp (response, flags, next) {
 
-    $scope.canvass = canvassFactory.readCanvassRsp(response, {
-          objId: [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
-          addrId: [RES.ASSIGNED_ADDR, RES.ALLOCATED_ADDR],
-          userId: [RES.ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER],
-          //resultsId: RES.CANVASS_RESULT,
+    $scope.canvass = canvassFactory.readCanvassRsp(response,
+                                      getCanvassRspOptions(flags, next));
+  }
+
+  function getCanvassRspOptions (flags, next) {
+    return {
+      objId: [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
+      factory: 'canvassFactory',
+      storage: RESOURCE_CONST.STORE_OBJ,
+      flags: flags,
+      next: next,
+      subObj: [
+        // storage arguments for specific sub sections of canvass info
+        { // storage infor for election
+          objId: RES.ACTIVE_ELECTION, // id of election object to save response data to
+          factory: 'electionFactory',
+          schema: CANVASSSCHEMA.SCHEMA,
+          schemaId: CANVASSSCHEMA.IDs.ELECTION,
+          //type: can be retrieved using schema & schemaId
+          //path: can be retrieved using schema & schemaId
+          storage: RESOURCE_CONST.STORE_OBJ,
+          flags: flags
+        },
+        { // storage info for survey
+          objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
+          factory: 'surveyFactory',
+          schema: CANVASSSCHEMA.SCHEMA,
+          schemaId: CANVASSSCHEMA.IDs.SURVEY,
+          //type: can be retrieved using schema & schemaId
+          //path: can be retrieved using schema & schemaId
+          storage: RESOURCE_CONST.STORE_OBJ,
           flags: flags,
-          next: next,
-          surveyArgs: {
-            objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
-            flags: flags
-          },
-          electionArgs: {
-            objId: RES.ACTIVE_ELECTION, // id of election object to save response data to
-            flags: flags
+          subObj: {
+            // storage arguments for specific sub sections of survey info
+            objId: RES.CANVASS_QUESTIONS,
+            factory: 'questionFactory',
+            schema: SURVEYSCHEMA.SCHEMA,
+            schemaId: SURVEYSCHEMA.IDs.QUESTIONS,
+            //type: can be retrieved using schema & schemaId
+            //path: can be retrieved using schema & schemaId
+            storage: RESOURCE_CONST.STORE_LIST,
+            flags: flags | storeFactory.COPY  // make copy of questions
           }
-        });
+        },
+        { // storage info for addresses
+          objId: [RES.ASSIGNED_ADDR, RES.ALLOCATED_ADDR],
+          factory: 'addressFactory',
+          schema: CANVASSSCHEMA.SCHEMA,
+          schemaId: CANVASSSCHEMA.IDs.ADDRESSES,
+          //type: can be retrieved using schema & schemaId
+          //path: can be retrieved using schema & schemaId
+          storage: RESOURCE_CONST.STORE_LIST,
+          flags: flags
+        },
+        { // storage info for canvassers
+          objId: [RES.ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER],
+          factory: 'userFactory',
+          schema: CANVASSSCHEMA.SCHEMA,
+          schemaId: CANVASSSCHEMA.IDs.CANVASSERS,
+          //type: can be retrieved using schema & schemaId
+          //path: can be retrieved using schema & schemaId
+          storage: RESOURCE_CONST.STORE_LIST,
+          flags: flags
+        },
+        { // storage info for results
+          objId: RES.CANVASS_RESULT,
+          factory: 'canvassResultFactory',
+          schema: CANVASSSCHEMA.SCHEMA,
+          schemaId: CANVASSSCHEMA.IDs.RESULTS,
+          //type: can be retrieved using schema & schemaId
+          //path: can be retrieved using schema & schemaId
+          storage: RESOURCE_CONST.STORE_LIST,
+          flags: flags,
+          customArgs: {
+            getChartType: function (type) {
+              /* chart.js pie, polarArea & doughnut charts may be displayed using
+                single data series (i.e. data = []), whereas chart.js radar, line &
+                bar require multiple data series (i.e. data = [[], []]) */
+              switch (type) {
+                case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
+                case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
+                case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
+                  return CHARTS.PIE;
+                case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
+                  return CHARTS.BAR;
+                case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
+                  return CHARTS.POLAR;
+                default:
+                  return undefined;
+              }
+            }
+          }
+        }
+      ]
+    };
   }
 
   function labeller () {
@@ -555,28 +707,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     if (ctrl) {
       ctrl.selCount = utilFactory.setSelected(ctrl.list, set);
     }
-  }
-
-  
-  function buildQuery (forEachSchemaField, filter) {
-    var query = {};
-    if (filter) {
-      // using the dialog fields to build an object based on the model fields
-      forEachSchemaField(function (idx, dialog, display, models) {
-        var filterVal = filter[dialog];
-        if (filterVal) {
-          var field = '';
-          for (var i = 0; i < models.length; ++i) {
-            if (i > 0) {
-              field += ' ';
-            }
-            field += models[i];
-          }
-          query[field] = filterVal;
-        }
-      });
-    }
-    return query;
   }
 
   function requestCanvasserRole (next) {

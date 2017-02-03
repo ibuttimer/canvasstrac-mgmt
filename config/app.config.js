@@ -8,34 +8,70 @@ angular.module('ct.config', [])
   .constant('apiKey', '@@apiKey')
   .constant('STATES', (function () {
     var cfgState = 'app.cfg',
-      campaignState = 'app.campaign';
-    return {
-      APP: 'app',
-      ABOUTUS: 'app.aboutus',
-      CONFIG: cfgState,
-      VOTINGSYS: cfgState + '.votingsystems',
-      VOTINGSYS_NEW: cfgState + '.newvotingsystem',
-      ROLES: cfgState + '.roles',
-      ROLES_NEW: cfgState + '.newrole',
-      USERS: cfgState + '.users',
-      USERS_VIEW: cfgState + '.viewuser',
-      USERS_EDIT: cfgState + '.edituser',
-      USERS_NEW: cfgState + '.newuser',
-      CAMPAIGN: campaignState,
-      ELECTION: campaignState + '.elections',
-      ELECTION_VIEW: campaignState + '.viewelection',
-      ELECTION_EDIT: campaignState + '.editelection',
-      ELECTION_NEW: campaignState + '.newelection',
-      CANDIDATE: campaignState + '.candidates',
-      CANDIDATE_VIEW: campaignState + '.newcandidate',
-      CANVASS: campaignState + '.canvass',
-      CANVASS_VIEW: campaignState + '.viewcanvass',
-      CANVASS_EDIT: campaignState + '.editcanvass',
-      CANVASS_NEW: campaignState + '.newcanvass',
+      campaignState = 'app.campaign',
+      stateConstant = {
+        APP: 'app',
+        ABOUTUS: 'app.aboutus',
 
-      LOGIN: 'app.login',
-      CONTACTUS: 'app.contactus'
+        CONFIG: cfgState,
+        VOTINGSYS: cfgState + '.votingsystems',
+        VOTINGSYS_VIEW: cfgState + '.viewvotingsystem',
+        VOTINGSYS_EDIT: cfgState + '.editvotingsystem',
+        VOTINGSYS_NEW: cfgState + '.newvotingsystem',
+
+        ROLES: cfgState + '.roles',
+        ROLES_VIEW: cfgState + '.viewrole',
+        ROLES_EDIT: cfgState + '.editrole',
+        ROLES_NEW: cfgState + '.newrole',
+
+        USERS: cfgState + '.users',
+        USERS_VIEW: cfgState + '.viewuser',
+        USERS_EDIT: cfgState + '.edituser',
+        USERS_NEW: cfgState + '.newuser',
+
+        CAMPAIGN: campaignState,
+        ELECTION: campaignState + '.elections',
+        ELECTION_VIEW: campaignState + '.viewelection',
+        ELECTION_EDIT: campaignState + '.editelection',
+        ELECTION_NEW: campaignState + '.newelection',
+
+        CANDIDATE: campaignState + '.candidates',
+        CANDIDATE_VIEW: campaignState + '.viewcandidate',
+        CANDIDATE_EDIT: campaignState + '.editcandidate',
+        CANDIDATE_NEW: campaignState + '.newcandidate',
+
+        CANVASS: campaignState + '.canvass',
+        CANVASS_VIEW: campaignState + '.viewcanvass',
+        CANVASS_EDIT: campaignState + '.editcanvass',
+        CANVASS_NEW: campaignState + '.newcanvass',
+
+        LOGIN: 'app.login',
+        CONTACTUS: 'app.contactus'
+      },
+      disabledStates = [
+        // add entries to disbale a state and any substates
+        stateConstant.VOTINGSYS,
+        stateConstant.ROLES
+      ];
+
+    stateConstant.ISDISABLED = function (state) {
+      var disabled = true,  // everythimg disabled by default
+        properties = Object.getOwnPropertyNames(stateConstant),
+        i, j;
+      for (i = 0; i < properties.length; ++i) {
+        if (stateConstant[properties[i]] === state) {
+          disabled = false; // valid state, enabled by default
+          for (j = 0; j < properties.length; ++j) {
+            if (state.indexOf(disabledStates[j]) === 0) {
+              return true;  // its or a parent is disabled
+            }
+          }
+        }
+      }
+      return disabled;
     };
+
+    return stateConstant;
   })())
   .constant('CONFIG', (function () {
     return {
@@ -96,6 +132,7 @@ angular.module('ct.config', [])
       BACKUP_SURVEY: 'backupSurvey',              // backup survey object name
       BACKUP_ELECTION: 'backupElection',          // backup election object name
       CANVASS_RESULT:  'canvassResults',          // canvass results object name
+      CANVASS_QUESTIONS:  'canvassQuestions',     // canvass questions object name
 
       ASSIGNED_ADDR: 'assignedAddr',              // all addresses assigned to canvass
       UNASSIGNED_ADDR: 'unassignedAddr',          // addresses not assigned to canvass

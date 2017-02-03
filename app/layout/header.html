@@ -7,60 +7,52 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" ui-sref="app"><img src="images/logo.png" height=30 width=41></a>
+      <a class="navbar-brand" ui-sref="{{homeMenu.sref}}"><img src="images/logo.png" height=30 width=41></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li ui-sref-active-eq="active"><a ui-sref="app">
+        <li ui-sref-active-eq="active"><a ui-sref="{{homeMenu.sref}}">
           <span class="glyphicon glyphicon-home"
-           aria-hidden="true"></span> Home</a>
+           aria-hidden="true"></span>&nbsp;{{homeMenu.name}}</a>
         </li>
         
-<!--        <li ng-class="{active: stateIs('app.aboutus')}"><a ui-sref="app.aboutus">-->
-        <li ui-sref-active="active"><a ui-sref="app.aboutus">
+        <li ui-sref-active="active"><a ui-sref="{{aboutMenu.sref}}">
           <span class="glyphicon glyphicon-info-sign"
-           aria-hidden="true"></span> About</a>
+           aria-hidden="true"></span>&nbsp;{{aboutMenu.name}}</a>
         </li>
-        
-         <li ng-class="{active: stateIs('app.contactus')}"><a ui-sref="app.contactus">
-         <i class="fa fa-envelope-o"></i> Contact</a></li>
 
-        <li role="presentation" class="dropdown" ng-class="{active: menuStateIs('app.cfg')}" uib-dropdown is-open="status.cfgIsOpen">
+        <li ui-sref-active="active"><a ui-sref="{{contactMenu.sref}}">
+          <span class="fa fa-envelope-o"
+           aria-hidden="true"></span>&nbsp;{{contactMenu.name}}</a>
+        </li>
+
+        <li role="presentation" class="dropdown" ng-class="{active: inSubstate('{{configMenu.root.sref}}')}" uib-dropdown is-open="status.cfgIsOpen">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"
            role="button" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle ng-disabled="disabled">
               <span class="fa fa-cog" aria-hidden="true"></span> Configutation <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-<!--  TODO voting system & roles config
-            <li class="dropdown-header">Voting Systems</li>
-              <li role="menuitem"><a ui-sref="app.cfg.votingsystems">Voting Systems</a></li>
-              <li role="menuitem"><a ui-sref="app.cfg.newvotingsystem">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
-            <li role="separator" class="divider"></li>
-            <li class="dropdown-header">Roles</li>
-              <li role="menuitem"><a ui-sref="app.cfg.roles">Roles</a></li>
-              <li role="menuitem"><a ui-sref="app.cfg.newrole">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
--->
-            <li class="dropdown-header">Users</li>
-              <li role="menuitem"><a ui-sref="app.cfg.users">Users</a></li>
-              <li role="menuitem"><a ui-sref="app.cfg.newuser">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li class="dropdown-header">{{configMenu.votingsys.header}}</li>
+              <li role="menuitem" ng-repeat="entry in configMenu.votingsys.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
+            <li class="dropdown-header">{{configMenu.roles.header}}</li>
+              <li role="menuitem" ng-repeat="entry in configMenu.roles.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
+            <li class="dropdown-header">{{configMenu.users.header}}</li>
+              <li role="menuitem" ng-repeat="entry in configMenu.users.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
           </ul>
         </li>
-        
-        <li role="presentation" class="dropdown" ng-class="{active: menuStateIs('app.campaign')}" uib-dropdown is-open="status.cmpgnIsOpen">
+
+        <li role="presentation" class="dropdown" ng-class="{active: inSubstate('{{campaignMenu.root.sref}}')}" uib-dropdown is-open="status.cmpgnIsOpen">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"
            role="button" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle ng-disabled="disabled">
-            <span class="fa fa-pencil-square" aria-hidden="true"></span> Campaign <span class="caret"></span>
+            <span class="fa fa-pencil-square" aria-hidden="true"></span>&nbsp;{{campaignMenu.root.name}}&nbsp;<span class="caret"></span>
           </a>
           <ul class="dropdown-menu" uib-dropdown-menu role="menu">
-            <li class="dropdown-header">Elections</li>
-              <li role="menuitem"><a ui-sref="app.campaign.elections">Elections</a></li>
-              <li role="menuitem"><a ui-sref="app.campaign.newelection">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
-            <li class="dropdown-header">Candidates</li>
-              <li role="menuitem"><a ui-sref="app.campaign.candidates">Candidates</a></li>
-              <li role="menuitem"><a ui-sref="app.campaign.newcandidate">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
-            <li class="dropdown-header">Canvass</li>
-              <li role="menuitem"><a ui-sref="app.campaign.canvass">Canvass</a></li>
-              <li role="menuitem"><a ui-sref="app.campaign.newcanvass">&nbsp;&nbsp;&nbsp;&nbsp;New</a></li>
+            <li class="dropdown-header">{{campaignMenu.elections.header}}</li>
+              <li role="menuitem" ng-repeat="entry in campaignMenu.elections.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
+            <li class="dropdown-header">{{campaignMenu.candidates.header}}</li>
+              <li role="menuitem" ng-repeat="entry in campaignMenu.candidates.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
+            <li class="dropdown-header">{{campaignMenu.canvass.header}}</li>
+              <li role="menuitem" ng-repeat="entry in campaignMenu.canvass.items"><a ui-sref="{{entry.sref}}">{{entry.name}}</a></li>
           </ul>
         </li>
 
@@ -108,36 +100,11 @@
   <div class="row">
     <div class="col-xs-12">
       <ul class="breadcrumb">
-        <li ng-if="stateIsNot('app')"><a href="#">Home</a></li>
-        <li class="active" ng-if="stateIs('app')">Home</li>
-
-        <li ng-if="stateIncludes('app.cfg')"><a href="#">Configuration</a></li>
-        <li class="active" ng-if="stateIs('app.cfg')">Configuration</li>
-
-        <li ng-if="stateIncludes('app.campaign')"><a href="#">Campaign</a></li>
-        <li class="active" ng-if="stateIs('app.campaign')">Campaign</li>
-
-        <li class="active" ng-if="stateIs('app.cfg.users')">Users</li>
-        <li class="active" ng-if="stateIs('app.cfg.newuser')">New User</li>
-        <li class="active" ng-if="stateIs('app.cfg.viewuser')">View User</li>
-        <li class="active" ng-if="stateIs('app.cfg.edituser')">Update User</li>
-        
-        <li class="active" ng-if="stateIs('app.campaign.elections')">Elections</li>
-        <li class="active" ng-if="stateIs('app.campaign.newelection')">New Election</li>
-        <li class="active" ng-if="stateIs('app.campaign.viewelection')">View Election</li>
-        <li class="active" ng-if="stateIs('app.campaign.editelection')">Update Election</li>
-        
-        <li class="active" ng-if="stateIs('app.campaign.canvass')">Canvass</li>
-        <li class="active" ng-if="stateIs('app.campaign.newcanvass')">New Canvass</li>
-        <li class="active" ng-if="stateIs('app.campaign.viewcanvass')">View Canvass</li>
-        <li class="active" ng-if="stateIs('app.campaign.editcanvass')">Update Canvass</li>
-        
-        
-        <li class="active" ng-if="stateIs('app.aboutus')">About Us</li>
+        <li ng-repeat="crumb in breadcrumb" ng-class="{ active: crumb.active }"><a ng-if="crumb.active" href="{{crumb.href}}">{{crumb.name}}</a><span ng-if="!crumb.active">{{crumb.name}}</span></li>
       </ul>
     </div>
     <div class="col-xs-12">
-      <h3 ng-if="stateIs('app.aboutus')">About Us</h3>
+      <h3 ng-if="stateIs('{{aboutMenu.sref}}')">{{aboutMenu.name}}</h3>
       <hr>
     </div>
   </div>

@@ -46,6 +46,7 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
       title: label,
       flags: storeFactory.CREATE_INIT
     });
+    $scope[id].sortOptions = $scope.sortOptions;
     $scope[id].sortBy = $scope.sortOptions[0];
     
     var filter = RES.getFilterName(id);
@@ -75,34 +76,7 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
   }
 
   function sortList (resList) {
-    var sortList;
-    if (resList) {
-//      if (!which) {
-//        which = CONST.ADDRESSES;
-//      }
-//      switch (which) {
-//        case CONST.ADDRESSES:
-          sortList = resList.list;
-//          break;
-//        case CONST.FILTER:
-//          sortList = resList.filterList;
-//          break;
-//        default:
-//          return; // return undefined, i.e. error
-//      }
-      var sortFxn = userFactory.getSortFunction($scope.sortOptions, resList.sortBy.value);
-      if (sortFxn) {
-        sortList.sort(sortFxn);
-        if (userFactory.isDescendingSortOrder(resList.sortBy.value)) {
-          sortList.reverse();
-        }
-
-        if (resList.pager) {
-          pagerFactory.updatePager(resList.pager.id, sortList);
-        }
-      }
-    }
-    return sortList;
+    return resList.sort();
   }
   
   function filterList (resList, action) {
@@ -138,25 +112,6 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
         }
         // no cancel function
       );
-//      var dialog = NgDialogFactory.open({ template: 'people/personfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'PersonFilterController', 
-//                    data: {action: resList.id, title: resList.title, filter: filter}});
-//
-//      dialog.closePromise.then(function (data) {
-//        if (!NgDialogFactory.isNgDialogCancel(data.value)) {
-//
-//          var filter = userFactory.newFilter(data.value.filter);
-//          
-//          var resList = setFilter(data.value.action, filter);
-//          if (resList) {
-//            if (resList.id === RES.UNASSIGNED_CANVASSER) {
-//              // request filtered addresses from server
-//              requestCanvassers(resList, filter);
-//            } else {
-//              resList.applyFilter();
-//            }
-//          }
-//        }
-//      });
     }
 
   }
@@ -183,35 +138,7 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
       function (response) {
         NgDialogFactory.error(response, 'Unable to retrieve canvassers');
       }
-                                    
-                                    );
-    
-//    var resource = userFactory.getUsers();
-//
-//    filter = filter || userFactory.newFilter();
-//
-//    var query = resourceFactory.buildQuery(userFactory.forEachSchemaField, filter.filterBy);
-//
-//    resList.setList([]);
-//    resource.query(query).$promise.then(
-//      // success function
-//      function (response) {
-//        // add indices
-//        for (var i = 0; i < response.length; ++i) {
-//          response[i].index = i + 1;
-//        }
-//        // response from server contains result of filter request
-//        resList.setList(response, storeFactory.APPLY_FILTER);
-//        
-//        if (!response.length) {
-//          NgDialogFactory.message('No canvassers found', 'No canvassers matched the specified criteria');
-//        }
-//      },
-//      // error function
-//      function (response) {
-//        NgDialogFactory.error(response, 'Unable to retrieve canvassers');
-//      }
-//    );
+    );
   }
 
   function updateList (fromList, toList) {

@@ -46,9 +46,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'STATES', 'UTIL'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA', 'STATES', 'UTIL'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, STATES, UTIL) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, PEOPLESCHEMA, STATES, UTIL) {
 
   console.log('UserController id', $stateParams.id);
 
@@ -187,38 +187,29 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
             var user = {
               // from user model
               username: response.username,
-              password: response.password,  // TODO sort out password
               role: response.role._id,
               id: response._id
             };
-            if (response.person) {
-              miscUtilFactory.copyProperties(response.person, user, [
-                // from person model
-                'firstname', 'lastname', 'note'
+
+            copyProperties(response.person, user, PEOPLESCHEMA.SCHEMA, [
+                PEOPLESCHEMA.IDs.FNAME,
+                PEOPLESCHEMA.IDs.LNAME,
+                PEOPLESCHEMA.IDs.NOTE
               ]);
-            }
-            if (response.person.address) {
-              var addrFields = [
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.ADDR1],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.ADDR2],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.ADDR3],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.TOWN],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.CITY],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.COUNTY],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.COUNTRY],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.PCODE],
-                ADDRSCHEMA.NAMES[ADDRSCHEMA.IDs.GPS]
-              ];
-              
-              miscUtilFactory.copyProperties(response.person.address, user, addrFields
-                                         
-//                                         [
-//                // from address model
-//                
-//                'addrLine1', 'addrLine2', 'addrLine3', 'town', 'city', 'county', 'country', 'postcode', 'gps'
-//                ]
-                                        );
-            }
+            copyProperties(response.person.address, user, ADDRSCHEMA.SCHEMA, [
+                ADDRSCHEMA.IDs.ADDR1,
+                ADDRSCHEMA.IDs.ADDR2,
+                ADDRSCHEMA.IDs.ADDR3,
+                ADDRSCHEMA.IDs.TOWN,
+                ADDRSCHEMA.IDs.CITY,
+                ADDRSCHEMA.IDs.COUNTY,
+                ADDRSCHEMA.IDs.COUNTRY,
+                ADDRSCHEMA.IDs.PCODE,
+                ADDRSCHEMA.IDs.GPS
+              ]);
+            // TODO contactDetails schema & factory
+//            copyProperties(response.person.contactDetails, user, schema, ids);
+
             if (response.person.contactDetails) {
               miscUtilFactory.copyProperties(response.person.contactDetails, user, [
                 // from contactDetails model
@@ -233,6 +224,17 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
             NgDialogFactory.error(response, 'Unable to retrieve User');
           }
         );
+    }
+  }
+
+
+  function copyProperties (from, to, schema, ids) {
+    if (from) {
+      var fields = [];
+      ids.forEach(function (id) {
+        fields.push(schema.getModelName(id));
+      });
+      miscUtilFactory.copyProperties(from, to, fields);
     }
   }
 

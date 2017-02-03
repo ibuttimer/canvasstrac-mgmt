@@ -47,6 +47,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
       title: label,
       flags: storeFactory.CREATE_INIT
     });
+    $scope[id].sortOptions = $scope.sortOptions;
     $scope[id].sortBy = $scope.sortOptions[0];
     
     var filter = RES.getFilterName(id);
@@ -71,34 +72,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
   }
 
   function sortList (resList) {
-    var sortList;
-    if (resList) {
-//      if (!which) {
-//        which = CONST.ADDRESSES;
-//      }
-//      switch (which) {
-//        case CONST.ADDRESSES:
-          sortList = resList.list;
-//          break;
-//        case CONST.FILTER:
-//          sortList = resList.filterList;
-//          break;
-//        default:
-//          return; // return undefined, i.e. error
-//      }
-      var sortFxn = addressFactory.getSortFunction($scope.sortOptions, resList.sortBy.value);
-      if (sortFxn) {
-        sortList.sort(sortFxn);
-        if (addressFactory.isDescendingSortOrder(resList.sortBy.value)) {
-          sortList.reverse();
-        }
-
-        if (resList.pager) {
-          pagerFactory.updatePager(resList.pager.id, sortList);
-        }
-      }
-    }
-    return sortList;
+    return resList.sort();
   }
 
 
@@ -156,36 +130,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
       function (response) {
         NgDialogFactory.error(response, 'Unable to retrieve addresses');
       }
-                                      
-                                      
-                                      
-                                      
-                                      ); // get database total address count
-    
-//    var resource = addressFactory.getAddresses();
-//
-//    filter = filter || addressFactory.newFilter();
-//
-//    var query = resourceFactory.buildQuery(addressFactory.forEachSchemaField, filter.filterBy);
-//
-//    resList.setList([]);
-//    resource.query(query).$promise.then(
-//      // success function
-//      function (response) {
-//        // add indices
-//        for (var i = 0; i < response.length; ++i) {
-//          response[i].index = i + 1;
-//        }
-//        // response from server contains result of filter request
-//        resList.setList(response, storeFactory.APPLY_FILTER);
-//
-//        requestAddressCount();  // get database total address count
-//      },
-//      // error function
-//      function (response) {
-//        NgDialogFactory.error(response, 'Unable to retrieve addresses');
-//      }
-//    );
+    ); // get database total address count
   }
 
   function requestAddressCount (filter) {

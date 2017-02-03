@@ -4,19 +4,7 @@
 
 angular.module('canvassTrac')
 
-  .constant('CANVASSASSIGN', (function () {
-    return {
-      ASSIGNMENTCHOICES: [{text: 'Yes', val: 'y'},
-                            {text: 'No', val: 'n'},
-                            {text: 'All', val: 'a'}
-                         ],
-      ASSIGNMENT_YES_IDX: 0,
-      ASSIGNMENT_NO_IDX: 1,
-      ASSIGNMENT_ALL_IDX: 2
-    };
-  })())
-
-  .controller('CanvassAssignmentController', CanvassAssignmentController);
+  .controller('CanvassResultController', CanvassResultController);
 
 
 
@@ -24,13 +12,31 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL'];
+CanvassResultController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'canvassResultFactory', 'questionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'CANVASSRES_SCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL', 'QUESTIONSCHEMA', 'CHARTS'];
 
-function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL) {
+function CanvassResultController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL, QUESTIONSCHEMA, CHARTS) {
 
-  console.log('CanvassAssignmentController id', $stateParams.id);
+  console.log('CanvassResultController id', $stateParams.id);
 
-  var MAX_DISP_PAGE = 5;
+  var MAX_DISP_PAGE = 5,
+    i,
+    quickDetails = [
+      { label: 'Not Available',
+        id: CANVASSRES_SCHEMA.IDs.AVAILABLE
+      },
+      { label: 'Don\'t Canvass',
+        id: CANVASSRES_SCHEMA.IDs.DONTCANVASS
+      },
+      { label: 'Try Again',
+        id: CANVASSRES_SCHEMA.IDs.TRYAGAIN
+      }
+    ],
+    supportProperty = CANVASSRES_SCHEMA.SCHEMA.getModelName(CANVASSRES_SCHEMA.IDs.SUPPORT);
+
+  quickDetails.forEach(function (detail) {
+    detail.property = CANVASSRES_SCHEMA.SCHEMA.getModelName(detail.id);
+    detail.dfltValue = CANVASSRES_SCHEMA.SCHEMA.getDfltValue(detail.id);
+  });
 
   $scope.perPageOpt = [5, 10, 15, 20];
   $scope.perPage = 10;
@@ -42,14 +48,244 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   $scope.filterList = filterList;
   $scope.updateList = updateList;
   $scope.sortList = sortList;
+  $scope.getQuestionTypeName = questionFactory.getQuestionTypeName;
+  $scope.showPieChart = showPieChart;
+  $scope.showBarChart = showBarChart;
+  $scope.showPolarAreaChart = showPolarAreaChart;
+  $scope.showChart = showChart;
+  $scope.showResultDetail = showResultDetail;
 
-  // get canvasser role id
-  $scope.requestCanvasserRole();
 
-  
+  // generate quick response labels & data
+  $scope.quickLabels = [];
+  $scope.quickData = [];
+  quickDetails.forEach(function (detail) {
+    $scope.quickLabels.push(detail.label);
+    $scope.quickData.push(0);
+  });
+
+  // generate support labels & data
+  $scope.supportLabels = ['Unknown'];
+  $scope.supportData = [0];
+  for (i = CANVASSRES_SCHEMA.SUPPORT_MIN; i <= CANVASSRES_SCHEMA.SUPPORT_MAX; ++i) {
+    $scope.supportLabels.push(i.toString());
+    $scope.supportData.push(0);
+  }
+  $scope.resultCount = 0;
+
+  $scope.canvassLabels = ['Completed', 'Pending'];
+  $scope.canvassComplete = 0;
+  $scope.canvassPending = 0;
+
+//  $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
+  $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
+
+  $scope.addresses = addressFactory.getList(RES.ALLOCATED_ADDR);
+  $scope.addresses.addOnChange(canvassChartData);
+
+  $scope.results = canvassResultFactory.getList(RES.CANVASS_RESULT);
+  $scope.results.addOnChange(processsResults);
+
+  $scope.questions = questionFactory.getList(RES.CANVASS_QUESTIONS);
+  $scope.questions.addOnChange(processQuestions);
+
+
+
   /* function implementation
   -------------------------- */
-  
+
+  function canvassChartData(resList) {
+    var completed = 0,
+      pending = 0;
+    resList.forEachInList(function (entry) {
+      if (entry.canvassResult) {
+        ++completed;
+      } else {
+        ++pending;
+      }
+    });
+    $scope.canvassComplete = completed;
+    $scope.canvassPending = pending;
+  }
+
+  function processsResults (resList) {
+    console.log('results');
+    console.log(resList);
+    $scope.resultCount = resList.count;
+
+    $scope.quickData.fill(0);
+    $scope.supportData.fill(0);
+
+    resList.forEachInList(function (result) {
+      // calc quick responses
+      for (i = 0; i < quickDetails.length; ++i) {
+        if (result[quickDetails[i].property] !== quickDetails[i].dfltValue) {
+          ++$scope.quickData[i];
+        }
+      }
+
+      // ca;c support
+      if (result[supportProperty] === CANVASSRES_SCHEMA.SUPPORT_UNKNOWN) {
+        ++$scope.supportData[0];
+      } else {
+        i = result[supportProperty] - CANVASSRES_SCHEMA.SUPPORT_MIN + 1;
+        if (i < $scope.supportData.length) {
+          ++$scope.supportData[i];
+        }
+      }
+    });
+  }
+
+  function processQuestions (resList) {
+    console.log('questions');
+    console.log(resList);
+
+    var val;
+    resList.forEachInList(function (question) {
+      question.chartType = chartCtrl(question);
+      switch (question.chartType) {
+        case CHARTS.PIE:
+          question.chartOptions = {
+            legend: {
+              display: true
+            }
+          };
+          break;
+        case CHARTS.BAR:
+        case CHARTS.HORZ_BAR:
+          question.chartOptions = {
+            legend: {
+              display: false  // don't display as no series names
+            },
+            scales: {
+              // horizontal bar
+              xAxes: [{
+                ticks: {
+                  beginAtZero: true,
+                  min: 0
+                }
+              }]
+            }
+          };
+          break;
+        case CHARTS.POLAR:
+          val = ((question.maxValue + 5) / 5).toFixed() * 5;
+          question.chartOptions = {
+            legend: {
+              display: true
+            },
+            scale: {
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                max: val,
+                stepSize: (val > 10 ? 10 : 5)
+              }
+            }
+          };
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  function chartCtrl (question) {
+    var chart;
+    switch (question.type) {
+      case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
+      case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
+      case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
+        chart = CHARTS.PIE;
+        break;
+      case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
+        chart = CHARTS.BAR;
+        break;
+      case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
+        chart = CHARTS.POLAR;
+        break;
+      default:
+        chart = undefined;
+        break;
+    }
+    return chart;
+  }
+
+  function showChart (question) {
+    return (chartCtrl(question) !== undefined);
+  }
+
+  function showPieChart (question) {
+    return (chartCtrl(question) === CHARTS.PIE);
+  }
+
+  function showBarChart (question) {
+    return (chartCtrl(question) === CHARTS.BAR);
+  }
+
+  function showPolarAreaChart (question) {
+    return (chartCtrl(question) === CHARTS.POLAR);
+  }
+
+
+  function showResultDetail (question) {
+
+    var dialog,
+      i,
+      seriesIdx,
+      value,
+      total = 0,
+      details = []; // combined label & count info
+
+    if (questionFactory.showQuestionOptions(question.type)) {
+      // selection from options
+      if (question.series) {
+        seriesIdx = question.series.length - 1;
+      } else {
+        seriesIdx = -1;
+      }
+      for (i = 0; i < question.labels.length; ++i) {
+        if (seriesIdx >= 0) {
+          value = question.data[seriesIdx][i];
+        } else {
+          value = question.data[i];
+        }
+        details.push({
+          label: question.labels[i],
+          value: value
+        });
+        total += value;
+      }
+      details.forEach(function (detail) {
+        value = (detail.value * 100) / total;
+        if (!Number.isInteger(value)) {
+          value = value.toFixed(1);
+        }
+        detail.percent = value;
+      });
+    } else if (questionFactory.showTextInput(question.type)) {
+      // text input
+      details = question.data;
+    }
+
+    dialog = NgDialogFactory.open({ template: 'canvasses/result.detail.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'ResultDetailController',
+                  data: {
+                    question: question,
+                    chart: chartCtrl(question),
+                    details: details
+                  }});
+
+    dialog.closePromise.then(function (data) {
+      if (!NgDialogFactory.isNgDialogCancel(data.value)) {
+        // noop
+      }
+    });
+  }
+
+
+
+
+
   function getFactory(id) {
     var factory;
     if (id === RES.ALLOCATED_ADDR) {
@@ -62,7 +298,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
 
   function setupGroup(id, label, assignmentChoices, assignmentLabel,  nameFields) {
     var factory = getFactory(id);
-    
+
     $scope[id] = factory.newList(id, {
       titile: label,
       flags: storeFactory.CREATE_INIT
@@ -96,14 +332,14 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     }
     return idx;
   }
-  
+
   function filterFunction (list, tests, filter) {
     var incTest,
       dfltFilter = angular.copy(filter);  // filter for use by default filter function
     if (filter && filter.assignment) {
       // remove assignment from default filter otherwise there'll be no moatches
       delete dfltFilter.assignment;
-      
+
       var idx = getAssignmentChoiceIndex(filter.assignment);
       if ((idx >= 0) && (idx < tests.length)) {
         incTest = tests[idx];
@@ -131,7 +367,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     filterFunction(list, [
         function (element) {  // yes test
           return (element.canvasser);
-        }, 
+        },
         function (element) {  // no test
           return (!element.canvasser);
         }
@@ -143,7 +379,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     filterFunction(list, [
         function (element) {  // yes test
           return (element.addresses && element.addresses.length);
-        }, 
+        },
         function (element) {  // no test
           return (!element.addresses || !element.addresses.length);
         }
@@ -165,10 +401,10 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     return filter;
   }
 
-            
-  
-  
-  
+
+
+
+
   function setFilter (id , filter) {
     var factory = getFactory(id),
       // allocatedAddrFilterStr or allocatedCanvasserFilterStr
@@ -187,23 +423,23 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
         }
       }
     }
-    
+
     $scope[filterStr] = filter.toString(filterStrPrefix);
 
     // add canvasser restriction to filter
     if ((id === RES.ALLOCATED_CANVASSER) && $scope.canvasser) {
       filter.role = $scope.canvasser._id;
     }
-    
+
     return factory.setFilter(id, filter);
   }
 
   function sortList (resList) {
     return resList.sort();
   }
-  
+
   function filterList (resList, action) {
-    
+
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
 //      if (resList.id === RES.UNASSIGNED_CANVASSER) {
@@ -218,8 +454,8 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     } else {  // set filter
       var filter = angular.copy(resList.filter.filterBy);
 
-      var dialog = NgDialogFactory.open({ template: 'canvasses/assignmentfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'AssignmentFilterController', 
-                    data: {action: resList.id, 
+      var dialog = NgDialogFactory.open({ template: 'canvasses/assignmentfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'AssignmentFilterController',
+                    data: {action: resList.id,
                            ctrl: { title: resList.title,
                                   assignmentChoices: resList.assignmentChoices,
                                   assignmentLabel: resList.assignmentLabel,
@@ -228,12 +464,12 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
 
       dialog.closePromise.then(function (data) {
         if (!NgDialogFactory.isNgDialogCancel(data.value)) {
-          
+
 //          ngDialogData.filter.assignment
-          
+
           var factory = getFactory(data.value.action),
             filter = newFilter(factory, data.value.filter);
-          
+
           var resList = setFilter(data.value.action, filter);
           if (resList) {
             if (resList.id === RES.UNASSIGNED_CANVASSER) {
