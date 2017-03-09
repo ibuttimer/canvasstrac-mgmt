@@ -19,6 +19,7 @@ function CanvassAssignedAddressController($scope, $rootScope, $state, $statePara
   console.log('CanvassAssignedAddressController id', $stateParams.id);
 
   $scope.list = addressFactory.getList(RES.ASSIGNED_ADDR);
+  $scope.sortOptions = $scope.list.sortOptions;
   $scope.pager = $scope.list.pager;
   $scope.reqAll = false; // disable request all button
   $scope.SET_SEL = UTIL.SET_SEL;

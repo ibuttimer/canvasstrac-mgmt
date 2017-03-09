@@ -85,19 +85,10 @@
     </div>
 
     <!-- navigation buttons -->
-    <div class="col-sm-1">
-      <button type="button" class="btn btn-primary btn-sm" ng-click="prevTab()" ng-disabled="canvasserForm.$invalid"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>&nbsp;Prev</span>
-      </button>
-    </div>
-    <div class="col-sm-offset-1 col-sm-2">
-      <button type="reset" class="btn btn-default btn-sm" ng-disabled="editDisabled">Reset</button>
-    </div>
-    <div class="col-sm-offset-4 col-sm-1">
-      <button type="button" class="btn btn-danger btn-sm" ng-click="gotoDash()">Cancel</button>
-    </div>
-    <div class="col-sm-offset-1 col-sm-1">
-      <button type="submit" class="btn btn-primary btn-sm" ng-disabled="canvasserForm.$invalid">Next&nbsp;<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
-      </button>
+    <div class="col-sm-12">
+      <div ng-controller="CanvassersTabNavController">
+        <div ng-include="'canvasses/tab.buttons.html'"></div>
+      </div>
     </div>
     <br />
     <br />

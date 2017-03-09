@@ -9,10 +9,7 @@ angular.module('canvassTrac')
       ASSIGNMENTCHOICES: [{text: 'Yes', val: 'y'},
                             {text: 'No', val: 'n'},
                             {text: 'All', val: 'a'}
-                         ],
-      ASSIGNMENT_YES_IDX: 0,
-      ASSIGNMENT_NO_IDX: 1,
-      ASSIGNMENT_ALL_IDX: 2
+                         ]
     };
   })())
 
@@ -30,13 +27,18 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
 
   console.log('CanvassAssignmentController id', $stateParams.id);
 
-  var MAX_DISP_PAGE = 5;
+  var MAX_DISP_PAGE = 5,
+    factories = {},
+    addressAssignmentTests = makeAddressAssignmentTests(),
+    canvasserAssignmentTests = makeCanvasserAssignmentTests();
 
   $scope.perPageOpt = [5, 10, 15, 20];
   $scope.perPage = 10;
 
-  setupGroup(RES.ALLOCATED_ADDR, 'Addresses', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
-  setupGroup(RES.ALLOCATED_CANVASSER, 'Canvassers', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
+  setupGroup(RES.ALLOCATED_ADDR, addressFactory, 'Addresses',
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
+  setupGroup(RES.ALLOCATED_CANVASSER, userFactory, 'Canvassers',
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterList = filterList;
@@ -49,29 +51,15 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   
   /* function implementation
   -------------------------- */
-  
-  function getFactory(id) {
-    var factory;
-    if (id === RES.ALLOCATED_ADDR) {
-      factory = addressFactory;
-    } else {
-      factory = userFactory;
-    }
-    return factory;
-  }
 
-  function setupGroup(id, label, assignmentChoices, assignmentLabel,  nameFields) {
-    var factory = getFactory(id);
+  function setupGroup(id, factory, label, assignmentChoices, assignmentLabel,  nameFields) {
+
+    factories[id] = factory;
     
-    $scope[id] = factory.newList(id, {
-      titile: label,
-      flags: storeFactory.CREATE_INIT
-    });
-    $scope[id].sortOptions = factory.getSortOptions();
-    $scope[id].sortBy = $scope[id].sortOptions[0];
+    $scope[id] = factory.getList(id, storeFactory.CREATE_INIT);
+    $scope[id].title = label;
     $scope[id].assignmentChoices = assignmentChoices;
     $scope[id].assignmentLabel = assignmentLabel;
-    $scope[id].factory = factory;
     $scope[id].nameFields = nameFields;
 
     var filter = RES.getFilterName(id);
@@ -86,78 +74,89 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     factory.setPager(id, $scope[pager]);
   }
 
-  function getAssignmentChoiceIndex (value) {
-    var idx = -1;
-    for (var i = CANVASSASSIGN.ASSIGNMENT_YES_IDX; i <= CANVASSASSIGN.ASSIGNMENT_ALL_IDX; ++i) {
-      if (value === CANVASSASSIGN.ASSIGNMENTCHOICES[i].val) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
-  }
-  
   function filterFunction (list, tests, filter) {
     var incTest,
       dfltFilter = angular.copy(filter);  // filter for use by default filter function
     if (filter && filter.assignment) {
       // remove assignment from default filter otherwise there'll be no moatches
       delete dfltFilter.assignment;
-      
-      var idx = getAssignmentChoiceIndex(filter.assignment);
-      if ((idx >= 0) && (idx < tests.length)) {
-        incTest = tests[idx];
-      }
+
+      incTest = tests[filter.assignment];
     }
 
     // list specific filter function
-    var filterList = list.factory.getFilteredList(list, dfltFilter);
-
-    // apply allocated criteria
-    if (incTest) {
-      var outList = [];
-      filterList.forEach(function (element) {
-        if (incTest(element)) {
-          outList.push(element);
-        }
-      });
-      filterList = outList;
-    }
+    var filterList = list.factory.getFilteredList(list, dfltFilter, incTest);
     list.filterList = filterList;
+  }
+
+  function addrHasAssignmentTest (addr) {
+    // if canvasser set then has assignment
+    return (addr.canvasser);
+  }
+
+  function addrHasNoAssignmentTest (addr) {
+    // if canvasser set then has assignment
+    return (!addr.canvasser);
+  }
+
+  function makeAddressAssignmentTests () {
+    var choiceObj = {};
+    CANVASSASSIGN.ASSIGNMENTCHOICES.forEach(function (choice) {
+      switch (choice.val) {
+        case 'y': // yes test
+          choiceObj[choice.val] = addrHasAssignmentTest;
+          break;
+        case 'n': // no test
+          choiceObj[choice.val] = addrHasNoAssignmentTest;
+          break;
+      }
+    });
+    return choiceObj;
   }
 
   function addrFilterFunction (list, filter) {
     // address specific filter function
-    filterFunction(list, [
-        function (element) {  // yes test
-          return (element.canvasser);
-        }, 
-        function (element) {  // no test
-          return (!element.canvasser);
-        }
-      ], filter);
+    filterFunction(list, addressAssignmentTests, filter);
+  }
+
+  function canvasserHasAssignmentTest (canvasser) {
+    // if addresses set then has assignment
+    return (canvasser.addresses && canvasser.addresses.length);
+  }
+
+  function canvasserHasNoAssignmentTest (canvasser) {
+    // if addresses set then has assignment
+    return (!canvasser.addresses || !canvasser.addresses.length);
+  }
+
+  function makeCanvasserAssignmentTests () {
+    var choiceObj = {};
+    CANVASSASSIGN.ASSIGNMENTCHOICES.forEach(function (choice) {
+      switch (choice.val) {
+        case 'y': // yes test
+          choiceObj[choice.val] = canvasserHasAssignmentTest;
+          break;
+        case 'n': // no test
+          choiceObj[choice.val] = canvasserHasNoAssignmentTest;
+          break;
+      }
+    });
+    return choiceObj;
   }
 
   function cnvsrFilterFunction (list, filter) {
     // canvasser specific filter function
-    filterFunction(list, [
-        function (element) {  // yes test
-          return (element.addresses && element.addresses.length);
-        }, 
-        function (element) {  // no test
-          return (!element.addresses || !element.addresses.length);
-        }
-      ], filter);
+    filterFunction(list, canvasserAssignmentTests, filter);
   }
 
-  function newFilter(factory, data) {
+  function newFilter (factory, data) {
     var filter = factory.newFilter(data);
     // add assignment specific fields
     if (data && data.assignment) {
       filter.filterBy.assignment = data.assignment;
     }
     // override default customFunction with enhanced version
-    if (factory.ID_TAG === ADDRSCHEMA.ID_TAG) {
+    if (factory.NAME === 'addressFactory') {
       filter.customFunction = addrFilterFunction;
     } else {
       filter.customFunction = cnvsrFilterFunction;
@@ -170,7 +169,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
   
   
   function setFilter (id , filter) {
-    var factory = getFactory(id),
+    var factory = factories[id],
       // allocatedAddrFilterStr or allocatedCanvasserFilterStr
       filterStr = RES.getFilterStrName(id),
       filterStrPrefix;
@@ -179,12 +178,13 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     }
     if (filter.filterBy.assignment) {
       // set filter string prefix to assignment text
-      var idx = getAssignmentChoiceIndex(filter.filterBy.assignment);
-      if ((idx >= 0) && (idx < CANVASSASSIGN.ASSIGNMENTCHOICES.length)) {
-        var list = factory.getList(id);
-        if (list) {
-          filterStrPrefix = list.assignmentLabel + ': '+           CANVASSASSIGN.ASSIGNMENTCHOICES[idx].text;
-        }
+      var list = factory.getList(id);
+      if (list) {
+        list.assignmentChoices.forEach(function (choice) {
+          if (choice.val === filter.filterBy.assignment) {
+            filterStrPrefix = list.assignmentLabel + ': '+ choice.text;
+          }
+        });
       }
     }
     
@@ -194,21 +194,18 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
     if ((id === RES.ALLOCATED_CANVASSER) && $scope.canvasser) {
       filter.role = $scope.canvasser._id;
     }
-    
+
     return factory.setFilter(id, filter);
   }
 
   function sortList (resList) {
     return resList.sort();
   }
-  
+
   function filterList (resList, action) {
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
-//      if (resList.id === RES.UNASSIGNED_CANVASSER) {
-//        resList.setList([]);  // clear list of addresses
-//      }
       resList.applyFilter();
     } else if (action === 'a') {  // no filter, get all
       var list = setFilter(resList.id);
@@ -228,25 +225,17 @@ function CanvassAssignmentController($scope, $rootScope, $state, $stateParams, $
 
       dialog.closePromise.then(function (data) {
         if (!NgDialogFactory.isNgDialogCancel(data.value)) {
-          
-//          ngDialogData.filter.assignment
-          
-          var factory = getFactory(data.value.action),
+
+          var factory = factories[data.value.action],
             filter = newFilter(factory, data.value.filter);
-          
+
           var resList = setFilter(data.value.action, filter);
           if (resList) {
-            if (resList.id === RES.UNASSIGNED_CANVASSER) {
-              // request filtered addresses from server
-              $scope.equestCanvassers(resList, filter);
-            } else {
-              resList.applyFilter();
-            }
+            resList.applyFilter();
           }
         }
       });
     }
-
   }
 
 

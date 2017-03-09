@@ -20,16 +20,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
+CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', '$injector', 'canvassFactory', 'canvassAssignmentFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'SCHEMA_CONST', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'CANVASSASSIGN_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
 
-function CanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
+function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $injector, canvassFactory, canvassAssignmentFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
 
   console.log('CanvassController id', $stateParams.id);
 
-  $scope.dashState = STATES.CANVASS;
-  $scope.newState = STATES.CANVASS_NEW;
-  $scope.viewState = STATES.CANVASS_VIEW;
-  $scope.editState = STATES.CANVASS_EDIT;
+  STATES.SET_SCOPE_VARS($scope, 'CANVASS');
   $scope.tabs = {
     CANVASS_TAB: 0,
     SURVEY_TAB: 1,
@@ -59,6 +56,8 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
+  $scope.showButton = showButton;
+  $scope.changeState = changeState;
   $scope.showTab = showTab;
   $scope.initTab = initTab;
   $scope.formatDate = utilFactory.formatDate;
@@ -85,6 +84,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   $scope.setItemSel = setItemSel;
   $scope.confirmDelete = confirmDelete;
   $scope.requestCanvasserRole = requestCanvasserRole;
+  $scope.getSurveyRspOptions = getSurveyRspOptions;
 
   canvassFactory.setLabeller(labeller);
 
@@ -151,6 +151,49 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     return title;
   }
 
+  function showButton (forState) {
+    var show = false;
+    if ($state.is($scope.newState)) {
+      // no buttons in newState
+    } else if ($state.is($scope.viewState)) {
+      switch (forState) {
+        case $scope.newState:
+        case $scope.editState:
+        case $scope.delState:
+          show = true;  // show new/edit/del
+          break;
+      }
+    } else if ($state.is($scope.editState)) {
+      switch (forState) {
+        case $scope.newState:
+        case $scope.viewState:
+        case $scope.delState:
+          show = true;  // show new/view/del
+          break;
+      }
+    }
+    return show;
+  }
+
+  function changeState (toState) {
+    var to = toState,
+      params;
+    if (toState === $scope.newState) {
+      // TODO add save changes check
+    } else if (toState === $scope.viewState) {
+      // TODO add save changes check
+      params = {id: $scope.canvass._id};
+    } else if (toState === $scope.editState) {
+      params = {id: $scope.canvass._id};
+    } else if (toState === $scope.delState) {
+      // TODO delState
+      to = undefined;
+    }
+    if (to) {
+      $state.go(to, params);
+    }
+  }
+
   
   function showTab (tab) {
     var show = true;
@@ -163,7 +206,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   }
 
 
-  function processForm() {
+  function processForm () {
     if ($state.is($scope.newState) || $state.is($scope.editState)) {
       // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
       var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
@@ -175,9 +218,13 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
           break;
         case $scope.tabs.SURVEY_TAB:
           if (!canvass.survey && (action === RES.PROCESS_UPDATE)) {
-            action = RES.PROCESS_UPDATE_NEW; // no previous survey so change to new mode
+            // no previous survey so change to new mode
+            action = RES.PROCESS_UPDATE_NEW;
+          } else if (canvass.survey && (action === RES.PROCESS_NEW)) {
+            // previous survey (created after adding question), so change to update mode
+            action = RES.PROCESS_UPDATE;
           }
-          processSurvey(action);
+          processSurvey(action, nextTab);
           break;
         case $scope.tabs.ADDRESS_TAB:
           // generate addreess list for host
@@ -200,75 +247,23 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
           break;
       }
     } else if ($state.is($scope.viewState)) {
-      switch ($scope.activeTab) {
-        case $scope.tabs.ASSIGNMENT_TAB:
-          $state.go($scope.dashState);
-          break;
-        default:
-          nextTab();
-          break;
+      if ($scope.activeTab === $scope.lastTab) {
+        $state.go($scope.dashState);
+      } else {
+        nextTab();
       }
     }
   }
 
   function init () {
 
-    var resources = createResources(resourceFactory.standardiseArgs(getCanvassRspOptions()));
+    var resources = resourceFactory.createResources(getCanvassRspOptions());
 
     $scope.canvass = resources[RES.ACTIVE_CANVASS];
     $scope.backupCanvass = resources[RES.BACKUP_CANVASS];
 
     $scope.survey = resources[RES.ACTIVE_SURVEY];
     $scope.backupSurvey = resources[RES.BACKUP_SURVEY];
-  }
-
-  function createResources (options, resources) {
-
-    var srcId,
-      result;
-
-    if (!resources) {
-      resources = {};
-    }
-
-    options.objId.forEach(function (id) {
-
-      switch (options.storage) {
-        case RESOURCE_CONST.STORE_OBJ:
-          if (!srcId) {
-            result = options.factory.newObj(id, storeFactory.CREATE_INIT);
-          } else {
-            result = options.factory.duplicateObj(id, srcId, storeFactory.DUPLICATE_OR_EXIST);
-          }
-          break;
-        case RESOURCE_CONST.STORE_LIST:
-          if (!srcId) {
-            result = options.factory.newList(id, {
-              title: id,
-              flags: storeFactory.CREATE_INIT
-            });
-          } else {
-            result = options.factory.duplicateList(id, srcId, storeFactory.DUPLICATE_OR_EXIST);
-          }
-          break;
-        default:
-          result = undefined;
-      }
-      if (result) {
-        resources[id] = result;
-      }
-      if (!srcId) {
-        srcId = id;
-      }
-    });
-
-    if (options.subObj) {
-      options.subObj.forEach(function (subObj) {
-        createResources(subObj, resources);
-      });
-    }
-
-    return resources;
   }
 
   function initItem(id) {
@@ -295,108 +290,249 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
   }
 
   function processCanvassRsp (response, flags, next) {
-
-    $scope.canvass = canvassFactory.readCanvassRsp(response,
-                                      getCanvassRspOptions(flags, next));
+    // process a canvass response linking subdoc elements
+    $scope.canvass = canvassFactory.readResponse(response,
+                            getCanvassRspOptions(flags, next, {
+                                                linkAddressAndResult: true,
+                                                linkQuestionAndResult: true
+                                              }));
   }
 
-  function getCanvassRspOptions (flags, next) {
-    return {
+  function getCanvassRspOptions (schema, flags, next, custom) {
+
+    var args = checkArgs('canvassFactory', schema, flags, next, custom),
+      addrObjId,
+      canvsrObjId;
+
+    if (!miscUtilFactory.isEmpty(args.schema) && args.schema.schema &&
+        (args.schema.schema.name === CANVASSASSIGN_SCHEMA.SCHEMA.name)) {
+      // for canvass assignment processing so only want allocated addr/canvasser
+      addrObjId = RES.ALLOCATED_ADDR;
+      canvsrObjId = RES.ALLOCATED_CANVASSER;
+    } else {
+      // for canvass processing
+      addrObjId = [RES.ASSIGNED_ADDR, RES.ALLOCATED_ADDR];
+      canvsrObjId = [RES.ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER];
+    }
+
+    var addrOpts = getRspAddressOptions(addrObjId, {
+        schema: CANVASSSCHEMA.SCHEMA,
+        schemaId: CANVASSSCHEMA.IDs.ADDRESSES,
+      }, (args.flags | storeFactory.COPY_SET)),  // make copy of addresses
+      canvsrOpts = getRspCanvasserOptions(canvsrObjId, {
+        schema: CANVASSSCHEMA.SCHEMA,
+        schemaId: CANVASSSCHEMA.IDs.CANVASSERS,
+      }, (args.flags | storeFactory.COPY_SET)),  // make copy of canvassers
+      resltsOpts = getRspResultOptions(RES.CANVASS_RESULT, {
+        schema: CANVASSSCHEMA.SCHEMA,
+        schemaId: CANVASSSCHEMA.IDs.RESULTS,
+      }, (args.flags | storeFactory.COPY_SET)),   // make copy of results
+    rspOptions = {
       objId: [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
-      factory: 'canvassFactory',
+      factory: args.factory,
+      schema: args.schema.schema,
+      schemaId: args.schema.schemaId,
       storage: RESOURCE_CONST.STORE_OBJ,
-      flags: flags,
-      next: next,
+      flags: args.flags,
+      next: args.next,
       subObj: [
-        // storage arguments for specific sub sections of canvass info
-        { // storage infor for election
+        // storage arguments for specific sub sections of survey info
+        { // storage info for election
           objId: RES.ACTIVE_ELECTION, // id of election object to save response data to
-          factory: 'electionFactory',
           schema: CANVASSSCHEMA.SCHEMA,
           schemaId: CANVASSSCHEMA.IDs.ELECTION,
-          //type: can be retrieved using schema & schemaId
-          //path: can be retrieved using schema & schemaId
-          storage: RESOURCE_CONST.STORE_OBJ,
-          flags: flags
+          //type/path/storage/factory: can be retrieved using schema & schemaId
+          flags: args.flags
         },
-        { // storage info for survey
-          objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
-          factory: 'surveyFactory',
+        // storage info for survey
+        getSurveyRspOptions({
           schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.SURVEY,
-          //type: can be retrieved using schema & schemaId
-          //path: can be retrieved using schema & schemaId
-          storage: RESOURCE_CONST.STORE_OBJ,
-          flags: flags,
-          subObj: {
-            // storage arguments for specific sub sections of survey info
-            objId: RES.CANVASS_QUESTIONS,
-            factory: 'questionFactory',
-            schema: SURVEYSCHEMA.SCHEMA,
-            schemaId: SURVEYSCHEMA.IDs.QUESTIONS,
-            //type: can be retrieved using schema & schemaId
-            //path: can be retrieved using schema & schemaId
-            storage: RESOURCE_CONST.STORE_LIST,
-            flags: flags | storeFactory.COPY  // make copy of questions
-          }
-        },
-        { // storage info for addresses
-          objId: [RES.ASSIGNED_ADDR, RES.ALLOCATED_ADDR],
-          factory: 'addressFactory',
-          schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.ADDRESSES,
-          //type: can be retrieved using schema & schemaId
-          //path: can be retrieved using schema & schemaId
-          storage: RESOURCE_CONST.STORE_LIST,
-          flags: flags
-        },
-        { // storage info for canvassers
-          objId: [RES.ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER],
-          factory: 'userFactory',
-          schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.CANVASSERS,
-          //type: can be retrieved using schema & schemaId
-          //path: can be retrieved using schema & schemaId
-          storage: RESOURCE_CONST.STORE_LIST,
-          flags: flags
-        },
-        { // storage info for results
-          objId: RES.CANVASS_RESULT,
-          factory: 'canvassResultFactory',
-          schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.RESULTS,
-          //type: can be retrieved using schema & schemaId
-          //path: can be retrieved using schema & schemaId
-          storage: RESOURCE_CONST.STORE_LIST,
-          flags: flags,
-          customArgs: {
-            getChartType: function (type) {
-              /* chart.js pie, polarArea & doughnut charts may be displayed using
-                single data series (i.e. data = []), whereas chart.js radar, line &
-                bar require multiple data series (i.e. data = [[], []]) */
-              switch (type) {
-                case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
-                case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
-                case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
-                  return CHARTS.PIE;
-                case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
-                  return CHARTS.BAR;
-                case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
-                  return CHARTS.POLAR;
-                default:
-                  return undefined;
-              }
+          schemaId: CANVASSSCHEMA.IDs.SURVEY
+        }, args.flags),
+        // storage info for addresses
+        addrOpts,
+        // storage info for canvassers
+        canvsrOpts,
+        // storage info for results
+        resltsOpts
+      ]
+    };
+
+    // mark address & result objects for linking
+    addrOpts[canvassFactory.ADDR_RES_LINKADDRESS] = true;
+    resltsOpts[canvassFactory.ADDR_RES_LINKRESULT] = true;
+
+    // mark question & result objects for linking
+    resltsOpts[canvassFactory.QUES_RES_LINKRES] = true;
+    // questions are in survey
+
+    // mark address & canvasser objects for linking
+    addrOpts[canvassAssignmentFactory.ADDR_CANVSR_ADDRESSLIST] = true;
+    canvsrOpts[canvassAssignmentFactory.ADDR_CANVSR_CANVASSERLIST] = true;
+
+    if (args.custom) {
+      // add custom items
+      miscUtilFactory.copyProperties(args.custom, rspOptions);
+    }
+
+    return rspOptions;
+  }
+
+  function getRspAddressOptions (objId, schema, flags, next, custom) {
+    // storage info for addresses
+    return getRspOptionsObject(objId, 'addressFactory', schema, flags, next, custom);
+  }
+
+  function getRspCanvasserOptions (objId, schema, flags, next, custom) {
+    // storage info for canvassers
+    return getRspOptionsObject(objId, 'userFactory', schema, flags, next, custom);
+  }
+
+  function getRspResultOptions (objId, schema, flags, next) {
+    // storage info for results, no need to decode embedded address/canvass/voter subdocs as not required
+    var modelProps = CANVASSRES_SCHEMA.SCHEMA.getModelPropList({
+        type: SCHEMA_CONST.FIELD_TYPES.OBJECTID,  // get list of properties of type OBJECTID
+        id: function (id) {
+          return (id !== CANVASSRES_SCHEMA.IDs.ID); // but not the canvass result id
+        }
+      }),
+      subObj = [],
+      read,
+      prune;
+    // create subObj array to just read the ids
+    modelProps.forEach(function (mdlProp) {
+      read = undefined;
+      prune = undefined;
+      if (mdlProp.factory) {
+        var schema = $injector.get(mdlProp.factory).getSchema();
+        if (schema) {
+          read = [schema.ids.ID]; // only want id
+          prune = [];
+          for (var id in schema.ids) {
+            if (schema.ids[id] !== schema.ids.ID) {
+              prune.push(schema.ids[id]); // prune anything other than id
             }
           }
         }
-      ]
+      }
+      subObj.push({
+        processArg: RESOURCE_CONST.PROCESS_READ,  // argument only for use during read
+        schema: CANVASSRES_SCHEMA.SCHEMA,
+        schemaId: mdlProp.id,
+        schemaReadIds: read,
+        schemaPruneIds: prune
+      });
+    });
+
+    var optObj = getRspOptionsObject(objId, 'canvassResultFactory', subObj, schema, flags, next);
+    optObj.customArgs = {
+      getChartType: function (type) {
+        /* chart.js pie, polarArea & doughnut charts may be displayed using
+          single data series (i.e. data = []), whereas chart.js radar, line &
+          bar require multiple data series (i.e. data = [[], []]) */
+        switch (type) {
+          case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
+          case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
+          case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
+            return CHARTS.PIE;
+          case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
+            return CHARTS.BAR;
+          case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
+            return CHARTS.POLAR;
+          default:
+            return undefined;
+        }
+      }
+    };
+    return optObj;
+  }
+
+  function getRspOptionsObject(objId, factory, subObj, schema, flags, next, custom) {
+    var args = checkArgs(factory, subObj, schema, flags, next, custom);
+    return { // storage info for results
+      objId: objId,
+      factory: args.factory,
+      schema: args.schema.schema,
+      schemaId: args.schema.schemaId,
+      //type/path/storage/factory: can be retrieved using schema & schemaId
+      subObj: args.subObj,
+      flags: args.flags,
+      next: args.next,
+      custom: args.custom
     };
   }
+
+  function checkArgs (factory, subObj, schema, flags, next, custom) {
+    if (!angular.isString(factory)) {
+      custom = next;
+      next = flags;
+      flags = schema;
+      schema = subObj;
+      subObj = factory;
+      factory = undefined;
+    }
+    if (!angular.isArray(subObj)) {
+      custom = next;
+      next = flags;
+      flags = schema;
+      schema = subObj;
+      subObj = undefined;
+    }
+    if (!angular.isObject(schema)) {
+      custom = next;
+      next = flags;
+      flags = schema;
+      schema = {};
+    }
+    if (!angular.isNumber(flags)) {
+      custom = next;
+      next = flags;
+      flags = storeFactory.NOFLAG;
+    }
+    if (!angular.isFunction(next)) {
+      custom = next;
+      next = undefined;
+    }
+    return {
+      factory: factory, schema: schema, subObj: subObj,
+      flags: flags, next: next, custom: custom
+    };
+  }
+
+  function getSurveyRspOptions (schema, flags, next) {
+    var args = checkArgs('surveyFactory', schema, flags, next),
+      subObj = {
+        // storage arguments for specific sub sections of survey info
+        objId: RES.SURVEY_QUESTIONS,
+        schema: SURVEYSCHEMA.SCHEMA,
+        schemaId: SURVEYSCHEMA.IDs.QUESTIONS,
+        //type/path/storage/factory: can be retrieved using schema & schemaId
+        flags: args.flags | storeFactory.COPY_SET  // make copy of questions
+      };
+
+    // mark question & result objects for linking
+    subObj[canvassFactory.QUES_RES_LINKQUES] = true;
+
+    return {
+      // storage info for survey
+      objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
+      factory: args.factory,
+      schema: args.schema.schema,
+      schemaId: args.schema.schemaId,
+      //type/path/storage: can be retrieved using schema & schemaId
+      storage: RESOURCE_CONST.STORE_OBJ,
+      flags: args.flags,
+      next: args.next,
+      subObj: subObj
+    };
+  }
+
+
 
   function labeller () {
     return LABELS[LABELIDX++ % LABELS.length];
   }
-  
+
   function processCanvassAllocationRsp (response, flags, next) {
 
     if (typeof flags !== 'number') {
@@ -406,19 +542,66 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     if (typeof next !== 'function') {
       next = undefined;
     }
-    canvassFactory.readCanvassAllocationRsp(response,{
-      addrId: RES.ALLOCATED_ADDR,
-      userId: RES.ALLOCATED_CANVASSER,
-      labeller: labeller,
-      flags: flags,
-      next: next
-    });
+
+    // TODO currently only support single assignment
+//    var toProcess = response;
+//    if (Array.isArray(response)) {
+//      toProcess = response[0];
+//    }
+//    if (toProcess) {
+      canvassAssignmentFactory.readResponse(response,
+                                            getAssignmentRspOptions(flags, next));
+//    }
   }
+
+  function getAssignmentRspOptions (schema, flags, next) {
+    var args = checkArgs(schema, flags, next),
+      custom = {
+        processArg: RESOURCE_CONST.PROCESS_READ,  // argument only for use during read
+      },
+      addrOpts = getRspAddressOptions(undefined /*RES.ALLOCATED_ADDR*/, {
+          schema: CANVASSASSIGN_SCHEMA.SCHEMA,
+          schemaId: CANVASSASSIGN_SCHEMA.IDs.ADDRESSES,
+        }, (args.flags | storeFactory.COPY_SET),  // make copy of addresses
+        custom),
+      canvsrOpts = getRspCanvasserOptions(undefined /*RES.ALLOCATED_CANVASSER*/, {
+          schema: CANVASSASSIGN_SCHEMA.SCHEMA,
+          schemaId: CANVASSASSIGN_SCHEMA.IDs.CANVASSER,
+        }, (args.flags | storeFactory.COPY_SET),  // make copy of canvasser
+        custom);
+
+    // mark address & canvasser objects for linking
+    addrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKADDRESS] = true;
+    canvsrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKCANVASSER] = true;
+
+    return {
+      // no objId as don't need to save the assignments response
+      flags: args.flags,
+      next: args.next,
+      subObj: [
+          // storage info for canvasser
+          canvsrOpts,
+          // storage info for addresses
+          addrOpts,
+          // storage info for canvass
+          getCanvassRspOptions({
+            schema: CANVASSASSIGN_SCHEMA.SCHEMA,
+            schemaId: CANVASSASSIGN_SCHEMA.IDs.CANVASS
+          }, args.flags, custom)
+      ],
+      linkAddressAndCanvasser: {
+        labeller: labeller
+      }
+    };
+  }
+
+
+
   
   function requestAssignments (next) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
     var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
-      resource = canvassFactory.getCanvassAllocation();
+      resource = canvassAssignmentFactory.getCanvassAssignment();
 
     resource.query({canvass: canvass._id}).$promise.then(
       // success function
@@ -456,7 +639,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     return errorFxn;
   }
   
-  function processCanvass(action, next) {
+  function processCanvass (action, next) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
     var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
       backupCanvass = canvassFactory.getObj(RES.BACKUP_CANVASS),
@@ -495,12 +678,12 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     }
   }
   
-  function processAllocations(action, next) {
+  function processAllocations (action, next) {
 
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
     var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
       canvassers = userFactory.getList(RES.ALLOCATED_CANVASSER),
-      resource = canvassFactory.getCanvassAllocation(),
+      resource = canvassAssignmentFactory.getCanvassAssignment(),
       newAllocs = [],
       promises = [];
     
@@ -555,7 +738,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
     return idArray;
   }
 
-  function processSurvey(action) {
+  function processSurvey (action, next) {
     // depending on timing of responses from host, $scope.canvass may not be set, so get local copy
     var canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS),
       survey = surveyFactory.getObj(RES.ACTIVE_SURVEY),
@@ -574,25 +757,28 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, ca
 
       if (modified) {   // object was modified
         promise = resource.update({id: survey._id}, survey).$promise;
-      } else {  // not modified so proceed to next tab
-        nextTab();
+      } else {  // not modified so proceed to next
+        if (next) {
+          next();
+        }
       }
     }
-    
+
     if (promise) {
       var errorFxn = getErrorFxn(action);
 
       promise.then(
         // success function
         function (response) {
-          survey = surveyFactory.readSurveyRsp(response, {
-              objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
-              next: nextTab
-            });
+          survey = surveyFactory.readResponse(response, getSurveyRspOptions());
           if (!canvass.survey) {
             // link survey to canvass (TODO should really be in the original request)
             canvass.survey = survey._id;
-            processCanvass(RES.PROCESS_UPDATE);
+            processCanvass(RES.PROCESS_UPDATE, next);
+          } else {  // have survey already so proceed to next
+            if (next) {
+              next();
+            }
           }
         },
         // error function

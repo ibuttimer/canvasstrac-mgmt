@@ -6,7 +6,7 @@ angular.module('canvassTrac')
 
   .controller('UserController', UserController)
 
-  .filter('filterUser', ['UTIL', function (UTIL) {
+  .filter('filterDashUser', ['UTIL', function (UTIL) {
     return function (input, name, op, role) {
       
       if (!op) {
@@ -52,10 +52,7 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
 
   console.log('UserController id', $stateParams.id);
 
-  $scope.dashState = STATES.USERS;
-  $scope.newState = STATES.USERS_NEW;
-  $scope.viewState = STATES.USERS_VIEW;
-  $scope.editState = STATES.USERS_EDIT;
+  STATES.SET_SCOPE_VARS($scope, 'USERS');
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.userFilterOps = UTIL.OP_LIST;

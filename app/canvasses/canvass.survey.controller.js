@@ -30,6 +30,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
 
   $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
   $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
+  $scope.questions = questionFactory.getList(RES.SURVEY_QUESTIONS);
 
   
   /* function implementation
@@ -40,25 +41,25 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
   }
 
   function haveSurveyQuestions () {
-    return ($scope.survey && $scope.survey.questions);
+    return ($scope.survey && $scope.questions.count);
   }
 
   function questionSelClear () {
     if (haveSurveyQuestions()) {
-      $scope.selQuestionCnt = utilFactory.setSelected($scope.survey.questions, UTIL.CLR_SEL);
+      $scope.selQuestionCnt = utilFactory.setSelected($scope.questions.list, UTIL.CLR_SEL);
     }
   }
 
   function questionSelAll () {
     if (haveSurveyQuestions()) {
-      $scope.selQuestionCnt = utilFactory.setSelected($scope.survey.questions, UTIL.SET_SEL);
+      $scope.selQuestionCnt = utilFactory.setSelected($scope.questions.list, UTIL.SET_SEL);
     }
   }
 
 
   function questionDelete () {
     if (haveSurveyQuestions()) {
-      var selectedList = utilFactory.getSelectedList($scope.survey.questions);
+      var selectedList = utilFactory.getSelectedList($scope.questions.list);
       confirmDeleteQuestion(selectedList);
     }
   }
@@ -72,23 +73,32 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
         controller: 'CanvassSurveyController', data: {list: deleteList}},
       function (data) {
         // perform delete
-        var delParams = {};
+        var delParams = {},
+          idx,
+          updatedSurvey = angular.copy($scope.survey);
         angular.forEach(data.value, function (entry) {
           delParams[entry._id] = true;
+
+          idx = updatedSurvey.questions.findIndex(function (ques) {
+            return (ques === entry._id);
+          });
+          if (idx >= 0) {
+            updatedSurvey.questions.splice(idx, 1);
+          }
         });
 
         questionFactory.getQuestions().delete(delParams)
           .$promise.then(
             // success function
             function (response) {
-              
-              surveyFactory.getSurveys().get({id: $scope.canvass.survey})
+              // update survey's list of questions
+              surveyFactory.getSurveys().update({id: updatedSurvey._id}, updatedSurvey)
                 .$promise.then(
                   // success function
                   function (response) {
-                    surveyFactory.readSurveyRsp(response, {
-                      objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY]
-                    });
+                    surveyFactory.readResponse(response, $scope.getSurveyRspOptions());
+
+                    $scope.selQuestionCnt = utilFactory.countSelected($scope.questions.list);
                   },
                   // error function
                   function (response) {
@@ -113,9 +123,9 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
       qdata = {};
     } else if ((action === 'view') || (action == 'edit')) {
       
-      for (var i = 0; i < $scope.survey.questions.length; ++i) {
-        if ($scope.survey.questions[i].isSelected) {
-          qdata = angular.copy($scope.survey.questions[i]);
+      for (var i = 0; i < $scope.questions.list.length; ++i) {
+        if ($scope.questions.list[i].isSelected) {
+          qdata = angular.copy($scope.questions.list[i]);
           // change qdata.type to a question type object as expected by dialog
           qdata.type = questionFactory.getQuestionTypeObj(qdata.type);
           // set numoptions as that's not part of the model but needed by dialog
@@ -127,8 +137,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
         }
       }
     } 
-    
-    
+
     var dialog = NgDialogFactory.open({ template: 'surveys/question.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'QuestionController', 
                 	data: {action: action, question: qdata},
 									resolve: {
@@ -173,6 +182,16 @@ function CanvassSurveyController($scope, $rootScope, $state, $stateParams, $filt
             .$promise.then(
               // success function
               function (response) {
+
+                var idx = $scope.questions.findIndexInList(function (entry) {
+                  return (entry._id === response._id);
+                });
+                if (idx >= 0) {
+                  toggleQuestionSel(
+                    $scope.questions.updateInList(idx,
+                                questionFactory.readRspObject(response)));
+                }
+
                 if (!$scope.survey.questions) {
                   $scope.survey.questions = [];
                   $scope.survey.questions.push(response._id);

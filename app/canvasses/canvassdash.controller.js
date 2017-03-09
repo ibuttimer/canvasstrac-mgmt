@@ -6,7 +6,7 @@ angular.module('canvassTrac')
 
   .controller('CanvassDashController', CanvassDashController)
 
-  .filter('filterCanvass', ['UTIL', function (UTIL) {
+  .filter('filterDashCanvass', ['UTIL', function (UTIL) {
     return function (input, name, op, election) {
       
       if (!op) {
@@ -49,10 +49,7 @@ CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFacto
 
 function CanvassDashController($scope, $rootScope, $state, canvassFactory, electionFactory, utilFactory, NgDialogFactory, stateFactory, STATES, UTIL) {
 
-  $scope.dashState = STATES.CANVASS;
-  $scope.newState = STATES.CANVASS_NEW;
-  $scope.viewState = STATES.CANVASS_VIEW;
-  $scope.editState = STATES.CANVASS_EDIT;
+  STATES.SET_SCOPE_VARS($scope, 'CANVASS');
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterOps = UTIL.OP_LIST;

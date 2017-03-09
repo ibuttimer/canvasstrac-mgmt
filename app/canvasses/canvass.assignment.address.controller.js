@@ -19,6 +19,7 @@ function CanvassAssignmentAddressController($scope, $rootScope, $state, $statePa
   console.log('CanvassAssignmentAddressController id', $stateParams.id);
 
   $scope.list = addressFactory.getList(RES.ALLOCATED_ADDR);
+
   $scope.sortOptions = $scope.list.sortOptions;
   $scope.pager = $scope.list.pager;
   $scope.reqAll = true; // enable request all button

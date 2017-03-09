@@ -32,7 +32,7 @@
     </div>
     <div class="col-sm-8">
       <div class="list-group">
-        <button type="button" class="list-group-item" ng-repeat="canvass in canvasses | filterCanvass: filterText : filterOp : filterElection" ng-class="{active: canvass.isSelected}" ng-click="toggleCanvassSel(canvass)">
+        <button type="button" class="list-group-item" ng-repeat="canvass in canvasses | filterDashCanvass: filterText : filterOp : filterElection" ng-class="{active: canvass.isSelected}" ng-click="toggleCanvassSel(canvass)">
           <div class="row">
             <div class="col-sm-8">
               <p>{{canvass.name}}</p>

@@ -6,7 +6,7 @@ angular.module('canvassTrac')
 
   .controller('ElectionController', ElectionController)
 
-  .filter('filterElection', ['UTIL', function (UTIL) {
+  .filter('filterDashElection', ['UTIL', function (UTIL) {
     return function (input, name, op, system) {
       
       if (!op) {
@@ -45,16 +45,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'STATES', 'UTIL'];
+ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'STATES', 'UTIL', 'ELECTIONSCHEMA', 'RESOURCE_CONST'];
 
-function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, NgDialogFactory, stateFactory, utilFactory, STATES, UTIL) {
+function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, NgDialogFactory, stateFactory, utilFactory, STATES, UTIL, ELECTIONSCHEMA, RESOURCE_CONST) {
 
   console.log('id', $stateParams.id);
-  
-  $scope.dashState = STATES.ELECTION;
-  $scope.newState = STATES.ELECTION_NEW;
-  $scope.viewState = STATES.ELECTION_VIEW;
-  $scope.editState = STATES.ELECTION_EDIT;
+
+  STATES.SET_SCOPE_VARS($scope, 'ELECTION');
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterOps = UTIL.OP_LIST;
@@ -173,14 +170,7 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
   function initItem(id) {
     if (!id) {
       // include only required fields
-      $scope.election = {
-        name: '',
-        description: '',
-        seats: '',
-        system: '',
-        electionDate: '',
-        _id: ''
-      };
+      $scope.election = ELECTIONSCHEMA.SCHEMA.getObject();
     } else {
       $scope.election = electionFactory.getElections().get({id: id})
         .$promise.then(
@@ -189,16 +179,20 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
             
             console.log('response', response);
             
-            var election = {
-              // from election model
-              name: response.name,
-              description: response.description,
-              seats: response.seats,
-              system: response.system._id,
-              electionDate: new Date(response.electionDate),
-              _id: response._id
-            };
-            $scope.election = election;
+            $scope.election = electionFactory.readElectionRsp(response, {
+                objId: undefined, // no objId means not stored, just returned
+                factory: 'electionFactory',
+                storage: RESOURCE_CONST.STORE_OBJ,
+                subObj: { // storage infor for election
+                    objId: undefined, // no objId means not stored, just returned
+                    factory: 'votingsystemFactory',
+                    schema: ELECTIONSCHEMA.SCHEMA,
+                    schemaId: ELECTIONSCHEMA.IDs.SYSTEM,
+                    //type: can be retrieved using schema & schemaId
+                    //path: can be retrieved using schema & schemaId
+                    storage: RESOURCE_CONST.STORE_OBJ,
+                  }
+              });
           },
           // error function
           function (response) {

@@ -32,7 +32,7 @@
     </div>
     <div class="col-sm-8">
       <div class="list-group">
-        <button type="button" class="list-group-item" ng-repeat="election in elections | filterElection: filterText : filterOp : filterSystem" ng-class="{active: election.isSelected}" ng-click="toggleSelection(election)">
+        <button type="button" class="list-group-item" ng-repeat="election in elections | filterDashElection: filterText : filterOp : filterSystem" ng-class="{active: election.isSelected}" ng-click="toggleSelection(election)">
           <div class="row">
             <div class="col-sm-8">
               <p>{{election.name}}</p>

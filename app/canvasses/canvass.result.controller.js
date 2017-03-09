@@ -19,6 +19,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
   console.log('CanvassResultController id', $stateParams.id);
 
   var MAX_DISP_PAGE = 5,
+    factories = {},
     i,
     quickDetails = [
       { label: 'Not Available',
@@ -41,8 +42,10 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
   $scope.perPageOpt = [5, 10, 15, 20];
   $scope.perPage = 10;
 
-  setupGroup(RES.ALLOCATED_ADDR, 'Addresses', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
-  setupGroup(RES.ALLOCATED_CANVASSER, 'Canvassers', CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
+  setupGroup(RES.ALLOCATED_ADDR, addressFactory, 'Addresses',
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
+  setupGroup(RES.ALLOCATED_CANVASSER, userFactory, 'Canvassers',
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterList = filterList;
@@ -86,7 +89,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
   $scope.results = canvassResultFactory.getList(RES.CANVASS_RESULT);
   $scope.results.addOnChange(processsResults);
 
-  $scope.questions = questionFactory.getList(RES.CANVASS_QUESTIONS);
+  $scope.questions = questionFactory.getList(RES.SURVEY_QUESTIONS);
   $scope.questions.addOnChange(processQuestions);
 
 
@@ -169,7 +172,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
           };
           break;
         case CHARTS.POLAR:
-          val = ((question.maxValue + 5) / 5).toFixed() * 5;
+          val = ((question.resData.maxValue + 5) / 5).toFixed() * 5;
           question.chartOptions = {
             legend: {
               display: true
@@ -235,23 +238,25 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
       seriesIdx,
       value,
       total = 0,
+      resData,
       details = []; // combined label & count info
 
     if (questionFactory.showQuestionOptions(question.type)) {
+      resData = question.resData;
       // selection from options
-      if (question.series) {
-        seriesIdx = question.series.length - 1;
+      if (resData.series) {
+        seriesIdx = resData.series.length - 1;
       } else {
         seriesIdx = -1;
       }
-      for (i = 0; i < question.labels.length; ++i) {
+      for (i = 0; i < resData.labels.length; ++i) {
         if (seriesIdx >= 0) {
-          value = question.data[seriesIdx][i];
+          value = resData.data[seriesIdx][i];
         } else {
-          value = question.data[i];
+          value = resData.data[i];
         }
         details.push({
-          label: question.labels[i],
+          label: resData.labels[i],
           value: value
         });
         total += value;
@@ -265,7 +270,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
       });
     } else if (questionFactory.showTextInput(question.type)) {
       // text input
-      details = question.data;
+      details = resData.data;
     }
 
     dialog = NgDialogFactory.open({ template: 'canvasses/result.detail.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'ResultDetailController',
@@ -286,28 +291,14 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
 
 
 
-  function getFactory(id) {
-    var factory;
-    if (id === RES.ALLOCATED_ADDR) {
-      factory = addressFactory;
-    } else {
-      factory = userFactory;
-    }
-    return factory;
-  }
+  function setupGroup(id, factory, label, assignmentChoices, assignmentLabel,  nameFields) {
 
-  function setupGroup(id, label, assignmentChoices, assignmentLabel,  nameFields) {
-    var factory = getFactory(id);
+    factories[id] = factory;
 
-    $scope[id] = factory.newList(id, {
-      titile: label,
-      flags: storeFactory.CREATE_INIT
-    });
-    $scope[id].sortOptions = factory.getSortOptions();
-    $scope[id].sortBy = $scope[id].sortOptions[0];
+    $scope[id] = factory.getList(id, storeFactory.CREATE_INIT);
+    $scope[id].title = label;
     $scope[id].assignmentChoices = assignmentChoices;
     $scope[id].assignmentLabel = assignmentLabel;
-    $scope[id].factory = factory;
     $scope[id].nameFields = nameFields;
 
     var filter = RES.getFilterName(id);
@@ -347,18 +338,18 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
     }
 
     // list specific filter function
-    var filterList = list.factory.getFilteredList(list, dfltFilter);
+    var filterList = list.factory.getFilteredList(list, dfltFilter, incTest);
 
     // apply allocated criteria
-    if (incTest) {
-      var outList = [];
-      filterList.forEach(function (element) {
-        if (incTest(element)) {
-          outList.push(element);
-        }
-      });
-      filterList = outList;
-    }
+//    if (incTest) {
+//      var outList = [];
+//      filterList.forEach(function (element) {
+//        if (incTest(element)) {
+//          outList.push(element);
+//        }
+//      });
+//      filterList = outList;
+//    }
     list.filterList = filterList;
   }
 
@@ -406,7 +397,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
 
 
   function setFilter (id , filter) {
-    var factory = getFactory(id),
+    var factory = factories[id],
       // allocatedAddrFilterStr or allocatedCanvasserFilterStr
       filterStr = RES.getFilterStrName(id),
       filterStrPrefix;
@@ -467,7 +458,7 @@ function CanvassResultController($scope, $rootScope, $state, $stateParams, $filt
 
 //          ngDialogData.filter.assignment
 
-          var factory = getFactory(data.value.action),
+          var factory = factories[data.value.action],
             filter = newFilter(factory, data.value.filter);
 
           var resList = setFilter(data.value.action, filter);

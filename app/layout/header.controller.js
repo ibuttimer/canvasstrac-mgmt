@@ -306,7 +306,7 @@ function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory
   }
 
   function logOut() {
-    authFactory.logout(function (response) {
+    authFactory.logout(function (/*response*/) {
       $state.go('app');
     });
     $scope.setLoggedIn(false);

@@ -10,13 +10,13 @@
     </div>
     <div ng-if="chart" class="col-sm-12">
       <canvas ng-if="showPieChart(chart)" id="pie" class="chart chart-pie"
-        chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+        chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
       </canvas>
       <canvas ng-if="showBarChart(chart)" id="bar" class="chart chart-horizontal-bar"
-        chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+        chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
       </canvas>
       <canvas ng-if="showPolarAreaChart(chart)" id="polar" class="chart chart-polar-area"
-        chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+        chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
       </canvas>
     </div>
     <div ng-if="chart" class="col-sm-12">

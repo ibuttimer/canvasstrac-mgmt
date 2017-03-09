@@ -46,8 +46,6 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
       title: label,
       flags: storeFactory.CREATE_INIT
     });
-    $scope[id].sortOptions = $scope.sortOptions;
-    $scope[id].sortBy = $scope.sortOptions[0];
     
     var filter = RES.getFilterName(id);
     $scope[filter] = storeFactory.newObj(filter, userFactory.newFilter, storeFactory.CREATE_INIT);
@@ -84,12 +82,12 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
       if (resList.id === RES.UNASSIGNED_CANVASSER) {
-        resList.setList([]);  // clear list of addresses
+        resList.setList([]);  // clear list of canvassers
       }
       resList.applyFilter();
     } else if (action === 'a') {  // no filter, get all
       setFilter(resList.id);
-      requestCanvassers(resList);  // request all addresses
+      requestCanvassers(resList);  // request all canvassers
       
     } else {  // set filter
       var filter = angular.copy(resList.filter.filterBy);

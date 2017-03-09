@@ -32,11 +32,11 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFI
   /* function implementation
     -------------------------- */
 
-  function loginSuccess (response) {
+  function loginSuccess (/*response*/) {
     $rootScope.$broadcast('login:Successful');
   }
 
-  function loginFailure (response) {
+  function loginFailure (/*response*/) {
     NgDialogFactory.error(response, 'Login Unsuccessful');
   }
 

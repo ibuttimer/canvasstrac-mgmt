@@ -24,7 +24,7 @@
     <div class="form-group">
       <div class="col-sm-8">
         <div class="list-group">
-          <button type="button" class="list-group-item" ng-repeat="question in survey.questions" ng-class="{active: question.isSelected}" ng-click="toggleQuestionSel(question)">
+          <button type="button" class="list-group-item" ng-repeat="question in questions.list" ng-class="{active: question.isSelected}" ng-click="toggleQuestionSel(question)">
             <div class="row">
               <div class="col-sm-9">
                 <p>{{question.question}}</p>
@@ -51,19 +51,10 @@
 
 
     <!-- navigation buttons -->
-    <div class="col-sm-1">
-      <button type="button" class="btn btn-primary btn-sm" ng-click="prevTab()" ng-disabled="surveyForm.$invalid"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>&nbsp;Prev</span>
-      </button>
-    </div>
-    <div class="col-sm-offset-1 col-sm-2">
-      <button type="reset" class="btn btn-default btn-sm" ng-disabled="editDisabled">Reset</button>
-    </div>
-    <div class="col-sm-offset-4 col-sm-1">
-      <button type="button" class="btn btn-danger btn-sm" ng-click="gotoDash()">Cancel</button>
-    </div>
-    <div class="col-sm-offset-1 col-sm-1">
-      <button type="submit" class="btn btn-primary btn-sm" ng-disabled="surveyForm.$invalid">Next&nbsp;<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
-      </button>
+    <div class="col-sm-12">
+      <div ng-controller="SurveyTabNavController">
+        <div ng-include="'canvasses/tab.buttons.html'"></div>
+      </div>
     </div>
     <br />
     <br />

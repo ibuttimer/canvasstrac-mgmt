@@ -32,7 +32,7 @@
     </div>
     <div class="col-sm-8">
       <div class="list-group">
-        <button type="button" class="list-group-item" ng-repeat="user in users | filterUser: userFilterText : userFilterOp : userFilterRole" ng-class="{active: user.isSelected}" ng-click="toggleSelection(user)">
+        <button type="button" class="list-group-item" ng-repeat="user in users | filterDashUser: userFilterText : userFilterOp : userFilterRole" ng-class="{active: user.isSelected}" ng-click="toggleSelection(user)">
           <p>{{user.person.firstname}} {{user.person.lastname}}</p>
           <p>{{user.role.name}}</p>
         </button>

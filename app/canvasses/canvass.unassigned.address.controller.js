@@ -19,6 +19,7 @@ function CanvassUnassignedAddressController($scope, $rootScope, $state, $statePa
   console.log('CanvassUnassignedAddressController id', $stateParams.id);
 
   $scope.list = addressFactory.getList(RES.UNASSIGNED_ADDR);
+  $scope.sortOptions = $scope.list.sortOptions;
   $scope.pager = $scope.list.pager;
   $scope.reqAll = true; // emable request all button
   $scope.SET_SEL = UTIL.SET_SEL;

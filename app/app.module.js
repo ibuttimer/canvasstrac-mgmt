@@ -6,12 +6,24 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
 
   .config(function ($stateProvider, $urlRouterProvider, STATES, MENUS) {
 
-    var appPath = '/',
+    var getUrl = function (state, param) {
+        var splits = state.split('.'),
+          url = '';
+        if (splits.length > 2) {
+          url += '/';
+        } // 2nd level doesn't need preceeding '/' as app path is only '/'
+        url += splits[splits.length - 1];
+        if (param) {
+          url += '/' + param;
+        }
+        return url;
+      },
+      appPath = '/',
       otherwisePath = appPath,
       routes = [
         { state: STATES.CONFIG,
           config: {
-            url: 'cfg',
+            url: getUrl(STATES.CONFIG),
             views: {
               'content@': {
                 templateUrl : 'layout/submenu.page.html',
@@ -27,7 +39,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.VOTINGSYS,
           config: {
-            url: '/votingsystems',
+            url: getUrl(STATES.VOTINGSYS),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -38,7 +50,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.VOTINGSYS_NEW,
           config: {
-            url: '/newvotingsystem',
+            url: getUrl(STATES.VOTINGSYS_NEW),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -49,7 +61,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ROLES,
           config: {
-            url: '/roles',
+            url: getUrl(STATES.ROLES),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -60,7 +72,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ROLES_NEW,
           config: {
-            url: '/newrole',
+            url: getUrl(STATES.ROLES_NEW),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -71,7 +83,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.USERS,
           config: {
-            url: '/users',
+            url: getUrl(STATES.USERS),
             views: {
               'content@': {
                 templateUrl : 'users/userdash.html',
@@ -82,7 +94,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.USERS_VIEW,
           config: {
-            url: '/viewuser/:id',
+            url: getUrl(STATES.USERS_VIEW, ':id'),
             views: {
               'content@': {
                 templateUrl : 'users/newuser.html',
@@ -93,7 +105,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.USERS_EDIT,
           config: {
-            url: '/edituser/:id',
+            url: getUrl(STATES.USERS_EDIT, ':id'),
             views: {
               'content@': {
                 templateUrl : 'users/newuser.html',
@@ -104,7 +116,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.USERS_NEW,
           config: {
-            url: '/newuser',
+            url: getUrl(STATES.USERS_NEW),
             views: {
               'content@': {
                 templateUrl : 'users/newuser.html',
@@ -115,7 +127,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CAMPAIGN,
           config: {
-            url: 'campaign',
+            url: getUrl(STATES.CAMPAIGN),
             views: {
               'content@': {
                 templateUrl : 'layout/submenu.page.html',
@@ -131,7 +143,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ELECTION,
           config: {
-            url: '/elections',
+            url: getUrl(STATES.ELECTION),
             views: {
               'content@': {
                 templateUrl : 'elections/electiondash.html',
@@ -142,7 +154,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ELECTION_VIEW,
           config: {
-            url: '/viewelection/:id',
+            url: getUrl(STATES.ELECTION_VIEW, ':id'),
             views: {
               'content@': {
                 templateUrl : 'elections/newelection.html',
@@ -153,7 +165,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ELECTION_EDIT,
           config: {
-            url: '/editelection/:id',
+            url: getUrl(STATES.ELECTION_EDIT, ':id'),
             views: {
               'content@': {
                 templateUrl : 'elections/newelection.html',
@@ -164,7 +176,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.ELECTION_NEW,
           config: {
-            url: '/newelection',
+            url: getUrl(STATES.ELECTION_NEW),
             views: {
               'content@': {
                 templateUrl : 'elections/newelection.html',
@@ -175,7 +187,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANDIDATE,
           config: {
-            url: '/candidates',
+            url: getUrl(STATES.CANDIDATE),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -186,7 +198,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANDIDATE_NEW,
           config: {
-            url: '/newcandidate',
+            url: getUrl(STATES.CANDIDATE_NEW),
             views: {
               'content@': {
                 templateUrl : 'views/aboutus.html',
@@ -197,7 +209,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANVASS,
           config: {
-            url: '/canvass',
+            url: getUrl(STATES.CANVASS),
             views: {
               'content@': {
                 templateUrl : 'canvasses/canvassdash.html',
@@ -208,7 +220,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANVASS_VIEW,
           config: {
-            url: '/viewcanvass/:id',
+            url: getUrl(STATES.CANVASS_VIEW, ':id'),
             views: {
               'content@': {
                 templateUrl : 'canvasses/newcanvass.html',
@@ -219,7 +231,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANVASS_EDIT,
           config: {
-            url: '/editcanvass/:id',
+            url: getUrl(STATES.CANVASS_EDIT, ':id'),
             views: {
               'content@': {
                 templateUrl : 'canvasses/newcanvass.html',
@@ -230,7 +242,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
         },
         { state: STATES.CANVASS_NEW,
           config: {
-            url: '/newcanvass',
+            url: getUrl(STATES.CANVASS_NEW),
             views: {
               'content@': {
                 templateUrl : 'canvasses/newcanvass.html',
@@ -262,7 +274,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
 
       // route for the aboutus page
       .state(STATES.ABOUTUS, {
-        url: 'aboutus',
+        url: getUrl(STATES.ABOUTUS),
         views: {
           'content@': {
             templateUrl : 'views/aboutus.html',
@@ -272,7 +284,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
       })
 
       .state(STATES.LOGIN, {
-        url: 'login',
+        url: getUrl(STATES.LOGIN),
         onEnter: ['$stateParams', '$state', '$uibModal', function ($stateParams, $state, $uibModal) {
           
           $uibModal.open({
@@ -286,7 +298,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
     
       // route for the contactus page
       .state(STATES.CONTACTUS, {
-        url: 'contactus',
+        url: getUrl(STATES.CONTACTUS),
         views: {
           'content@': {
             templateUrl : 'views/contactus.html',

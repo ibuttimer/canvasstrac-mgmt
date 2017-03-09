@@ -124,23 +124,39 @@ gulp.task('replace', function () {
   // based on http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
 
   // Get the environment from the command line
-  var env = argv.env || 'localdev';
+  var env = argv.env || 'localdev',
 
   // Read the settings from the right file
-  var filename = env + '.json';
-  var settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8'));
+    filename = env + '.json',
+    settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
+    // basic patterns
+    patterns = [
+      { match: 'baseURL', replacement: settings.baseURL },
+      { match: 'basePort',  replacement: settings.basePort },
+      { match: 'apiKey', replacement: settings.apiKey },
+      { match: 'DEV_MODE', replacement: settings.DEV_MODE },
+      { match: 'DEV_USER', replacement: settings.DEV_USER },
+      { match: 'DEV_PASSWORD', replacement: settings.DEV_PASSWORD }
+    ];
+
+  // add dbg settins to patterns
+  [ 'storeFactory',
+    'localStorage',
+    'surveyFactory',
+    'canvassFactory',
+    'electionFactory',
+    'CanvassController',
+    'CanvassActionController',
+    'SurveyController',
+    'navService'
+  ].forEach(function (key) {
+    var keyVal = settings[key] || false;
+    patterns.push({ match: key, replacement: keyVal });
+  });
 
   // Replace each placeholder with the correct value for the variable.
   gulp.src(basePaths.config + 'app.config.js')
-  .pipe(replace({
-    patterns: [ { match: 'baseURL', replacement: settings.baseURL },
-        { match: 'basePort',  replacement: settings.basePort },
-        { match: 'apiKey', replacement: settings.apiKey },
-        { match: 'DEV_MODE', replacement: settings.DEV_MODE },
-        { match: 'DEV_USER', replacement: settings.DEV_USER },
-        { match: 'DEV_PASSWORD', replacement: settings.DEV_PASSWORD }
-      ]
-    }))
+  .pipe(replace({ patterns: patterns }))
     .pipe(gulp.dest(basePaths.src));
 });
 

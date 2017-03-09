@@ -1,5 +1,5 @@
 <div role="tabpanel" class="tab-pane fade in active">
-  <form class="form-horizontal" name="resultForm" role="form" novalidate>
+  <form class="form-horizontal" name="resultForm" role="form" ng-submit="processForm()" novalidate>
 
     <div class="form-group">
       <div class="col-sm-12">
@@ -92,22 +92,26 @@
 -->
             <div class="col-sm-3">
               <canvas ng-if="showPieChart(question)" id="chart{{$index}}" class="chart chart-pie"
-                chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+                chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
               </canvas>
               <canvas ng-if="showBarChart(question)" id="chart{{$index}}" class="chart chart-horizontal-bar"
-                chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+                chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
               </canvas>
               <canvas ng-if="showPolarAreaChart(question)" id="chart{{$index}}" class="chart chart-polar-area"
-                chart-data="question.data" chart-labels="question.labels" chart-options="question.chartOptions">
+                chart-data="question.resData.data" chart-labels="question.resData.labels" chart-options="question.chartOptions">
               </canvas>
             </div>
         </div>
       </button>
     </div>
+
+    <!-- navigation buttons -->
+    <div class="col-sm-12">
+      <div ng-controller="ResultTabNavController">
+        <div ng-include="'canvasses/tab.buttons.html'"></div>
+      </div>
+    </div>
     <br />
     <br />
   </form>
-
-
-
 </div>

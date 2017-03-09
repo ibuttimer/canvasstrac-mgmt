@@ -9,51 +9,54 @@ angular.module('ct.config', [])
   .constant('STATES', (function () {
     var cfgState = 'app.cfg',
       campaignState = 'app.campaign',
+      makeStates = function (path, base, substate) {
+        var state = path + '.' + base;
+        if (substate) {
+          state += '-' + substate;
+        }
+        return state;
+      },
+      makeSubStatePropName = function (state, substate) {
+        return state + '_' + substate;
+      },
+      substates = [
+        'NEW', 'VIEW', 'EDIT', 'NEW', 'DEL'
+      ],
       stateConstant = {
         APP: 'app',
         ABOUTUS: 'app.aboutus',
 
         CONFIG: cfgState,
-        VOTINGSYS: cfgState + '.votingsystems',
-        VOTINGSYS_VIEW: cfgState + '.viewvotingsystem',
-        VOTINGSYS_EDIT: cfgState + '.editvotingsystem',
-        VOTINGSYS_NEW: cfgState + '.newvotingsystem',
-
-        ROLES: cfgState + '.roles',
-        ROLES_VIEW: cfgState + '.viewrole',
-        ROLES_EDIT: cfgState + '.editrole',
-        ROLES_NEW: cfgState + '.newrole',
-
-        USERS: cfgState + '.users',
-        USERS_VIEW: cfgState + '.viewuser',
-        USERS_EDIT: cfgState + '.edituser',
-        USERS_NEW: cfgState + '.newuser',
-
         CAMPAIGN: campaignState,
-        ELECTION: campaignState + '.elections',
-        ELECTION_VIEW: campaignState + '.viewelection',
-        ELECTION_EDIT: campaignState + '.editelection',
-        ELECTION_NEW: campaignState + '.newelection',
-
-        CANDIDATE: campaignState + '.candidates',
-        CANDIDATE_VIEW: campaignState + '.viewcandidate',
-        CANDIDATE_EDIT: campaignState + '.editcandidate',
-        CANDIDATE_NEW: campaignState + '.newcandidate',
-
-        CANVASS: campaignState + '.canvass',
-        CANVASS_VIEW: campaignState + '.viewcanvass',
-        CANVASS_EDIT: campaignState + '.editcanvass',
-        CANVASS_NEW: campaignState + '.newcanvass',
 
         LOGIN: 'app.login',
         CONTACTUS: 'app.contactus'
       },
       disabledStates = [
         // add entries to disbale a state and any substates
-        stateConstant.VOTINGSYS,
-        stateConstant.ROLES
       ];
 
+      /* make state values, e.g. VOTINGSYS, VOTINGSYS_NEW etc.
+          add a disabled flag to disable the state and any substates */
+      [ { property: 'VOTINGSYS', path: cfgState, base: 'votingsystem', disabled: true },
+        { property: 'ROLES', path: cfgState, base: 'role', disabled: true },
+        { property: 'USERS', path: cfgState, base: 'user' },
+        { property: 'ELECTION', path: campaignState, base: 'election' },
+        { property: 'CANDIDATE', path: campaignState, base: 'candidate' },
+        { property: 'CANVASS', path: campaignState, base: 'canvass' }
+      ].forEach(function (state) {
+        stateConstant[state.property] = makeStates(state.path, state.base);
+        substates.forEach(function (substate) {
+          stateConstant[makeSubStatePropName(state.property, substate)] = makeStates(state.path, state.base, substate.toLowerCase());
+        });
+
+        if (state.disabled) {
+          // disbale the state and any substates
+          disabledStates.push(stateConstant[state.property]);
+        }
+      });
+
+    // add function to check for disabled states
     stateConstant.ISDISABLED = function (state) {
       var disabled = true,  // everythimg disabled by default
         properties = Object.getOwnPropertyNames(stateConstant),
@@ -63,12 +66,23 @@ angular.module('ct.config', [])
           disabled = false; // valid state, enabled by default
           for (j = 0; j < properties.length; ++j) {
             if (state.indexOf(disabledStates[j]) === 0) {
-              return true;  // its or a parent is disabled
+              return true;  // it or a parent is disabled
             }
           }
         }
       }
       return disabled;
+    };
+
+    /* add function to set scope variables giving
+      scope.dashState, $scope.newState, $scope.viewState etc. */
+    stateConstant.SET_SCOPE_VARS = function (scope, base) {
+      scope.dashState = stateConstant[base];
+      substates.forEach(function (substate) {
+        // make properties like 'newState' etc.
+        let name = substate.toLowerCase();
+        scope[name + 'State'] = stateConstant[makeSubStatePropName(base, substate)];
+      });
     };
 
     return stateConstant;
@@ -83,15 +97,15 @@ angular.module('ct.config', [])
   .constant('DBG', (function () {
     return {
       // debug enable flags
-      storeFactory: false,
-      localStorage: false,
-      surveyFactory: true,
-      canvassFactory: true,
-      electionFactory: true,
-      CanvassController: true,
-      CanvassActionController: true,
-      SurveyController: true,
-      navService: true,
+      storeFactory: @@storeFactory,
+      localStorage: @@localStorage,
+      surveyFactory: @@surveyFactory,
+      canvassFactory: @@canvassFactory,
+      electionFactory: @@electionFactory,
+      CanvassController: @@CanvassController,
+      CanvassActionController: @@CanvassActionController,
+      SurveyController: @@SurveyController,
+      navService: @@navService,
 
       isEnabled: function (mod) {
         return this[mod];
@@ -131,8 +145,8 @@ angular.module('ct.config', [])
       BACKUP_CANVASS: 'backupCanvass',            // backup canvass object name
       BACKUP_SURVEY: 'backupSurvey',              // backup survey object name
       BACKUP_ELECTION: 'backupElection',          // backup election object name
-      CANVASS_RESULT:  'canvassResults',          // canvass results object name
-      CANVASS_QUESTIONS:  'canvassQuestions',     // canvass questions object name
+      CANVASS_RESULT: 'canvassResults',           // canvass results object name
+      SURVEY_QUESTIONS: 'surveyQuestions',        // survey questions object name
 
       ASSIGNED_ADDR: 'assignedAddr',              // all addresses assigned to canvass
       UNASSIGNED_ADDR: 'unassignedAddr',          // addresses not assigned to canvass

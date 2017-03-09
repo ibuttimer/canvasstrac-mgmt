@@ -2,8 +2,19 @@
 <div class="container" ng-controller="CanvassController">
   <div class="row row-content">
     <div class="col-xs-12">
-      <h2>{{getTitle()}}</h2>
-
+      <div class="col-xs-4">
+        <h2>{{getTitle()}}</h2>
+      </div>
+      <div class="col-xs-8">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-default" ng-if="showButton(newState)" ui-sref="{{newState}}">New</button>
+          <button type="button" class="btn btn-default" ng-if="showButton(viewState)" ng-click="changeState(viewState)">View</button>
+          <button type="button" class="btn btn-default" ng-if="showButton(editState)" ng-click="changeState(editState)">Update</button>
+          <button type="button" class="btn btn-default" ng-if="showButton(delState)" ng-click="changeState(delState)">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-12">
       <uib-tabset active="activeTab">
         <!-- Canvass tab -->
         <uib-tab index="tabs.CANVASS_TAB" heading="1. Canvass" role="presentation">

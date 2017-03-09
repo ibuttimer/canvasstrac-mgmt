@@ -35,6 +35,7 @@ function utilFactory ($rootScope, miscUtilFactory, UTIL) {
     initSelected: initSelected,
     setSelected: setSelected,
     getSelectedList: getSelectedList,
+    countSelected: countSelected,
     toggleSelection: toggleSelection,
     arrayAdd: arrayAdd,
     arrayRemove: arrayRemove
@@ -107,12 +108,29 @@ function utilFactory ($rootScope, miscUtilFactory, UTIL) {
 
   
   /**
+   * Return number of 'selected' entries
+   * @param   {Array} fullList Array to count selected items from
+   * @returns {number} Number of selected items
+   */
+  function countSelected (fullList) {
+    var count = 0;
+
+    angular.forEach(fullList, function (entry) {
+      if (entry.isSelected) {
+        ++count;
+      }
+    });
+    return count;
+  }
+
+
+  /**
    * Toggle an object's 'selected' state
    * @param   {object} entry Object to toggle state of
    * @param   {number} count Current selected count
    * @returns {number} Updated selected count
    */
-  function toggleSelection(entry, count) {
+  function toggleSelection (entry, count) {
     if (count === undefined) {
       count = 0;
     }

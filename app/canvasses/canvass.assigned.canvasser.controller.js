@@ -19,6 +19,7 @@ function CanvassAssignedCanvasserController($scope, $rootScope, $state, $statePa
   console.log('CanvassAssignedCanvasserController id', $stateParams.id);
 
   $scope.list = userFactory.getList(RES.ASSIGNED_CANVASSER);
+  $scope.sortOptions = $scope.list.sortOptions;
   $scope.pager = $scope.list.pager;
   $scope.reqAll = false; // disable request all button
   $scope.SET_SEL = UTIL.SET_SEL;
