@@ -223,8 +223,10 @@ function cssProcessChain() {
 }
 
 gulp.task('usemin', ['jshint'], function () {
-  
+  var cmt;
+
   if (!production) {
+    cmt = 'non-usemin: '
     gulp.src(appFiles.scripts)
       .pipe(changed(basePaths.dest))
       .pipe(gulp.dest(basePaths.dest));
@@ -232,6 +234,8 @@ gulp.task('usemin', ['jshint'], function () {
     gulp.src(appFiles.styles)
       .pipe(changed(paths.styles.dest))
       .pipe(gulp.dest(paths.styles.dest));
+  } else {
+    cmt = 'usemin: '
   }
 
   return gulp.src(appFiles.views)
@@ -243,9 +247,12 @@ gulp.task('usemin', ['jshint'], function () {
         appjs: jsProcessChain()
       })))
     .pipe(gulp.dest(basePaths.dest))
-    .pipe(notify(production ?
-                 { message: 'Usemin task complete' } :
-                 { message: 'Usemin task skipped in dev mode' }));
+    .pipe(print(function(filepath) {
+      return cmt + filepath;
+    }));
+//    .pipe(notify(production ?
+//                 { message: 'Usemin task complete' } :
+//                 { message: 'Usemin task skipped in dev mode' }));
 });
 
 // Images
@@ -302,10 +309,10 @@ gulp.task('copyvendor', function () {
     .pipe(print())
     .pipe(gulp.dest(dest))
     .pipe(print(function(filepath) {
-      return "built: " + filepath;
-    }))
+      return "Vendor script/css: " + filepath;
+    }));
 
-    .pipe(notify({ message: 'Vendor script/css task complete' }));
+//    .pipe(notify({ message: 'Vendor script/css task complete' }));
   
   
 });
