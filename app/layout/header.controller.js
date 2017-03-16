@@ -16,7 +16,7 @@ angular.module('canvassTrac')
       CRUMBS: []
     };
   })())
-  .config(function (MENUS, STATES) {
+  .config(['MENUS', 'STATES', function (MENUS, STATES) {
     /* Unicode code point   UTF-8 literal   html
       U+00A0	             \xc2\xa0	       &nbsp; */
     var prop,
@@ -227,7 +227,7 @@ angular.module('canvassTrac')
 
         for (prop in MENUS) {
           if (MENUS[prop].root) {
-            let runner = new runnerObj(MENUS[prop].root);
+            var runner = new runnerObj(MENUS[prop].root);
 
             cfgBlock.entries.forEach(runner.processEntry);
           }
@@ -235,7 +235,7 @@ angular.module('canvassTrac')
       }
     });
     MENUS.CRUMBS = tree;
-  })
+  }])
   .controller('HeaderController', HeaderController);
 
 

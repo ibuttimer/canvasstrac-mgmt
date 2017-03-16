@@ -1,18 +1,39 @@
 The environment variable replacement functionality is based on a post by Jeff French, available at http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
 
-There is a gulp task 'replace' which reads the contents of a json config file from this folder and 
-creates version of app.config.js in the www folder.
+A single json config file may be shared between the server and management web app, with each reading the common settings and those specific to itself.
 
-WARNING: nice idea but need to investigate further as regards passing the '--env localdev' argument to
-gulp from the Visual studio build.
+There is a gulp task 'replace' which reads the contents of the json config file from this folder and creates an env.js in the app folder.
+
+WARNING: nice idea but need to investigate further as regards passing the '--env localdev' argument to gulp from the Visual studio build.
 
 
 The json config file should have the following format
 {
-  "baseURL": "<<base url for server, e.g. http://1.2.3.4>>",
-  "basePort": "<<server port to use, e.g 1234>>",
+  // server/management app common settings
+  "baseURL": "<<base url for server, e.g. localhost>>",
+  "forceHttps": <<true to force https, false otherwise>>,
+  "httpPort": <<server port to use, e.g 1234>>,
+  "httpsPortOffset": <<offset to use for https server port, e.g 123>>,
 
-  "apiKey": "<<Google Maps API key>>",
+  // server-specific settings
+  "dbAddr": "<<MongoDB URI, e.g. localhost:27017/canvassTrac>>",
+
+  "mgmtPath": "<<path (relative to app.js) of management console files to serve>>",
+
+  "jwtSecretKey": "<<JWT secret key>>",
+  "jwtTokenLife": <<JWT token life, e.g. 3600>>,
+
+  "disableAuth": <<true to disable authentication, false otherwise>>,
+
+  "fbClientID": "<<Facebook client id>>",
+  "fbClientSecret": "<<Facebook client secret>>",
+
+  "dfltPassword": "<<default password for new users>>",
+
+  "testOptions": "<<test options, see config.js for details>>"
+
+  // management app settings
+  "mapsApiKey": "<<Google Maps API key>>",
 
   "DEV_MODE": <<true to enable development mode, false otherwise>>,
   "DEV_USER": "<<username to use for quick login in development mode>>",
@@ -27,6 +48,7 @@ The json config file should have the following format
   "CanvassActionController": <<true to enable debug output, false otherwise>>,
   "SurveyController": <<true to enable debug output, false otherwise>>,
   "navService": <<true to enable debug output, false otherwise>>
+
 
 }
 

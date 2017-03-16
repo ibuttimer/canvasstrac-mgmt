@@ -2,10 +2,41 @@
 /*global angular */
 'use strict';
 
+ /**************************************************************************
+   * Set environment values
+   *************************************************************************/
+
+// Default environment variables
+var appenv = {};
+
+// Import variables if present
+if(window){
+  for (var prop in window.__env) {
+    appenv[prop] = window.__env[prop];
+  }
+  if (!appenv.baseURL) {
+    throw Error('Missing configuration: baseURL');
+  }
+}
+
 angular.module('ct.config', [])
 
-  .constant('baseURL', '@@baseURL:@@basePort/')
-  .constant('apiKey', '@@apiKey')
+  .constant('baseURL', (function () {
+    // This is the data base url, app pages are handled by ui-router
+    var proto = 'http',
+      port = appenv.httpPort,
+      url;
+    if (appenv.forceHttps) {
+      proto = 'https';
+      port += appenv.httpsPortOffset;
+    }
+    url = proto + '://' + appenv.baseURL;
+    if (port) {
+      url += ':' + port;
+    }
+    return url + '/db/';
+  })())
+  .constant('mapsApiKey', appenv.mapsApiKey)
   .constant('STATES', (function () {
     var cfgState = 'app.cfg',
       campaignState = 'app.campaign',
@@ -80,7 +111,7 @@ angular.module('ct.config', [])
       scope.dashState = stateConstant[base];
       substates.forEach(function (substate) {
         // make properties like 'newState' etc.
-        let name = substate.toLowerCase();
+        var name = substate.toLowerCase();
         scope[name + 'State'] = stateConstant[makeSubStatePropName(base, substate)];
       });
     };
@@ -89,23 +120,23 @@ angular.module('ct.config', [])
   })())
   .constant('CONFIG', (function () {
     return {
-      DEV_MODE: @@DEV_MODE,  // flag to enable dev mode hack/shortcuts etc.
-      DEV_USER: '@@DEV_USER',
-      DEV_PASSWORD: '@@DEV_PASSWORD'
+      DEV_MODE: appenv.DEV_MODE,  // flag to enable dev mode hack/shortcuts etc.
+      DEV_USER: appenv.DEV_USER,
+      DEV_PASSWORD: appenv.DEV_PASSWORD
     };
   })())
   .constant('DBG', (function () {
     return {
       // debug enable flags
-      storeFactory: @@storeFactory,
-      localStorage: @@localStorage,
-      surveyFactory: @@surveyFactory,
-      canvassFactory: @@canvassFactory,
-      electionFactory: @@electionFactory,
-      CanvassController: @@CanvassController,
-      CanvassActionController: @@CanvassActionController,
-      SurveyController: @@SurveyController,
-      navService: @@navService,
+      storeFactory: appenv.storeFactory,
+      localStorage: appenv.localStorage,
+      surveyFactory: appenv.surveyFactory,
+      canvassFactory: appenv.canvassFactory,
+      electionFactory: appenv.electionFactory,
+      CanvassController: appenv.CanvassController,
+      CanvassActionController: appenv.CanvassActionController,
+      SurveyController: appenv.SurveyController,
+      navService: appenv.navService,
 
       isEnabled: function (mod) {
         return this[mod];

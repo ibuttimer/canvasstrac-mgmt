@@ -4,7 +4,7 @@
 
 angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordova', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon', 'chart.js'])
 
-  .config(function ($stateProvider, $urlRouterProvider, STATES, MENUS) {
+  .config(['$stateProvider', '$urlRouterProvider', 'STATES', 'MENUS', function ($stateProvider, $urlRouterProvider, STATES, MENUS) {
 
     var getUrl = function (state, param) {
         var splits = state.split('.'),
@@ -314,4 +314,4 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
     });
 
     $urlRouterProvider.otherwise(otherwisePath);
-  });
+  }]);

@@ -179,7 +179,7 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
             
             console.log('response', response);
             
-            $scope.election = electionFactory.readElectionRsp(response, {
+            $scope.election = electionFactory.readResponse(response, {
                 objId: undefined, // no objId means not stored, just returned
                 factory: 'electionFactory',
                 storage: RESOURCE_CONST.STORE_OBJ,

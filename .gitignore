@@ -41,5 +41,6 @@ bower_components
 # Editor configs
 .brackets.json
 /config/localdev.json
-/app/app.config.js
+/config/localdev-mlab.json
 /app/styles/appstyles.css
+/.vscode/launch.json

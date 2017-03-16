@@ -16,7 +16,7 @@ SubmenuPageController.$inject = ['$scope', 'SUBMENU'];
 function SubmenuPageController ($scope, SUBMENU) {
 
   var menuEntries = [];
-  for (let prop in SUBMENU) {
+  for (var prop in SUBMENU) {
     if (SUBMENU[prop].header) {
       menuEntries.push(SUBMENU[prop]);
     }

@@ -33,7 +33,7 @@ function stateFactory ($state, STATES, MENUS) {
     -------------------------- */
 
   function addInterface (scope) {
-    for (let prop in factory) {
+    for (var prop in factory) {
       if (prop !== 'addInterface') {
         scope[prop] = factory[prop];
       }
@@ -54,7 +54,7 @@ function stateFactory ($state, STATES, MENUS) {
 
   function stateIsOneOf(states) {
     var isoneof = false;
-    for (let i = 0; i < states.length; ++i) {
+    for (var i = 0; i < states.length; ++i) {
       if ($state.is(states[i])) {
         isoneof = true;
         break;
@@ -70,11 +70,11 @@ function stateFactory ($state, STATES, MENUS) {
   function inSubstate (state) {
     var properties = Object.getOwnPropertyNames(MENUS),
       issub = false;
-    for (let i = 0; (i < properties.length) && !issub; ++i) {
-      let entry = MENUS[properties[i]].root;
+    for (var i = 0; (i < properties.length) && !issub; ++i) {
+      var entry = MENUS[properties[i]].root;
       if (entry) {
         if (entry.sref === state) {
-          for (let j = 0; (j < entry.substates.length) && !issub; ++j) {
+          for (var j = 0; (j < entry.substates.length) && !issub; ++j) {
             issub = $state.is(entry.substates[j]);
           }
         }

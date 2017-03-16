@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="canvassTrac">
+<html lang="en" ng-app="canvassTrac" ng-strict-di>
 
   <head>
     <meta charset="utf-8">
@@ -14,7 +14,7 @@
     
     <title>CanvassTrac</title>    
         <!-- Bootstrap -->
-<!-- build:css styles/main.css -->
+<!-- build:css({.,../}) styles/main.css -->
     <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
@@ -23,6 +23,8 @@
     <link href="bower_components/ng-dialog/css/ngDialog-theme-default.min.css" rel="stylesheet">
 	  <link href="bower_components/bootstrap-social/bootstrap-social.css" rel="stylesheet">
 <!--	<link href="bower_components/nya-bootstrap-select/dist/css/nya-bs-select.min.css" rel="stylesheet">-->
+<!-- endbuild -->
+<!-- build:appcss styles/app.css -->
     <link href="styles/appstyles.css" rel="stylesheet">
 <!-- endbuild -->
 
@@ -45,22 +47,25 @@
     <div ui-view="footer"></div>
     
 
-<!-- build:js scripts/main.js -->
+<!-- build:js({.,../}) scripts/main.js -->
     <script src="bower_components/angular/angular.min.js"></script>
 	  <script src="bower_components/angular-animate/angular-animate.min.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
-    <script src="bower_components/ng-dialog/js/ngDialog.min.js"></script>
-    <script src="bower_components/ngCordova/dist/ng-cordova.js"></script>
+    <script src="bower_components/ngCordova/dist/ng-cordova.min.js"></script>
     <script src="bower_components/chart.js/dist/Chart.min.js"></script>
     <script src="bower_components/angular-chart.js/dist/angular-chart.min.js"></script>
-
+    <script src="bower_components/ng-dialog/js/ngDialog.min.js"></script>
 
 <!--    <script src="bower_components/jquery/dist/jquery.min.js"></script>-->
 <!--    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
 <!--    <script src="bower_components/nya-bootstrap-select/dist/js/nya-bs-select.min.js"></script>-->
+<!-- endbuild -->
+
+<!-- build:appjs scripts/app.js -->
+    <script src="env.js"></script>
     <script src="app.config.js"></script>
 
     <script src="scripts/ngdialog.factory.js"></script>
