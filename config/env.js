@@ -34,7 +34,7 @@
   window.__env.httpsPortOffset = @@httpsPortOffset;
 
   // management app settings
-  window.__env.apiKey = "@@mapsApiKey";
+  window.__env.mapsApiKey = "@@mapsApiKey";
 
   window.__env.DEV_MODE = @@DEV_MODE;
   window.__env.DEV_USER = "@@DEV_USER";

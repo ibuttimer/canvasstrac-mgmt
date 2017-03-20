@@ -28,10 +28,12 @@ angular.module('ct.config', [])
       url;
     if (appenv.forceHttps) {
       proto = 'https';
-      port += appenv.httpsPortOffset;
+      if (port >= 0) {
+        port += appenv.httpsPortOffset;
+      }
     }
     url = proto + '://' + appenv.baseURL;
-    if (port) {
+    if (port >= 0) {
       url += ':' + port;
     }
     return url + '/db/';

@@ -165,8 +165,8 @@ gulp.task('replace', function () {
 
   // Get the environment from the command line
   var env = argv.env || 'localdev',
-
-  // Read the settings from the right file
+    envfilename = 'env.js',
+    // Read the settings from the right file
     filename = env + '.json',
     settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
     // basic patterns
@@ -199,8 +199,9 @@ gulp.task('replace', function () {
   });
 
   // Replace each placeholder with the correct value for the variable.
-  gulp.src(basePaths.config + 'env.js')
-  .pipe(replace({ patterns: patterns }))
+  gulp.src(basePaths.config + envfilename)
+    .pipe(notify({ message: 'Creating ' + envfilename + ' from ' + filename }))
+    .pipe(replace({ patterns: patterns }))
     .pipe(gulp.dest(basePaths.src));
 });
 
