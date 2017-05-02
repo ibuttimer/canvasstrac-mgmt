@@ -32,22 +32,39 @@
   window.__env.forceHttps = @@forceHttps;
   window.__env.httpPort = @@httpPort;
   window.__env.httpsPortOffset = @@httpsPortOffset;
+  window.__env.socketTimeout = @@socketTimeout;
+
+  window.__env.disableAuth = @@disableAuth;
 
   // management app settings
   window.__env.mapsApiKey = "@@mapsApiKey";
 
-  window.__env.DEV_MODE = @@DEV_MODE;
-  window.__env.DEV_USER = "@@DEV_USER";
-  window.__env.DEV_PASSWORD = "@@DEV_PASSWORD";
+  window.__env.autoLogout = "@@autoLogout";
+  window.__env.autoLogoutCount = "@@autoLogoutCount";
+  window.__env.tokenRefresh = "@@tokenRefresh";
+  window.__env.reloadMargin = "@@reloadMargin";
 
-  window.__env.storeFactory = @@storeFactory;
-  window.__env.localStorage = @@localStorage;
-  window.__env.surveyFactory = @@surveyFactory;
-  window.__env.canvassFactory = @@canvassFactory;
-  window.__env.electionFactory = @@electionFactory;
-  window.__env.CanvassController = @@CanvassController;
-  window.__env.CanvassActionController = @@CanvassActionController;
-  window.__env.SurveyController = @@SurveyController;
-  window.__env.navService = @@navService;
+  window.__env.DEV_MODE = @@DEV_MODE;
+  window.__env.DEV_USER1 = "@@DEV_USER1";
+  window.__env.DEV_PASSWORD1 = "@@DEV_PASSWORD1";
+  window.__env.DEV_USER2 = "@@DEV_USER2";
+  window.__env.DEV_PASSWORD2 = "@@DEV_PASSWORD2";
+  window.__env.DEV_USER3 = "@@DEV_USER3";
+  window.__env.DEV_PASSWORD3 = "@@DEV_PASSWORD3";
+
+  /* TODO debug flags really need some work */
+  window.__env.dbgstoreFactory = @@storeFactory;
+  window.__env.dbglocalStore = @@localStore;
+  window.__env.dbgsurveyFactory = @@surveyFactory;
+  window.__env.dbgcanvassFactory = @@canvassFactory;
+  window.__env.dbgelectionFactory = @@electionFactory;
+  window.__env.dbgCanvassController = @@CanvassController;
+  window.__env.dbgCanvassActionController = @@CanvassActionController;
+  window.__env.dbgSurveyController = @@SurveyController;
+  window.__env.dbgHeaderController = @@HeaderController;
+  window.__env.dbgElectionController = @@ElectionController;
+  window.__env.dbgCanvassController = @@CanvassController;
+  window.__env.dbgCanvassAddressController = @@CanvassAddressController;
+  window.__env.dbgnavService = @@navService;
 
 }(this));

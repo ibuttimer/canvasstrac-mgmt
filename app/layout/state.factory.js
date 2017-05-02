@@ -41,21 +41,29 @@ function stateFactory ($state, STATES, MENUS) {
   }
 
   function stateIs(curstate) {
-    return $state.is(curstate);
+    var res = false;
+    if (curstate) {
+      res = $state.is(curstate);
+    }
+    return res;
   }
 
   function stateIsNot(curstate) {
-    return !$state.is(curstate);
+    return !stateIs(curstate);
   }
 
   function stateIncludes(curstate) {
-    return $state.includes(curstate);
+    var res = false;
+    if (curstate) {
+      res = $state.includes(curstate);
+    }
+    return res;
   }
 
   function stateIsOneOf(states) {
     var isoneof = false;
     for (var i = 0; i < states.length; ++i) {
-      if ($state.is(states[i])) {
+      if (stateIs(states[i])) {
         isoneof = true;
         break;
       }
@@ -75,7 +83,7 @@ function stateFactory ($state, STATES, MENUS) {
       if (entry) {
         if (entry.sref === state) {
           for (var j = 0; (j < entry.substates.length) && !issub; ++j) {
-            issub = $state.is(entry.substates[j]);
+            issub = $state.is(entry.substates[j].state);
           }
         }
       }

@@ -1,5 +1,6 @@
 /*jslint node: true */
 /*global angular */
+/*global window */
 'use strict';
 
  /**************************************************************************
@@ -17,6 +18,19 @@ if(window){
   if (!appenv.baseURL) {
     throw Error('Missing configuration: baseURL');
   }
+  // ensure numbers where required
+  [ 'httpPort',
+    'httpsPortOffset',
+    'socketTimeout',
+    'autoLogout',
+    'autoLogoutCount',
+    'tokenRefresh',
+    'reloadMargin'
+  ].forEach(function (prop) {
+    if (typeof appenv[prop] === 'string') {
+      appenv[prop] = parseInt(appenv[prop]);
+    }
+  });
 }
 
 angular.module('ct.config', [])
@@ -38,11 +52,11 @@ angular.module('ct.config', [])
     }
     return url + '/db/';
   })())
-  .constant('mapsApiKey', appenv.mapsApiKey)
   .constant('STATES', (function () {
     var cfgState = 'app.cfg',
       campaignState = 'app.campaign',
       makeStates = function (path, base, substate) {
+        // e.g. app.cfg.user-view
         var state = path + '.' + base;
         if (substate) {
           state += '-' + substate;
@@ -50,12 +64,19 @@ angular.module('ct.config', [])
         return state;
       },
       makeSubStatePropName = function (state, substate) {
+        // e.g. VOTINGSYS_NEW
         return state + '_' + substate;
       },
       substates = [
-        'NEW', 'VIEW', 'EDIT', 'NEW', 'DEL'
+        'NEW', 'VIEW', 'EDIT', 'DEL'
       ],
+      makeStdStateName = function (name) {
+        // e.g. dashState
+        return name.toLowerCase() + 'State';
+      },
       stateConstant = {
+        STD_STATE_NAMES: [],
+
         APP: 'app',
         ABOUTUS: 'app.aboutus',
 
@@ -63,7 +84,8 @@ angular.module('ct.config', [])
         CAMPAIGN: campaignState,
 
         LOGIN: 'app.login',
-        CONTACTUS: 'app.contactus'
+        CONTACTUS: 'app.contactus',
+        SUPPORT: 'app.support'
       },
       disabledStates = [
         // add entries to disbale a state and any substates
@@ -75,7 +97,7 @@ angular.module('ct.config', [])
         { property: 'ROLES', path: cfgState, base: 'role', disabled: true },
         { property: 'USERS', path: cfgState, base: 'user' },
         { property: 'ELECTION', path: campaignState, base: 'election' },
-        { property: 'CANDIDATE', path: campaignState, base: 'candidate' },
+        { property: 'CANDIDATE', path: campaignState, base: 'candidate', disabled: true },
         { property: 'CANVASS', path: campaignState, base: 'canvass' }
       ].forEach(function (state) {
         stateConstant[state.property] = makeStates(state.path, state.base);
@@ -108,40 +130,61 @@ angular.module('ct.config', [])
     };
 
     /* add function to set scope variables giving
-      scope.dashState, $scope.newState, $scope.viewState etc. */
-    stateConstant.SET_SCOPE_VARS = function (scope, base) {
-      scope.dashState = stateConstant[base];
+      scope.dashState, scope.newState, scope.viewState etc. */
+    stateConstant.SET_SCOPE_VARS = function (base, scope) {
+      if (!scope) {
+        scope = {};
+      }
+      scope[makeStdStateName('dash')] = stateConstant[base];
       substates.forEach(function (substate) {
         // make properties like 'newState' etc.
-        var name = substate.toLowerCase();
-        scope[name + 'State'] = stateConstant[makeSubStatePropName(base, substate)];
+        scope[makeStdStateName(substate)] = stateConstant[makeSubStatePropName(base, substate)];
       });
+      return scope;
     };
+
+    // list of properties added by SET_SCOPE_VARS
+    stateConstant.STD_STATE_NAMES.push(makeStdStateName('dash'));
+    substates.forEach(function (substate) {
+      stateConstant.STD_STATE_NAMES.push(makeStdStateName(substate));
+    });
 
     return stateConstant;
   })())
   .constant('CONFIG', (function () {
     return {
       DEV_MODE: appenv.DEV_MODE,  // flag to enable dev mode hack/shortcuts etc.
-      DEV_USER: appenv.DEV_USER,
-      DEV_PASSWORD: appenv.DEV_PASSWORD
+      DEV_USER1: appenv.DEV_USER1,
+      DEV_PASSWORD1: appenv.DEV_PASSWORD1,
+      DEV_USER2: appenv.DEV_USER2,
+      DEV_PASSWORD2: appenv.DEV_PASSWORD2,
+      DEV_USER3: appenv.DEV_USER3,
+      DEV_PASSWORD3: appenv.DEV_PASSWORD3,
+      NOAUTH: appenv.disableAuth,
+      MAPSAPIKEY: appenv.mapsApiKey,
+      AUTOLOGOUT: appenv.autoLogout,
+      AUTOLOGOUTCOUNT: appenv.autoLogoutCount,
+      TOKENREFRESH: appenv.tokenRefresh,
+      RELOADMARGIN: appenv.reloadMargin
     };
   })())
   .constant('DBG', (function () {
-    return {
-      // debug enable flags
-      storeFactory: appenv.storeFactory,
-      localStorage: appenv.localStorage,
-      surveyFactory: appenv.surveyFactory,
-      canvassFactory: appenv.canvassFactory,
-      electionFactory: appenv.electionFactory,
-      CanvassController: appenv.CanvassController,
-      CanvassActionController: appenv.CanvassActionController,
-      SurveyController: appenv.SurveyController,
-      navService: appenv.navService,
 
+    var dbgObj = {
       isEnabled: function (mod) {
         return this[mod];
+      },
+      loggerFunc: function (level, mod) {
+        if (this[mod]) {
+          var args = Array.prototype.slice.call(arguments, 2);
+          console[level].apply(console, args.concat(' '));
+        }
+      },
+      log: function (mod) {
+        if (this[mod]) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          console.log.apply(console, args.concat(' '));
+        }
       },
       debug: function (mod) {
         if (this[mod]) {
@@ -167,8 +210,16 @@ angular.module('ct.config', [])
           console.error.apply(console, args.concat(' '));
         }
       }
-
     };
+
+    // add debug enable flags
+    Object.getOwnPropertyNames(appenv).forEach(function (prop) {
+      if (prop.indexOf('dbg') === 0) {
+        dbgObj[prop] = appenv[prop];
+      }
+    });
+
+    return dbgObj;
   })())
   .constant('RES', (function () {
     return {

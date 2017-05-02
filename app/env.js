@@ -32,22 +32,37 @@
   window.__env.forceHttps = false;
   window.__env.httpPort = 4000;
   window.__env.httpsPortOffset = 443;
+  window.__env.socketTimeout = 120000;
 
   // management app settings
-  window.__env.apiKey = "";
+  window.__env.mapsApiKey = "";
+
+  window.__env.autoLogout = "2000";
+  window.__env.autoLogoutCount = "10";
+  window.__env.tokenRefresh = "1000";
+  window.__env.reloadMargin = "60";
 
   window.__env.DEV_MODE = true;
-  window.__env.DEV_USER = "";
-  window.__env.DEV_PASSWORD = "";
+  window.__env.DEV_USER1 = "";
+  window.__env.DEV_PASSWORD1 = "";
+  window.__env.DEV_USER2 = "";
+  window.__env.DEV_PASSWORD2 = "";
+  window.__env.DEV_USER3 = "";
+  window.__env.DEV_PASSWORD3 = "";
 
-  window.__env.storeFactory = false;
-  window.__env.localStorage = false;
-  window.__env.surveyFactory = true;
-  window.__env.canvassFactory = true;
-  window.__env.electionFactory = true;
-  window.__env.CanvassController = true;
-  window.__env.CanvassActionController = true;
-  window.__env.SurveyController = true;
-  window.__env.navService = true;
+  /* TODO debug flags really need some work */
+  window.__env.dbgstoreFactory = false;
+  window.__env.dbglocalStore = false;
+  window.__env.dbgsurveyFactory = true;
+  window.__env.dbgcanvassFactory = true;
+  window.__env.dbgelectionFactory = true;
+  window.__env.dbgCanvassController = true;
+  window.__env.dbgCanvassActionController = true;
+  window.__env.dbgSurveyController = true;
+  window.__env.dbgHeaderController = true;
+  window.__env.dbgElectionController = true;
+  window.__env.dbgCanvassController = true;
+  window.__env.dbgCanvassAddressController = false;
+  window.__env.dbgnavService = true;
 
 }(this));

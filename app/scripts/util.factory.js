@@ -33,6 +33,7 @@ function utilFactory ($rootScope, miscUtilFactory, UTIL) {
   var factory = {
     formatDate: formatDate,
     initSelected: initSelected,
+    selectAll: selectAll,
     setSelected: setSelected,
     getSelectedList: getSelectedList,
     countSelected: countSelected,
@@ -59,6 +60,15 @@ function utilFactory ($rootScope, miscUtilFactory, UTIL) {
     return setSelected(list, UTIL.CLR_SEL, callback);
   }
   
+  /**
+   * Set the 'selected' property of all objects in an array
+   * @param {Array}    list     Array of objects to initialise
+   * @param {function} callback Optional function to call with each element
+   */
+  function selectAll(list, callback) {
+    return setSelected(list, UTIL.SET_SEL, callback);
+  }
+
   /**
    * Set the 'selected' state of all the entries in the array
    * @param {Array}    list     Array to set

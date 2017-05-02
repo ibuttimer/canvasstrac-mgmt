@@ -96,9 +96,21 @@ address {
 	font-size: 80%;
 	margin: 0px;
 }
+.filter-box {
+	background-color: @off-white;
+  border-radius: 5px;
+	margin: 2px;
+}
+.question-list-box {
+	background-color: @off-white;
+  border-radius: 5px;
+	margin: 2px;
+}
 body {
 	align: center;
-	padding: 50px 0px 0px 0px;
+  // top/right/bottom/left
+  // fixed navbar will overlay other content, unless you add padding to the bottom of the <body>. By default, the navbar is 50px high.
+	padding: 50px 0px 70px 0px;
 	z-index: 0;
 }
 .tab-content {
@@ -117,4 +129,16 @@ body {
 }
 
 
+.filter-label {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 
+// Mixin
+.center-block() {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}

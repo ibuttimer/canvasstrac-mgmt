@@ -4,65 +4,38 @@
 
 angular.module('canvassTrac')
 
-  .controller('ContactController', ['$scope', function ($scope) {
+  .controller('ContactController', ContactController)
 
-    // function to initialise feedback object
-    $scope.initFeedback = function () {
-      $scope.feedback = {
-        mychannel: '',
-        firstName: '',
-        lastName: '',
-        agree: false,
-        email: ''
-      };
+  .controller('FeedbackController', ['$scope', '$state', 'messageFactory' ,'NgDialogFactory', 'STATES', function ($scope, $state, messageFactory, NgDialogFactory, STATES) {
 
-      $scope.invalidChannelSelection = false;
-    };
 
-    $scope.initFeedback();
+    $scope.sendMessage = function () {
 
-    // function to log feedback object to console
-    $scope.logFeedback = function (message) {
-      console.log(message + ':');
-      console.log($scope.feedback);
-    };
-
-    $scope.channels = [{value: 'tel', label: 'Tel.'}, {value: 'Email', label: 'Email'}];
-  }])
-
-  .controller('FeedbackController', ['$scope', 'feedbackFactory', function ($scope, feedbackFactory) {
-
-    $scope.sendFeedback = function () {
-
-      $scope.logFeedback('sendFeedback');
-
-      if ($scope.feedback.agree && ($scope.feedback.mychannel === '')) {
-        $scope.invalidChannelSelection = true;
-        console.log('invalidChannelSelection');
-      } else {
-        // post comment to server
-        feedbackFactory.putFeedback().save($scope.feedback)
-          .$promise.then(
-            // success function
-            function (response) {
-              // response is actual data
-
-              // re-init for next comment entry
-              $scope.initFeedback();
-
-              $scope.feedbackForm.$setPristine();
-
-              $scope.logFeedback('clearFeedback');
-            },
-            // error function
-            function (response) {
-              // reponse is message
-              var message = 'Error saving feedback\n\n' +
-                  'Error: ' + response.status + ' ' + response.statusText;
-              alert(message);
-            }
-          );
+      var resource;
+      if ($state.is(STATES.CONTACTUS)) {
+        resource = messageFactory.getFeedback();
+      } else if ($state.is(STATES.SUPPORT)) {
+        resource = messageFactory.getSupport();
       }
+
+      // post message to server
+      resource.save($scope.message)
+        .$promise.then(
+          // success function
+          function (/*response*/) {
+            // response is actual data
+
+            // re-init for next comment entry
+            $scope.initMessage(true);
+
+            $scope.messageForm.$setPristine();
+          },
+          // error function
+          function (response) {
+            // response is message
+            NgDialogFactory.error(response, 'Error saving');
+          }
+        );
     };
   }])
 
@@ -72,5 +45,28 @@ angular.module('canvassTrac')
 
   }]);
 
+
+ContactController.$inject = ['$scope', '$state', 'STATES', 'MESSAGESCHEMA'];
+
+function ContactController ($scope, $state, STATES, MESSAGESCHEMA) {
+
+  // function to initialise feedback object
+  $scope.initMessage = function (submitted) {
+    $scope.message = MESSAGESCHEMA.SCHEMA.getObject();
+    $scope.message.submitted = submitted;
+  };
+
+  if ($state.is(STATES.CONTACTUS)) {
+    $scope.title = 'Send Feedback';
+    $scope.thanks = 'Thank you for your feedback';
+    $scope.entryPrompt = 'Your Feedback';
+  } else if ($state.is(STATES.SUPPORT)) {
+    $scope.title = 'Support Request';
+    $scope.thanks = 'Thank you for your request, you will receive a response as soon as possible.';
+    $scope.entryPrompt = 'Details';
+  }
+
+  $scope.initMessage();
+}
 
 

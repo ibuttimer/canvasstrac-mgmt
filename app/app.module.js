@@ -2,9 +2,9 @@
 /*global angular */
 'use strict';
 
-angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordova', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon', 'chart.js'])
+angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordova', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon', 'chart.js', 'ngIdle', 'timer'])
 
-  .config(['$stateProvider', '$urlRouterProvider', 'STATES', 'MENUS', function ($stateProvider, $urlRouterProvider, STATES, MENUS) {
+  .config(['$stateProvider', '$urlRouterProvider', 'STATES', function ($stateProvider, $urlRouterProvider, STATES) {
 
     var getUrl = function (state, param) {
         var splits = state.split('.'),
@@ -87,7 +87,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             views: {
               'content@': {
                 templateUrl : 'users/userdash.html',
-                controller  : 'UserController'
+                controller  : 'UserDashController'
               }
             }
           }
@@ -147,7 +147,7 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             views: {
               'content@': {
                 templateUrl : 'elections/electiondash.html',
-                controller  : 'ElectionController'
+                controller  : 'ElectionDashController'
               }
             }
           }
@@ -263,7 +263,8 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             controller  : 'HeaderController'
           },
           'content': {
-            templateUrl : 'views/home.html'
+            templateUrl : 'views/home.html',
+            controller  : 'HomeController'
           },
           'footer': {
             templateUrl : 'layout/footer.html',
@@ -305,6 +306,17 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             controller  : 'ContactController'
           }
         }
+      })
+
+      // route for the support page
+      .state(STATES.SUPPORT, {
+        url: getUrl(STATES.SUPPORT),
+        views: {
+          'content@': {
+            templateUrl : 'views/contactus.html',
+            controller  : 'ContactController'
+          }
+        }
       });
 
     routes.forEach(function (route) {
@@ -314,4 +326,10 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
     });
 
     $urlRouterProvider.otherwise(otherwisePath);
+  }])
+  .config(['IdleProvider', 'KeepaliveProvider', 'CONFIG', function(IdleProvider, KeepaliveProvider, CONFIG) {
+    // configure Idle settings
+    IdleProvider.idle(CONFIG.AUTOLOGOUT); // in seconds
+    IdleProvider.timeout(CONFIG.AUTOLOGOUTCOUNT); // in seconds
+    KeepaliveProvider.interval(CONFIG.TOKENREFRESH); // in seconds
   }]);

@@ -4,15 +4,22 @@
 
 angular.module('canvassTrac')
 
+  .constant('QUESACTION', (function () {
+    return {
+      NEW: 'new',
+      VIEW: 'view',
+      EDIT: 'edit'
+    };
+  })())
   .controller('QuestionController', QuestionController);
 
 /* Manually Identify Dependencies
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-QuestionController.$inject = ['$scope', 'questionFactory', 'NgDialogFactory', 'questionTypes'];
+QuestionController.$inject = ['$scope', 'questionFactory', 'NgDialogFactory', 'questionTypes', 'QUESACTION'];
 
-function QuestionController($scope, questionFactory, NgDialogFactory, questionTypes) {
+function QuestionController($scope, questionFactory, NgDialogFactory, questionTypes, QUESACTION) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
@@ -27,26 +34,18 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
     $scope.showRankingNumber = false;
   }
 
-  
-  
-  var ACTIONS = {
-    NEW: 'new',
-    VIEW: 'view',
-    EDIT: 'edit'
-  };
-  
   /* function implementation
   -------------------------- */
 
   function getTitle() {
     $scope.editDisabled = true;
     var title;
-    if ($scope.ngDialogData.action === ACTIONS.NEW) {
+    if ($scope.ngDialogData.action === QUESACTION.NEW) {
       title = 'Create Question';
       $scope.editDisabled = false;
-    } else if ($scope.ngDialogData.action === ACTIONS.VIEW) {
+    } else if ($scope.ngDialogData.action === QUESACTION.VIEW) {
       title = 'View Question';
-    } else if ($scope.ngDialogData.action === ACTIONS.EDIT) {
+    } else if ($scope.ngDialogData.action === QUESACTION.EDIT) {
       title = 'Update Question';
       $scope.editDisabled = false;
     } else {
@@ -57,11 +56,11 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
 
   function getOkText() {
     var text;
-    if ($scope.ngDialogData.action === ACTIONS.NEW) {
+    if ($scope.ngDialogData.action === QUESACTION.NEW) {
       text = 'Create';
-    } else if ($scope.ngDialogData.action === ACTIONS.VIEW) {
+    } else if ($scope.ngDialogData.action === QUESACTION.VIEW) {
       text = 'OK';
-    } else if ($scope.ngDialogData.action === ACTIONS.EDIT) {
+    } else if ($scope.ngDialogData.action === QUESACTION.EDIT) {
       text = 'Update';
     } else {
       text = '';
@@ -70,7 +69,6 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
   }
 
   function selectedItemChanged(item, value) {
-    console.log(item, value);
     if ((item === 'qtype') || (item === 'init')) {
       var typeId = value.type.type,
         showNumOpts = (questionFactory.showQuestionOptions(typeId) &&
@@ -84,10 +82,6 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
       
       $scope.showNumOptions = showNumOpts;
       $scope.showRankingNumber = showRankingNum;
-      
-      console.log(item + ' after', value);
-
-
     } else if (item === 'numopts') {
       if (value.options === undefined) {
         value.options = [];

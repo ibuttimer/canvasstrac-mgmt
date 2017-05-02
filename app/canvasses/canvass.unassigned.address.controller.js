@@ -12,11 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassUnassignedAddressController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'addressFactory', 'RES', 'UTIL'];
+CanvassUnassignedAddressController.$inject = ['$scope', 'addressFactory', 'RES', 'UTIL'];
 
-function CanvassUnassignedAddressController($scope, $rootScope, $state, $stateParams, addressFactory, RES, UTIL) {
-
-  console.log('CanvassUnassignedAddressController id', $stateParams.id);
+function CanvassUnassignedAddressController($scope, addressFactory, RES, UTIL) {
 
   $scope.list = addressFactory.getList(RES.UNASSIGNED_ADDR);
   $scope.sortOptions = $scope.list.sortOptions;

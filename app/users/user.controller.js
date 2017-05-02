@@ -4,74 +4,34 @@
 
 angular.module('canvassTrac')
 
-  .controller('UserController', UserController)
-
-  .filter('filterDashUser', ['UTIL', function (UTIL) {
-    return function (input, name, op, role) {
-      
-      if (!op) {
-        op = UTIL.OP_OR;
-      }
-      var out = [];
-      if (name || role) {
-        // filter by name & role values for 
-        angular.forEach(input, function (user) {
-          var nameOk,
-            roleOk,
-            username = user.person.firstname + ' ' + user.person.lastname;
-
-          if (name) {
-            nameOk = (username.toLowerCase().indexOf(name) >= 0);
-          } else {
-            nameOk = false;
-          }
-          if (role) {
-            roleOk = (user.role._id === role);
-          } else {
-            roleOk = false;
-          }
-          if (((op === UTIL.OP_OR) && (nameOk || roleOk)) ||
-              ((op === UTIL.OP_AND) && (nameOk && roleOk))) {
-            out.push(user);
-          }
-        });
-      } else {
-        out = input;
-      }
-      return out;
-    };
-  }]);
+  .controller('UserController', UserController);
 
 /* Manually Identify Dependencies
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA', 'STATES', 'UTIL'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'consoleService', 'controllerUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, ADDRSCHEMA, PEOPLESCHEMA, STATES, UTIL) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, consoleService, controllerUtilFactory, ADDRSCHEMA, PEOPLESCHEMA) {
 
-  console.log('UserController id', $stateParams.id);
+  var con = consoleService.getLogger('UserController');
 
-  STATES.SET_SCOPE_VARS($scope, 'USERS');
+  con.log('UserController id', $stateParams.id);
+
+  controllerUtilFactory.setScopeVars('USERS', $scope);
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
-  $scope.userFilterOps = UTIL.OP_LIST;
-  $scope.initUserFilter = initUserFilter;
-  $scope.toggleSelection = toggleSelection;
   $scope.getTitle = getTitle;
-  $scope.selectedCnt = 0;
-  $scope.editDisabled = true;
-  $scope.initUser = initUser;
   $scope.processForm = processForm;
-  $scope.viewUser = viewUser;
-  $scope.editUser = editUser;
-  $scope.confirmDelete = confirmDelete;
-  $scope.stateIs = stateFactory.stateIs;
-  $scope.stateIsNot = stateFactory.stateIsNot;
-  $scope.stateIncludes = stateFactory.stateIncludes;
-  $scope.menuStateIs = stateFactory.menuStateIs;
-  
-  initUserFilter();
+
+  $scope.changeStateParam = changeStateParam;
+  $scope.singleDelete = singleDelete;
+  $scope.getStateButton = getStateButton;
+
+  $scope.gotoDash = gotoDash;
+
+  stateFactory.addInterface($scope);  // add stateFactory menthods to scope
+
   initUser($stateParams.id);
 
   // get list of roles selecting name field, _id field is always provided
@@ -80,60 +40,17 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
       // success function
       function (response) {
         // response is actual data
-        
-        console.log(response);
-        
         $scope.roles = response;
       },
       // error function
       function (response) {
         // response is message
-        $scope.message = 'Error: ' + response.status + ' ' + response.statusText;
+        NgDialogFactory.error(response);
       }
     );
 
-  $scope.users = userFactory.getUsers().query(
-    // success function
-    function (response) {
-      // response is actual data
-      $scope.users = response;
-//        $scope.showMenu = true;
-    },
-    // error function
-    function (response) {
-      // repose is message
-      $scope.message = 'Error: ' + response.status + ' ' + response.statusText;
-    }
-  );
-
-
-  
-  
   /* function implementation
   -------------------------- */
-
-  function initUserFilter() {
-    $scope.userFilterText = undefined;
-    $scope.userFilterRole = undefined;
-    $scope.userFilterOp = undefined;
-    $scope.userSelectList = undefined;
-    $scope.selectedCnt = utilFactory.initSelected($scope.users);
-  }
-  
-  function toggleSelection(entry) {
-    $scope.selectedCnt = utilFactory.toggleSelection(entry, $scope.selectedCnt);
-    switch ($scope.selectedCnt) {
-      case 1:
-        if (entry.isSelected) {
-          $scope.user = entry;
-          break;
-        }
-        /* falls through */
-      default:
-        initUser();
-        break;
-    }
-  }
 
   function getTitle() {
     $scope.editDisabled = true;
@@ -157,7 +74,7 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
     if ($state.is($scope.newState)) {
       createUser();
     } else if ($state.is($scope.viewState)) {
-      $state.go($scope.dashState);
+      gotoDash();
     } else if ($state.is($scope.editState)) {
       updateUser();
     }
@@ -179,13 +96,13 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
           // success function
           function (response) {
             
-            console.log('response', response);
+            con.log('response', response);
             
             var user = {
               // from user model
               username: response.username,
               role: response.role._id,
-              id: response._id
+              _id: response._id
             };
 
             copyProperties(response.person, user, PEOPLESCHEMA.SCHEMA, [
@@ -238,14 +155,14 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
 
   function createUser() {
 
-    console.log('createUser', $scope.user);
+    con.log('createUser', $scope.user);
 
     userFactory.getUsers().save($scope.user)
       .$promise.then(
         // success function
-        function (response) {
-          $scope.initUser();
-          $state.go($scope.dashState);
+        function (/*response*/) {
+          initUser();
+          gotoDash();
         },
         // error function
         function (response) {
@@ -257,14 +174,14 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
 
   function updateUser() {
 
-    console.log('updateUser', $scope.user);
+    con.log('updateUser', $scope.user);
 
-    userFactory.getUsers().update({id: $scope.user.id}, $scope.user)
+    userFactory.getUsers().update({id: $scope.user._id}, $scope.user)
       .$promise.then(
         // success function
-        function (response) {
-          $scope.initUser();
-          $state.go($scope.dashState);
+        function (/*response*/) {
+          initUser();
+          gotoDash();
         },
         // error function
         function (response) {
@@ -274,26 +191,28 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
       );
   }
 
-  function viewUser() {
-    $state.go($scope.viewState, {id: $scope.user._id});
+  function changeStateParam () {
+    return {
+      id: $scope.user._id
+    };
   }
 
-  function editUser() {
-    $state.go($scope.editState, {id: $scope.user._id});
+  function singleDelete() {
+    userService.confirmDeleteUser($scope, [$scope.user],
+      // success function
+      function (/*response*/) {
+        gotoDash();
+      });
   }
 
-  function confirmDelete() {
-    $scope.userSelectList = [];
-
-    angular.forEach($scope.users, function (user) {
-      if (user.isSelected) {
-        $scope.userSelectList.push(user);
-      }
-    });
-
-    NgDialogFactory.open({ template: 'users/confirmdelete.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'UserController' });
+  function getStateButton (state) {
+    return userService.getStateButton($scope, state);
   }
-  
-  
+
+  function gotoDash() {
+    $state.go($scope.dashState);
+  }
+
+
 }
 

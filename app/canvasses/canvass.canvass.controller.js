@@ -11,11 +11,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassCanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'RES'];
+CanvassCanvassController.$inject = ['$scope', 'canvassFactory', 'electionFactory', 'NgDialogFactory', 'RES'];
 
-function CanvassCanvassController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, RES) {
-
-  console.log('CanvassCanvassController id', $stateParams.id);
+function CanvassCanvassController($scope, canvassFactory, electionFactory, NgDialogFactory, RES) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
 
@@ -30,7 +28,7 @@ function CanvassCanvassController($scope, $rootScope, $state, $stateParams, $fil
       // error function
       function (response) {
         // response is message
-        $scope.message = 'Error: ' + response.status + ' ' + response.statusText;
+        NgDialogFactory.error(response, 'Unable to retrieve Elections');
       }
     );
   

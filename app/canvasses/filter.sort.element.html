@@ -4,7 +4,7 @@
   <button type="button" class="btn btn-warning btn-sm" ng-click="filterList(list,'c')"><i class="fa fa-eraser" aria-hidden="true"></i>&nbsp;Clear</button>
 </div>
 <p>Sort by:
-  <select ng-model="list.sortBy" ng-change="sortList(list, pager)" 
+  <select class="form-control" ng-model="list.sortBy" ng-change="sortList(list, pager)"
   ng-options="sortOpt.name for sortOpt in sortOptions track by sortOpt.value">
   </select>
 </p>

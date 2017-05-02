@@ -13,9 +13,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-LoginController.$inject = ['$scope', '$rootScope', 'NgDialogFactory', 'authFactory', 'CONFIG'];
+LoginController.$inject = ['$scope', '$state', '$rootScope', 'NgDialogFactory', 'Idle', 'authFactory', 'timerFactory', 'CONFIG', 'STATES'];
 
-function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFIG) {
+function LoginController($scope, $state, $rootScope, NgDialogFactory, Idle, authFactory, timerFactory, CONFIG, STATES) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.doLogin = doLogin;
@@ -27,6 +27,9 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFI
   $scope.devmode = CONFIG.DEV_MODE;
   if (CONFIG.DEV_MODE) {
     $scope.devCredentials = devCredentials;
+    $scope.devUser1 = CONFIG.DEV_USER1;
+    $scope.devUser2 = CONFIG.DEV_USER2;
+    $scope.devUser3 = CONFIG.DEV_USER3;
   }
 
   /* function implementation
@@ -34,26 +37,37 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFI
 
   function loginSuccess (/*response*/) {
     $rootScope.$broadcast('login:Successful');
+    goHome();
+
+    // start idle watching, also starts the Keepalive service by default.
+    Idle.watch();
   }
 
-  function loginFailure (/*response*/) {
+  function loginFailure (response) {
     NgDialogFactory.error(response, 'Login Unsuccessful');
+    goHome();
+  }
+
+  function goHome() {
+    if ($state.is(STATES.APP)) {
+      $state.reload();
+    } else {
+      $state.go(STATES.APP);
+    }
+  }
+
+  function setSource(data) {
+    data.src = authFactory.SRC.WEB;
+    return data;
   }
 
   function doLogin() {
-    if($scope.rememberMe) {
-      authFactory.storeUserinfo($scope.loginData);
-    } else {
-      authFactory.removeUserinfo();
-    }
-
-    authFactory.login($scope.loginData, loginSuccess, loginFailure);
-
+    authFactory.login(setSource($scope.loginData), loginSuccess, loginFailure);
     NgDialogFactory.close();
   }
 
   function doFacebookLogin() {
-    authFactory.loginByFacebook($scope.loginData, loginSuccess, loginFailure);
+    authFactory.loginByFacebook(setSource($scope.loginData), loginSuccess, loginFailure);
     NgDialogFactory.close();
   }
 
@@ -62,10 +76,21 @@ function LoginController($scope, $rootScope, NgDialogFactory, authFactory, CONFI
   }
 
   // Quick hack for dev mode to enter user credentials
-  function devCredentials() {
+  function devCredentials(user) {
     // HACK username/password for dev
-    $scope.loginData.username = CONFIG.DEV_USER;
-    $scope.loginData.password = CONFIG.DEV_PASSWORD;
+    if (!$scope.loginData) {
+      $scope.loginData = {};
+    }
+    if (user === CONFIG.DEV_USER1) {
+      $scope.loginData.username = CONFIG.DEV_USER1;
+      $scope.loginData.password = CONFIG.DEV_PASSWORD1;
+    } else if (user === CONFIG.DEV_USER2) {
+      $scope.loginData.username = CONFIG.DEV_USER2;
+      $scope.loginData.password = CONFIG.DEV_PASSWORD2;
+    } else if (user === CONFIG.DEV_USER3) {
+      $scope.loginData.username = CONFIG.DEV_USER3;
+      $scope.loginData.password = CONFIG.DEV_PASSWORD3;
+    }
   }
 
 
@@ -80,7 +105,7 @@ function RegisterController ($scope, $rootScope, NgDialogFactory, authFactory) {
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.doRegister = doRegister;
 
-  $scope.register = {};
+  $scope.registration = {};
   $scope.loginData = {};
 
 
@@ -88,11 +113,9 @@ function RegisterController ($scope, $rootScope, NgDialogFactory, authFactory) {
     -------------------------- */
 
   function doRegister() {
-    console.log('Doing registration', $scope.registration);
-
     authFactory.register($scope.registration,
       // success functgion
-      function (response) {
+      function (/*response*/) {
         $rootScope.$broadcast('registration:Successful');
       },
       // failure function

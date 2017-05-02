@@ -20,13 +20,16 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', '$injector', 'canvassFactory', 'canvassAssignmentFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'SCHEMA_CONST', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'CANVASSASSIGN_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
+CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', '$injector', 'canvassFactory', 'canvassService', 'canvassAssignmentFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'consoleService', 'controllerUtilFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'SCHEMA_CONST', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'CANVASSASSIGN_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
 
-function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $injector, canvassFactory, canvassAssignmentFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
+function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $injector, canvassFactory, canvassService, canvassAssignmentFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, consoleService, controllerUtilFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
 
-  console.log('CanvassController id', $stateParams.id);
+  var con = consoleService.getLogger('CanvassController');
 
-  STATES.SET_SCOPE_VARS($scope, 'CANVASS');
+  con.debug('CanvassController id', $stateParams.id);
+
+  controllerUtilFactory.setScopeVars('CANVASS', $scope);
+
   $scope.tabs = {
     CANVASS_TAB: 0,
     SURVEY_TAB: 1,
@@ -56,8 +59,11 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
-  $scope.showButton = showButton;
-  $scope.changeState = changeState;
+
+  $scope.changeStateParam = changeStateParam;
+  $scope.singleDelete = singleDelete;
+  $scope.getStateButton = getStateButton;
+
   $scope.showTab = showTab;
   $scope.initTab = initTab;
   $scope.formatDate = utilFactory.formatDate;
@@ -66,12 +72,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
   $scope.gotoDash = gotoDash;
   $scope.nextTab = nextTab;
   $scope.prevTab = prevTab;
-  $scope.stateIs = stateFactory.stateIs;
-  $scope.stateIsNot = stateFactory.stateIsNot;
-  $scope.stateIncludes = stateFactory.stateIncludes;
-  $scope.menuStateIs = stateFactory.menuStateIs;
-  $scope.stateIsOneOf = stateFactory.stateIsOneOf;
-  $scope.stateIsNotOneOf = stateFactory.stateIsNotOneOf;
   $scope.setPage = setPage;
   $scope.incPage = incPage;
   $scope.decPage = decPage;
@@ -82,9 +82,10 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
   $scope.showPager = showPager;
   $scope.toggleItemSel = toggleItemSel;
   $scope.setItemSel = setItemSel;
-  $scope.confirmDelete = confirmDelete;
   $scope.requestCanvasserRole = requestCanvasserRole;
   $scope.getSurveyRspOptions = getSurveyRspOptions;
+
+  stateFactory.addInterface($scope);  // add stateFactory menthods to scope
 
   canvassFactory.setLabeller(labeller);
 
@@ -151,50 +152,29 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
     return title;
   }
 
-  function showButton (forState) {
-    var show = false;
-    if ($state.is($scope.newState)) {
-      // no buttons in newState
-    } else if ($state.is($scope.viewState)) {
-      switch (forState) {
-        case $scope.newState:
-        case $scope.editState:
-        case $scope.delState:
-          show = true;  // show new/edit/del
-          break;
-      }
-    } else if ($state.is($scope.editState)) {
-      switch (forState) {
-        case $scope.newState:
-        case $scope.viewState:
-        case $scope.delState:
-          show = true;  // show new/view/del
-          break;
-      }
-    }
-    return show;
+  function changeStateParam () {
+    return {
+      id: $scope.canvass._id
+    };
   }
 
-  function changeState (toState) {
-    var to = toState,
-      params;
-    if (toState === $scope.newState) {
-      // TODO add save changes check
-    } else if (toState === $scope.viewState) {
-      // TODO add save changes check
-      params = {id: $scope.canvass._id};
-    } else if (toState === $scope.editState) {
-      params = {id: $scope.canvass._id};
-    } else if (toState === $scope.delState) {
-      // TODO delState
-      to = undefined;
-    }
-    if (to) {
-      $state.go(to, params);
-    }
+  function singleDelete() {
+    var deleteList = [
+      JSON.parse(JSON.stringify($scope.canvass))
+    ];
+    deleteList[0].election = $scope.election;
+
+    canvassService.confirmDeleteCanvass($scope, deleteList,
+      // on success
+      function (/*response*/) {
+        gotoDash();
+      });
   }
 
-  
+  function getStateButton (state) {
+    return canvassService.getStateButton($scope, state);
+  }
+
   function showTab (tab) {
     var show = true;
     if ($state.is($scope.newState) || $state.is($scope.editState)) {
@@ -204,7 +184,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
     }
     return show;
   }
-
 
   function processForm () {
     if ($state.is($scope.newState) || $state.is($scope.editState)) {
@@ -264,6 +243,8 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
 
     $scope.survey = resources[RES.ACTIVE_SURVEY];
     $scope.backupSurvey = resources[RES.BACKUP_SURVEY];
+
+    $scope.election = resources[RES.ACTIVE_ELECTION];
   }
 
   function initItem(id) {
@@ -646,14 +627,14 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
       resource = canvassFactory.getCanvasses(),
       promise;
 
-    console.log('processCanvass', canvass);
+    con.log('processCanvass', canvass);
     
     if (action === RES.PROCESS_NEW) {
       promise = resource.save(canvass).$promise;
     } else if (action === RES.PROCESS_UPDATE) {
       var modified = !angular.equals(backupCanvass, canvass);
 
-      console.log('updateCanvass', modified);
+      con.log('updateCanvass', modified);
 
       if (modified) {   // object was modified
         promise = resource.update({id: canvass._id}, canvass).$promise;
@@ -746,14 +727,14 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
       resource = surveyFactory.getSurveys(),
       promise;
     
-    console.log('processSurvey', survey);
+    con.log('processSurvey', survey);
 
     if ((action === RES.PROCESS_NEW) || (action === RES.PROCESS_UPDATE_NEW)) {
       promise = resource.save(survey).$promise;
     } else if (action === RES.PROCESS_UPDATE) {
       var modified = !angular.equals(backupSurvey, survey);
 
-      console.log('updateSurvey', modified);
+      con.log('updateSurvey', modified);
 
       if (modified) {   // object was modified
         promise = resource.update({id: survey._id}, survey).$promise;
@@ -791,19 +772,6 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
     $state.go($scope.dashState);
   }
 
-  function confirmDelete (dialogOpts, onClose) {
-
-    var dialog = NgDialogFactory.open(dialogOpts);
-    
-    dialog.closePromise.then(function (data) {
-      if (!NgDialogFactory.isNgDialogCancel(data.value)) {
-        // perform delete
-        onClose(data);
-      }
-    });
-  }
-  
-  
   function nextTab () {
     if ($scope.activeTab < $scope.lastTab) {
       $scope.activeTab += 1;
@@ -909,7 +877,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
         // error function
         function (response) {
           // response is message
-          $scope.message = 'Error: ' + response.status + ' ' + response.statusText;
+          NgDialogFactory.error(response, 'Unable to retrieve Roles');
         }
       );
   }

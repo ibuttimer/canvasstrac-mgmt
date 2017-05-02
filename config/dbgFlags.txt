@@ -1,0 +1,16 @@
+# This file contains the list of consoleService enable/disable flag names.
+# Flag names should be added one per line. Lines beginning with '#' are ignored.
+
+storeFactory
+localStore
+surveyFactory
+canvassFactory
+electionFactory
+CanvassController
+CanvassActionController
+SurveyController
+HeaderController
+ElectionController
+CanvassController
+CanvassAddressController
+navService

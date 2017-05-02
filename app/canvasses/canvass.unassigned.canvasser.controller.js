@@ -12,11 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassUnassignedCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'userFactory', 'RES', 'UTIL'];
+CanvassUnassignedCanvasserController.$inject = ['$scope', 'userFactory', 'RES', 'UTIL'];
 
-function CanvassUnassignedCanvasserController($scope, $rootScope, $state, $stateParams, userFactory, RES, UTIL) {
-
-  console.log('CanvassUnassignedCanvasserController id', $stateParams.id);
+function CanvassUnassignedCanvasserController($scope, userFactory, RES, UTIL) {
 
   $scope.list = userFactory.getList(RES.UNASSIGNED_CANVASSER);
   $scope.sortOptions = $scope.list.sortOptions;

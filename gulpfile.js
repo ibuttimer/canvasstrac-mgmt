@@ -115,7 +115,15 @@ var vendorFiles = {
                 '!' + paths.vendor.src + 'chart.js/test/*.js',
                 '!' + paths.vendor.src + 'jquery/src/*.js',
                 '!' + paths.vendor.src + 'nya-bootstrap-select/e2e-test/*.js',
-                '!' + paths.vendor.src + 'nya-bootstrap-select/tasks/*.js'
+                '!' + paths.vendor.src + 'nya-bootstrap-select/tasks/*.js',
+                '!' + paths.vendor.src + 'ng-idle/src/**/*.js',
+                '!' + paths.vendor.src + 'angular-timer/test/**/*.js',
+                '!' + paths.vendor.src + 'angular-timer/docs/**/*.js',
+                '!' + paths.vendor.src + 'angular-timer/config/**/*.js',
+                '!' + paths.vendor.src + 'angular-timer/app/**/*.js',
+                '!' + paths.vendor.src + 'moment/benchmarks/**/*.js',
+                '!' + paths.vendor.src + 'moment/locale/**/*.js',
+                '!' + paths.vendor.src + 'moment/meteor/**/*.js'
   ]
 };
 
@@ -169,33 +177,64 @@ gulp.task('replace', function () {
     // Read the settings from the right file
     filename = env + '.json',
     settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
-    // basic patterns
-    patterns = [
-    // server/management app common settings
-      { match: 'baseURL', replacement: settings.baseURL },
-      { match: 'forceHttps', replacement: settings.forceHttps },
-      { match: 'httpPort', replacement: settings.httpPort },
-      { match: 'httpsPortOffset',  replacement: settings.httpsPortOffset },
-      // management app settings
-      { match: 'mapsApiKey', replacement: settings.mapsApiKey },
-      { match: 'DEV_MODE', replacement: settings.DEV_MODE },
-      { match: 'DEV_USER', replacement: settings.DEV_USER },
-      { match: 'DEV_PASSWORD', replacement: settings.DEV_PASSWORD }
-    ];
+    flags = fs.readFileSync(basePaths.config + 'dbgFlags.txt', 'utf8'),
+    patterns = [],
+    keyVal, dfltVal, setDflt;
 
-  // add dbg settins to patterns
-  [ 'storeFactory',
-    'localStorage',
-    'surveyFactory',
-    'canvassFactory',
-    'electionFactory',
-    'CanvassController',
-    'CanvassActionController',
-    'SurveyController',
-    'navService'
-  ].forEach(function (key) {
-    var keyVal = settings[key] || false;
-    patterns.push({ match: key, replacement: keyVal });
+    [ // server/management app common settings
+      { prop: 'baseURL', type: 'str' },
+      { prop: 'forceHttps', type: 'bool', dflt: true },
+      { prop: 'httpPort', type: 'num' },
+      { prop: 'httpsPortOffset', type: 'num' },
+      { prop: 'socketTimeout', type: 'num' },
+      { prop: 'disableAuth', type: 'bool', dflt: false },
+      // management app settings
+      { prop: 'mapsApiKey', type: 'str' },
+      { prop: 'autoLogout', type: 'num|str' },
+      { prop: 'autoLogoutCount', type: 'num|str' },
+      { prop: 'tokenRefresh', type: 'num|str' },
+      { prop: 'reloadMargin', type: 'num|str' },
+      { prop: 'DEV_MODE', type: 'bool', dflt: false },
+      { prop: 'DEV_USER1', type: 'str' },
+      { prop: 'DEV_PASSWORD1', type: 'str' },
+      { prop: 'DEV_USER2', type: 'str' },
+      { prop: 'DEV_PASSWORD2', type: 'str' },
+      { prop: 'DEV_USER3', type: 'str' },
+      { prop: 'DEV_PASSWORD3', type: 'str' }
+    ].forEach(function (key) {
+      keyVal = settings[key.prop];
+      setDflt = (keyVal === undefined);
+      if (!setDflt && (typeof keyVal === 'string')) {
+        setDflt = (keyVal.indexOf('@@') === 0); // no replacement in settings file
+      }
+      if (setDflt) {
+        dfltVal = undefined;
+
+        if (key.dflt) {
+          dfltVal = key.dflt;
+        } else if (key.type.indexOf('num') >= 0) {
+          dfltVal = '0';
+        } else if (key.type.indexOf('str') >= 0) {
+          dfltVal = '';
+        } else if (key.type.indexOf('bool') >= 0) {
+          dfltVal = false;
+        }
+        keyVal = dfltVal;
+      }
+      patterns.push({ match: key.prop, replacement: keyVal });
+    });
+
+  // TODO better method of setting debug options
+
+  // add dbg settings to patterns
+  flags.split('\n').forEach(function (key) {
+    if (key) {
+      var keyText = key.trim();
+      if (keyText.length && (keyText.indexOf('#') < 0)) {
+        keyVal = settings[keyText] || false;
+        patterns.push({ match: keyText, replacement: keyVal });
+      }
+    }
   });
 
   // Replace each placeholder with the correct value for the variable.
@@ -321,6 +360,8 @@ gulp.task('copyvendor', function () {
 
 // Watch
 gulp.task('watch', ['browser-sync'], function() {
+  // Watch less files
+  gulp.watch([appFiles.less], ['less']);
   // Watch js, css & html files
   gulp.watch([appFiles.scripts, appFiles.styles, appFiles.views], ['usemin']);
   // Watch image files

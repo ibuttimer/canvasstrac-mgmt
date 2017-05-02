@@ -2,7 +2,7 @@
   <form class="form-horizontal" name="assignmentForm" role="form" ng-submit="processForm()" novalidate>
 
     <div class="form-group">
-      <div class="col-sm-12">
+      <div class="col-sm-12 filter-box">
         <div class="col-sm-5">
           <h4>Addresses</h4>
           <p>Filter by: {{allocatedAddrFilterStr}}</p>
@@ -27,7 +27,7 @@
 
         <div class="col-sm-2">
           <p>Items per page</p>
-          <select id="allocperpage" name="allocperpage" ng-change="setPerPage([allocatedCanvasserPager,allocatedAddrPager],perPage)" ng-model="perPage"
+          <select class="form-control" id="allocperpage" name="allocperpage" ng-change="setPerPage([allocatedCanvasserPager,allocatedAddrPager],perPage)" ng-model="perPage"
           ng-options="perPage for perPage in perPageOpt">
           </select>
         </div>
@@ -92,10 +92,7 @@
         <div ng-include="'canvasses/tab.buttons.html'"></div>
       </div>
     </div>
-    <br />
-    <br />
+    <br>
+    <br>
   </form>
-
-
-
 </div>

@@ -12,11 +12,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAddressController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'RES'];
+CanvassAddressController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'consoleService', 'RES'];
 
-function CanvassAddressController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, resourceFactory, RES) {
+function CanvassAddressController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, resourceFactory, consoleService, RES) {
 
-  console.log('CanvassAddressController id', $stateParams.id);
+  var con = consoleService.getLogger('CanvassAddressController');
+
+  con.log('CanvassAddressController id', $stateParams.id);
 
   var MAX_DISP_PAGE = 5;
 
@@ -48,7 +50,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
     });
     
     var filter = RES.getFilterName(id);
-    $scope[filter] = storeFactory.newObj(filter, addressFactory.newFilter, storeFactory.CREATE_INIT);
+    $scope[filter] = storeFactory.newObj(filter, newFilter, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
     $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
@@ -57,11 +59,16 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
     addressFactory.setPager(id, $scope[pager]);
   }
   
-  function setFilter (id , filter) {
+  function newFilter (base) {
+    // new filter no blanks
+    return addressFactory.newFilter(base, false);
+  }
+
+  function setFilter (id, filter) {
     // unassignedAddrFilterStr or assignedAddrFilterStr
     var filterStr = RES.getFilterStrName(id);
     if (!filter) {
-      filter = addressFactory.newFilter();
+      filter = newFilter();
     }
     $scope[filterStr] = filter.toString();
 
@@ -83,7 +90,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
       resList.applyFilter();
     } else if (action === 'a') {  // no filter, get all
       setFilter(resList.id);
-      requestAddresses(resList);  // request all addresses
+      requestAddresses(resList, resList.filter);  // request all addresses
       
     } else {  // set filter
       var filter = angular.copy(resList.filter.filterBy);
@@ -94,7 +101,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
       dialog.closePromise.then(function (data) {
         if (!NgDialogFactory.isNgDialogCancel(data.value)) {
 
-          var filter = addressFactory.newFilter(data.value.filter);
+          var filter = newFilter(data.value.filter);
           
           var resList = setFilter(data.value.action, filter);
           if (resList) {
@@ -130,7 +137,7 @@ function CanvassAddressController($scope, $rootScope, $state, $stateParams, $fil
     ); // get database total address count
   }
 
-  function requestAddressCount (filter) {
+  function requestAddressCount () {
     $scope.dbAddrCount = addressFactory.getCount().get()
       .$promise.then(
         // success function

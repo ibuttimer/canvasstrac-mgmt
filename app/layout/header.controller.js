@@ -16,7 +16,7 @@ angular.module('canvassTrac')
       CRUMBS: []
     };
   })())
-  .config(['MENUS', 'STATES', function (MENUS, STATES) {
+  .config(['MENUS', 'STATES', 'ACCESS', function (MENUS, STATES, ACCESS) {
     /* Unicode code point   UTF-8 literal   html
       U+00A0	             \xc2\xa0	       &nbsp; */
     var prop,
@@ -30,6 +30,10 @@ angular.module('canvassTrac')
       electionDash = 'Elections',
       candidateDash = 'Candidates',
       canvassDash = 'Canvasses',
+      accessAllRead = { group: 'a', privilege: 'r' },
+      access1Read = { group: '1', privilege: 'r' },
+      access1Update = { group: '1', privilege: 'u' },
+      access1Create = { group: '1', privilege: 'c' },
 
       addToTree = function (entry) {
         if (!STATES.ISDISABLED(entry.sref)) {
@@ -68,7 +72,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.VOTINGSYS,
-              property: 'votingsys',
+              property: ACCESS.VOTINGSYS,  // NOTE: matches access property in login response
               value: {
                 header: votingSysDash,
                 items: [
@@ -78,7 +82,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.ROLES,
-              property: 'roles',
+              property: ACCESS.ROLES,  // NOTE: matches access property in login response
               value: {
                 header: rolesDash,
                 items: [
@@ -88,7 +92,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.USERS,
-              property: 'users',
+              property: ACCESS.USERS,  // NOTE: matches access property in login response
               value: {
                 header: userDash,
                 items: [
@@ -110,7 +114,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.ELECTION,
-              property: 'elections',
+              property: ACCESS.ELECTIONS,  // NOTE: matches access property in login response
               value: {
                 header: electionDash,
                 items: [
@@ -120,7 +124,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.CANDIDATE,
-              property: 'candidates',
+              property: ACCESS.CANDIDATES,  // NOTE: matches access property in login response
               value: {
                 header: candidateDash,
                 items: [
@@ -130,7 +134,7 @@ angular.module('canvassTrac')
               }
             },
             { sref: STATES.CANVASS,
-              property: 'canvass',
+              property: ACCESS.CANVASSES,  // NOTE: matches access property in login response
               value: {
                 header: canvassDash,
                 items: [
@@ -161,7 +165,10 @@ angular.module('canvassTrac')
       self.processEntry = function (entry) {
         if (entry.state) {
           if (entry.state.indexOf(self.root.sref) === 0) {
-            self.root.substates.push(entry.state);
+            self.root.substates.push({
+              state: entry.state,
+              access: entry.access
+            });
           }
         }
       };
@@ -169,7 +176,8 @@ angular.module('canvassTrac')
     // start with basic entries
     tree = [
       { state: STATES.APP, name: 'Home' },
-      { state: STATES.ABOUTUS, name: 'About' }
+      { state: STATES.ABOUTUS, name: 'About' },
+      { state: STATES.CONTACTUS, name: 'Contact' }
     ];
     if (!STATES.ISDISABLED(STATES.CAMPAIGN)) {
       tree.push({ state: STATES.CAMPAIGN, name: campaign });
@@ -180,45 +188,45 @@ angular.module('canvassTrac')
     // add entries from dropdown menus
     [
       { state: STATES.ELECTION, entries: [
-          { state: STATES.ELECTION, name: electionDash },
-          { state: STATES.ELECTION_VIEW, name: 'View Election' },
-          { state: STATES.ELECTION_EDIT, name: 'Update Election' },
-          { state: STATES.ELECTION_NEW, name: 'New Election' }
+          { state: STATES.ELECTION, name: electionDash, access: accessAllRead },
+          { state: STATES.ELECTION_VIEW, name: 'View Election', access: access1Read },
+          { state: STATES.ELECTION_EDIT, name: 'Update Election', access: access1Update },
+          { state: STATES.ELECTION_NEW, name: 'New Election', access: access1Create }
         ]
       },
       { state: STATES.CANDIDATE, entries: [
-          { state: STATES.CANDIDATE, name: candidateDash },
-          { state: STATES.CANDIDATE_VIEW, name: 'View Candidate' },
-          { state: STATES.CANDIDATE_EDIT, name: 'Update Candidate' },
-          { state: STATES.CANDIDATE_NEW, name: 'New Candidate' }
+          { state: STATES.CANDIDATE, name: candidateDash, access: accessAllRead },
+          { state: STATES.CANDIDATE_VIEW, name: 'View Candidate', access: access1Read },
+          { state: STATES.CANDIDATE_EDIT, name: 'Update Candidate', access: access1Update},
+          { state: STATES.CANDIDATE_NEW, name: 'New Candidate', access: access1Create }
         ]
       },
       { state: STATES.CANVASS, entries: [
-          { state: STATES.CANVASS, name: canvassDash },
-          { state: STATES.CANVASS_VIEW, name: 'View Canvass' },
-          { state: STATES.CANVASS_EDIT, name: 'Update Canvass' },
-          { state: STATES.CANVASS_NEW, name: 'New Canvass' }
+          { state: STATES.CANVASS, name: canvassDash, access: accessAllRead },
+          { state: STATES.CANVASS_VIEW, name: 'View Canvass', access: access1Read },
+          { state: STATES.CANVASS_EDIT, name: 'Update Canvass', access: access1Update },
+          { state: STATES.CANVASS_NEW, name: 'New Canvass', access: access1Create }
         ]
       },
       { state: STATES.VOTINGSYS, entries: [
-          { state: STATES.VOTINGSYS, name: votingSysDash },
-          { state: STATES.VOTINGSYS_VIEW, name: 'View Voting System' },
-          { state: STATES.VOTINGSYS_EDIT, name: 'Update Voting System' },
-          { state: STATES.VOTINGSYS_NEW, name: 'New Voting System' }
+          { state: STATES.VOTINGSYS, name: votingSysDash, access: accessAllRead },
+          { state: STATES.VOTINGSYS_VIEW, name: 'View Voting System', access: access1Read },
+          { state: STATES.VOTINGSYS_EDIT, name: 'Update Voting System', access: access1Update },
+          { state: STATES.VOTINGSYS_NEW, name: 'New Voting System', access: access1Create }
         ]
       },
       { state: STATES.ROLES, entries: [
-          { state: STATES.ROLES, name: rolesDash },
-          { state: STATES.ROLES_VIEW, name: 'View Role' },
-          { state: STATES.ROLES_EDIT, name: 'Update Role' },
-          { state: STATES.ROLES_NEW, name: 'New Role' }
+          { state: STATES.ROLES, name: rolesDash, access: accessAllRead },
+          { state: STATES.ROLES_VIEW, name: 'View Role', access: access1Read },
+          { state: STATES.ROLES_EDIT, name: 'Update Role', access: access1Update },
+          { state: STATES.ROLES_NEW, name: 'New Role', access: access1Create }
         ]
       },
       { state: STATES.USERS, entries: [
-          { state: STATES.USERS, name: userDash },
-          { state: STATES.USERS_VIEW, name: 'View User' },
-          { state: STATES.USERS_EDIT, name: 'Update User' },
-          { state: STATES.USERS_NEW, name: 'New User' }
+          { state: STATES.USERS, name: userDash, access: accessAllRead },
+          { state: STATES.USERS_VIEW, name: 'View User', access: access1Read },
+          { state: STATES.USERS_EDIT, name: 'Update User', access: access1Update },
+          { state: STATES.USERS_NEW, name: 'New User', access: access1Create }
         ]
       }
     ].forEach(function (cfgBlock) {
@@ -243,9 +251,11 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-HeaderController.$inject = ['$scope', '$state', '$rootScope', 'authFactory', 'stateFactory', 'NgDialogFactory', 'STATES', 'MENUS'];
+HeaderController.$inject = ['$scope', '$state', '$rootScope', 'Idle', 'authFactory', 'consoleService', 'stateFactory', 'NgDialogFactory', 'STATES', 'MENUS', 'CONFIG', 'USER', 'HOMESCRN'];
 
-function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory, NgDialogFactory, STATES, MENUS) {
+function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consoleService, stateFactory, NgDialogFactory, STATES, MENUS, CONFIG, USER, HOMESCRN) {
+
+  var con = consoleService.getLogger('HeaderController');
 
   $scope.status = {
     cfgIsOpen: false,
@@ -255,19 +265,17 @@ function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.setLoggedIn = setLoggedIn;
   $scope.openLogin = openLogin;
+  $scope.openSupport = openSupport;
   $scope.logOut = logOut;
 
-  stateFactory.addInterface($scope);  // add stateFactory menthod to scope
+  stateFactory.addInterface($scope);  // add stateFactory menthods to scope
 
   $scope.homeMenu = MENUS.HOME;
   $scope.aboutMenu = MENUS.ABOUT;
   $scope.contactMenu = MENUS.CONTACT;
-  $scope.campaignMenu = MENUS.CAMPAIGN;
-  $scope.configMenu = MENUS.CONFIG;
-
 
   makeBreadcrumb();
-  $scope.setLoggedIn(false);
+  $scope.setLoggedIn(CONFIG.NOAUTH ? false : true);
 
   $rootScope.$on('login:Successful', function () {
     $scope.setLoggedIn(true);
@@ -283,6 +291,55 @@ function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory
       makeBreadcrumb();
   });
 
+  $scope.$on('IdleStart', function() {
+		// the user appears to have gone idle
+    log('IdleStart:');
+	});
+
+	$scope.$on('IdleWarn', function(e, countdown) {
+		// follows after the IdleStart event, but includes a countdown until the user is considered timed out
+		// the countdown arg is the number of seconds remaining until then.
+		// you can change the title or display a warning dialog from here.
+		// you can let them resume their session by calling Idle.watch()
+    log('IdleWarn:', countdown);
+
+    if (countdown === CONFIG.AUTOLOGOUTCOUNT) {
+      openIdleTimeout();
+    }
+	});
+
+	$scope.$on('IdleTimeout', function() {
+		// timed out (meaning idleDuration + timeout has passed without any activity)
+    log('IdleTimeout:');
+	});
+
+	$scope.$on('IdleEnd', function() {
+		// the user has come back from AFK and is doing stuff. if you are warning them, you can use this to hide the dialog
+    log('IdleEnd:');
+	});
+
+	$scope.$on('Keepalive', function() {
+		// do something to keep the user's session alive
+    log('Keepalive:');
+
+    doRefresh();
+	});
+
+
+  if (USER.authenticated) {
+    // page reload, start idle watching, also starts the Keepalive service by default.
+    if (!Idle.running()) {
+      Idle.watch();
+
+      var time = Math.floor(USER.sessionLength / 1000); // convert to sec
+      time -= Idle.getIdle() - CONFIG.RELOADMARGIN;
+      if (time < 0) {
+        // session will expire before refresh event, so refresh now
+        doRefresh();
+      }
+    }
+  }
+
 
   /* function implementation
     -------------------------- */
@@ -291,25 +348,119 @@ function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory
    * Set logged in state
    * @param {boolean} loggedIn - logged in flag; false: force logged off state, true: state determined by authentication factory
    */
-  function setLoggedIn(loggedIn) {
+  function setLoggedIn(loggedIn, type) {
+    var showMenus,
+      override,
+      doConfigMenu,
+      doCampaignMenu;
     if (!loggedIn) {
       $scope.loggedIn = false;
       $scope.username = '';
+      showMenus = CONFIG.NOAUTH;  // show menus if authentication disabled
+      override = CONFIG.NOAUTH;   // override access check if authentication disabled
     } else {
-      $scope.loggedIn = authFactory.isAuthenticated();
-      $scope.username = authFactory.getUsername();
+      $scope.loggedIn = USER.authenticated;
+      $scope.username = USER.username;
+      showMenus = USER.authenticated;
+    }
+    // config menu's if need to show, or menu exists and not showing
+    doConfigMenu = doCampaignMenu = showMenus;
+    if (!showMenus) {
+      doConfigMenu = $scope.configMenu;
+      doCampaignMenu = $scope.campaignMenu;
+    }
+    if (doConfigMenu) {
+      $scope.configMenu = configMenuAccess(MENUS.CONFIG, override);
+    }
+    if (doCampaignMenu) {
+      $scope.campaignMenu = configMenuAccess(MENUS.CAMPAIGN, override);
+    }
+
+    if ($scope.loggedIn) {
+      HOMESCRN.message = undefined;
+    } else if (type === 'auto') {
+      HOMESCRN.message = 'Your session has expired, please login again to continue.';
     }
   }
 
-  function openLogin() {
+  function openLogin () {
     NgDialogFactory.open({ template: 'login/login.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'LoginController' });
   }
 
-  function logOut() {
-    authFactory.logout(function (/*response*/) {
-      $state.go('app');
+  function openSupport () {
+    $state.go(STATES.SUPPORT);
+  }
+
+  function openIdleTimeout () {
+
+    doRefresh();
+
+    var dialog = NgDialogFactory.open({
+      template: 'login/idlemodal.html',
+      scope: $scope, className: 'ngdialog-theme-default',
+      controller: 'IdleController',
+      data: {}
     });
-    $scope.setLoggedIn(false);
+
+    dialog.closePromise.then(function (data) {
+      if (!NgDialogFactory.isNgDialogCancel(data.value)) {
+        // stay logged in
+        Idle.watch();
+      } else {
+        // logout
+        autoLogOut();
+      }
+    });
+  }
+
+
+  function autoLogOut() {
+    log('autoLogOut:');
+    logOut('auto');
+
+    NgDialogFactory.errormessage('Session expired', 'Please login again.');
+  }
+
+  function logOut(type) {
+    Idle.unwatch();
+    authFactory.logout(function (/*response*/) {
+      // on success
+      loggedOut();
+    },
+    function (/*response*/) {
+      // on error
+      loggedOut();
+    });
+    $scope.setLoggedIn(false, type);
+  }
+
+  function loggedOut () {
+    // stop idle watching
+    if ($state.is(STATES.APP)) {
+      $state.reload();
+    } else {
+      $state.go(STATES.APP);
+    }
+  }
+
+
+  function doRefresh() {
+    if (!$scope.refreshInProgress) {
+      $scope.refreshInProgress = true;
+      $scope.lastRefresh = $scope.thisRefresh;
+      $scope.thisRefresh = Date.now();
+      authFactory.tokenRefresh(function () {
+        // on success
+        $scope.refreshInProgress = false;
+        log('refresh ok:', ($scope.thisRefresh - $scope.lastRefresh));
+      },
+      function (/*response*/) {
+        // on failure
+        $scope.refreshInProgress = false;
+
+        NgDialogFactory.errormessage('Session expired', 'Please login again.');
+      });
+    }
   }
 
   function makeBreadcrumb () {
@@ -350,6 +501,47 @@ function HeaderController ($scope, $state, $rootScope, authFactory, stateFactory
     return crumb;
   }
 
+  function configMenuAccess (baseMenu, override) {
+    var menu = {
+      root: baseMenu.root // copy root
+    },
+    substate,
+    count = 0;  // count of menu entries
 
+    Object.getOwnPropertyNames(baseMenu).forEach(function (name) {
+      if (name !== 'root') {
+        // NOTE: name is the property value from the MENUS config phase & matches the access property in the login response
+        menu[name] = {
+          header: baseMenu[name].header,
+          items: []
+        };
+        // add items to the menu if user has access
+        baseMenu[name].items.forEach(function (item) {
+          substate = menu.root.substates.find(function (state) {
+            return (state.state === item.sref);
+          });
+          if (substate) {
+            if (override ||
+                authFactory.hasAccess(name, substate.access.group, substate.access.privilege)) {
+              menu[name].items.push(item);
+              ++count;
+            }
+          }
+        });
+      }
+    });
+    if (!count) {
+      menu = undefined; // no menu items so no need for menu
+    }
+    return menu;
+  }
+
+
+  function log (title) {
+    if (con.isEnabled()) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      con.debug(title, Date.now(), args.concat(' '));
+    }
+  }
 
 }

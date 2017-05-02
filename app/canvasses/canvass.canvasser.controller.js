@@ -12,11 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory'];
+CanvassCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory'];
 
-function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory) {
-
-  console.log('CanvassCanvasserController id', $stateParams.id);
+function CanvassCanvasserController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory) {
 
   var MAX_DISP_PAGE = 5;
 
@@ -92,8 +90,11 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
     } else {  // set filter
       var filter = angular.copy(resList.filter.filterBy);
 
-      NgDialogFactory.openAndHandle({ template: 'people/personfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'PersonFilterController', 
-                    data: {action: resList.id, title: resList.title, filter: filter}},
+      NgDialogFactory.openAndHandle({
+          template: 'people/personfilter.html', scope: $scope,
+          className: 'ngdialog-theme-default', controller: 'PersonFilterController',
+          data: {action: resList.id, title: resList.title, filter: filter}
+        },
         // process function
         function (value) {
 
@@ -115,7 +116,7 @@ function CanvassCanvasserController($scope, $rootScope, $state, $stateParams, $f
   }
 
 
-  function requestUnassignedCanvassers (filter) {
+  function requestUnassignedCanvassers () {
     var resList = userFactory.getList(RES.UNASSIGNED_CANVASSER);
     if (resList) {
       requestCanvassers(resList);
