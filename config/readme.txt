@@ -64,15 +64,8 @@ The json config file should have the following format
   "DEV_USER3": "<<username for user 3 to use for quick login in development mode>>",
   "DEV_PASSWORD3": "<<password for user 3 to use for quick login in development mode>>"
 
-  "storeFactory": <<true to enable debug output, false otherwise>>,
-  "localStore": <<true to enable debug output, false otherwise>>,
-  "surveyFactory": <<true to enable debug output, false otherwise>>,
-  "canvassFactory": <<true to enable debug output, false otherwise>>,
-  "electionFactory": <<true to enable debug output, false otherwise>>,
-  "CanvassController": <<true to enable debug output, false otherwise>>,
-  "CanvassActionController": <<true to enable debug output, false otherwise>>,
-  "SurveyController": <<true to enable debug output, false otherwise>>,
-  "navService": <<true to enable debug output, false otherwise>>
+  // see dbgFlags.txt for list of debug flag names
+  // values are true to enable debug output, false otherwise
 
 
 }

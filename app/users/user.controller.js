@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'consoleService', 'controllerUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'consoleService', 'controllerUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, consoleService, controllerUtilFactory, ADDRSCHEMA, PEOPLESCHEMA) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, miscUtilFactory, consoleService, controllerUtilFactory, ADDRSCHEMA, PEOPLESCHEMA) {
 
   var con = consoleService.getLogger('UserController');
 

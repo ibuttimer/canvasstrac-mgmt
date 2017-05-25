@@ -53,11 +53,14 @@
   window.__env.DEV_PASSWORD3 = "@@DEV_PASSWORD3";
 
   /* TODO debug flags really need some work */
+  // client common flags
   window.__env.dbgstoreFactory = @@storeFactory;
   window.__env.dbglocalStore = @@localStore;
   window.__env.dbgsurveyFactory = @@surveyFactory;
   window.__env.dbgcanvassFactory = @@canvassFactory;
   window.__env.dbgelectionFactory = @@electionFactory;
+
+  //  mgmt client app flags
   window.__env.dbgCanvassController = @@CanvassController;
   window.__env.dbgCanvassActionController = @@CanvassActionController;
   window.__env.dbgSurveyController = @@SurveyController;
@@ -65,6 +68,5 @@
   window.__env.dbgElectionController = @@ElectionController;
   window.__env.dbgCanvassController = @@CanvassController;
   window.__env.dbgCanvassAddressController = @@CanvassAddressController;
-  window.__env.dbgnavService = @@navService;
 
 }(this));

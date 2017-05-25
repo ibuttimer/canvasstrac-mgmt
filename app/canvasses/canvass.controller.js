@@ -111,7 +111,7 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
               case $scope.tabs.SURVEY_TAB:
                 // survey tab specific init
                 if ($scope.survey) {
-                  utilFactory.initSelected($scope.survey.questions);
+                  miscUtilFactory.initSelected($scope.survey.questions);
                 }
                 break;
               case $scope.tabs.ADDRESS_TAB:
@@ -853,13 +853,13 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
   
   function toggleItemSel (ctrl, entry) {
     if (ctrl && !$scope.editDisabled) {
-      ctrl.selCount = utilFactory.toggleSelection(entry, ctrl.selCount);
+      ctrl.selCount = miscUtilFactory.toggleSelection(entry, ctrl.selCount);
     }
   }
   
   function setItemSel (ctrl, set) {
     if (ctrl) {
-      ctrl.selCount = utilFactory.setSelected(ctrl.list, set);
+      ctrl.selCount = miscUtilFactory.setSelected(ctrl, set);
     }
   }
 

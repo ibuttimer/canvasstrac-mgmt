@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'consoleService', 'STATES', 'UTIL', 'ELECTIONSCHEMA', 'RESOURCE_CONST'];
+ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'controllerUtilFactory', 'consoleService', 'STATES', 'ELECTIONSCHEMA', 'RESOURCE_CONST'];
 
-function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, consoleService, STATES, UTIL, ELECTIONSCHEMA, RESOURCE_CONST) {
+function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, controllerUtilFactory, consoleService, STATES, ELECTIONSCHEMA, RESOURCE_CONST) {
 
   var con = consoleService.getLogger('ElectionController');
 

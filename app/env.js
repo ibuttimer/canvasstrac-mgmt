@@ -34,6 +34,8 @@
   window.__env.httpsPortOffset = 443;
   window.__env.socketTimeout = 120000;
 
+  window.__env.disableAuth = false;
+
   // management app settings
   window.__env.mapsApiKey = "";
 
@@ -51,11 +53,14 @@
   window.__env.DEV_PASSWORD3 = "";
 
   /* TODO debug flags really need some work */
+  // client common flags
   window.__env.dbgstoreFactory = false;
   window.__env.dbglocalStore = false;
   window.__env.dbgsurveyFactory = true;
   window.__env.dbgcanvassFactory = true;
   window.__env.dbgelectionFactory = true;
+
+  //  mgmt client app flags
   window.__env.dbgCanvassController = true;
   window.__env.dbgCanvassActionController = true;
   window.__env.dbgSurveyController = true;
@@ -63,6 +68,5 @@
   window.__env.dbgElectionController = true;
   window.__env.dbgCanvassController = true;
   window.__env.dbgCanvassAddressController = false;
-  window.__env.dbgnavService = true;
 
 }(this));

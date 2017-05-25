@@ -21,9 +21,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL'];
+CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN'];
 
-function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL) {
+function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN) {
 
   var MAX_DISP_PAGE = 5,
     factories = {},
@@ -147,17 +147,26 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
     filterFunction(list, canvasserAssignmentTests, filter);
   }
 
+  /**
+   * Create a new filter
+   * @param   {object} factory Factory to create filter
+   * @param   {object} data    Base object to create filter from
+   * @returns {object} Filter
+   */
   function newFilter (factory, data) {
-    var filter = factory.newFilter(data);
+    var customFilter,
+      filter;
+    // override default customFunction with enhanced version
+    if (factory.NAME === 'addressFactory') {
+      customFilter = addrFilterFunction;
+    } else {
+      customFilter = cnvsrFilterFunction;
+    }
+
+    filter = factory.newFilter(data, customFilter, false);
     // add assignment specific fields
     if (data && data.assignment) {
       filter.filterBy.assignment = data.assignment;
-    }
-    // override default customFunction with enhanced version
-    if (factory.NAME === 'addressFactory') {
-      filter.customFunction = addrFilterFunction;
-    } else {
-      filter.customFunction = cnvsrFilterFunction;
     }
     return filter;
   }
@@ -238,8 +247,8 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
 
 
   function updateList (action) {
-    var addrList = utilFactory.getSelectedList($scope.allocatedAddr.list),
-      cnvsList = utilFactory.getSelectedList($scope.allocatedCanvasser.list),
+    var addrList = miscUtilFactory.getSelectedList($scope.allocatedAddr),
+      cnvsList = miscUtilFactory.getSelectedList($scope.allocatedCanvasser),
       aidx, cidx,
       canvasser, addr,
       clrSel;
@@ -272,8 +281,8 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
     }
 
     if (clrSel) {
-      $scope.setItemSel($scope.allocatedAddr, UTIL.CLR_SEL);
-      $scope.setItemSel($scope.allocatedCanvasser, UTIL.CLR_SEL);
+      $scope.setItemSel($scope.allocatedAddr, miscUtilFactory.CLR_SEL);
+      $scope.setItemSel($scope.allocatedCanvasser, miscUtilFactory.CLR_SEL);
     }
   }
 

@@ -45,9 +45,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionDashController.$inject = ['$scope', '$rootScope', '$state', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'ELECTIONSCHEMA', 'STATES', 'UTIL'];
+ElectionDashController.$inject = ['$scope', '$rootScope', '$state', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'miscUtilFactory', 'ELECTIONSCHEMA', 'STATES', 'UTIL'];
 
-function ElectionDashController($scope, $rootScope, $state, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, ELECTIONSCHEMA, STATES, UTIL) {
+function ElectionDashController($scope, $rootScope, $state, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, miscUtilFactory, ELECTIONSCHEMA, STATES, UTIL) {
 
   controllerUtilFactory.setScopeVars('ELECTION', $scope);
 
@@ -136,7 +136,7 @@ function ElectionDashController($scope, $rootScope, $state, votingsystemFactory,
 
 
   function dashDelete() {
-    var selectedList = utilFactory.getSelectedList($scope.elections);
+    var selectedList = miscUtilFactory.getSelectedList($scope.elections);
     electionService.confirmDeleteElection($scope, selectedList,
       // success function
       function (/*response*/) {

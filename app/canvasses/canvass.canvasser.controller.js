@@ -12,9 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassCanvasserController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory'];
+CanvassCanvasserController.$inject = ['$scope', '$state', '$filter', 'NgDialogFactory', 'miscUtilFactory', 'controllerUtilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'userFactory'];
 
-function CanvassCanvasserController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory) {
+function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, userFactory) {
 
   var MAX_DISP_PAGE = 5;
 
@@ -141,48 +141,9 @@ function CanvassCanvasserController($scope, $rootScope, $state, $filter, canvass
   }
 
   function updateList (fromList, toList) {
-    var selList,
-      moveList = [];  // addr to be moved, i.e. not in target
 
-    selList = utilFactory.getSelectedList(fromList.list);
-    
-    if (selList.length > 0) {
-      selList.forEach(function (element) {
-        var i;
-        for (i = 0; i < toList.list.length; ++i) {
-          if (element._id === toList.list[i]._id) {
-            break;
-          }
-        }
-        if (i === toList.list.length) {
-          // not in target so needs to be moved
-          moveList.push(element);
-        }
-        
-        utilFactory.toggleSelection(element);
-      });
-      
-      // remove all selected from source
-      utilFactory.arrayRemove(fromList.list, selList);
-      fromList.selCount = 0;
-    }
-    
-    if (moveList.length > 0) {
-
-      utilFactory.arrayAdd(toList.list, moveList, function (array, add) {
-        for (var i = 0; i < array.length; ++i) {
-          if (add._id === array[i]._id) {
-            return false; // already in array
-          }
-        }
-        return true;  // not found, so add
-      });
-    }
-    
-    [fromList, toList].forEach(function (resList) {
-      sortList(resList);
-      resList.count = resList.list.length;
-      resList.applyFilter();
+    controllerUtilFactory.moveListSelected(fromList, toList, function (item1, item2) {
+      return (item1._id === item2._id);
     });
   }
   

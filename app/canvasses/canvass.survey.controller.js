@@ -11,9 +11,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'questionFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'QUESACTION', 'UTIL', 'RES'];
+CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'questionFactory', 'addressFactory', 'miscUtilFactory', 'NgDialogFactory', 'stateFactory', 'QUESACTION', 'RES'];
 
-function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, questionFactory, addressFactory, NgDialogFactory, stateFactory, utilFactory, QUESACTION, UTIL, RES) {
+function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, questionFactory, addressFactory, miscUtilFactory, NgDialogFactory, stateFactory, QUESACTION, RES) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.toggleQuestionSel = toggleQuestionSel;
@@ -54,11 +54,11 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
   -------------------------- */
 
   function toggleQuestionSel (entry) {
-    $scope.selQuestionCnt = utilFactory.toggleSelection(entry, $scope.selQuestionCnt);
+    $scope.selQuestionCnt = miscUtilFactory.toggleSelection(entry, $scope.selQuestionCnt);
   }
 
   function countQuestionSel () {
-    $scope.selQuestionCnt = utilFactory.countSelected($scope.questions.list);
+    $scope.selQuestionCnt = miscUtilFactory.countSelected($scope.questions);
   }
 
   function haveSurveyQuestions () {
@@ -67,24 +67,24 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
 
   function questionSelUnSel (action) {
     if (haveSurveyQuestions()) {
-      $scope.selQuestionCnt = utilFactory.setSelected($scope.questions.list, action);
+      $scope.selQuestionCnt = miscUtilFactory.setSelected($scope.questions, action);
     } else {
       $scope.selQuestionCnt = 0;
     }
   }
 
   function questionSelClear () {
-    questionSelUnSel(UTIL.CLR_SEL);
+    questionSelUnSel(miscUtilFactory.CLR_SEL);
   }
 
   function questionSelAll () {
-    questionSelUnSel(UTIL.SET_SEL);
+    questionSelUnSel(miscUtilFactory.SET_SEL);
   }
 
 
   function questionDelete () {
     if (haveSurveyQuestions()) {
-      var selectedList = utilFactory.getSelectedList($scope.questions.list);
+      var selectedList = miscUtilFactory.getSelectedList($scope.questions);
       confirmDeleteQuestion(selectedList);
     }
   }
@@ -150,17 +150,15 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
       qdata = {};
     } else if ((action === QUESACTION.VIEW) || (action === QUESACTION.EDIT)) {
       
-      for (var i = 0; i < $scope.questions.list.length; ++i) {
-        if ($scope.questions.list[i].isSelected) {
-          qdata = angular.copy($scope.questions.list[i]);
-          // change qdata.type to a question type object as expected by dialog
-          qdata.type = questionFactory.getQuestionTypeObj(qdata.type);
-          // set numoptions as that's not part of the model but needed by dialog
-          qdata.numoptions = 0;
-          if (qdata.type.showOptions && qdata.options) {
-            qdata.numoptions = qdata.options.length;
-          }
-          break;
+      qdata = miscUtilFactory.findSelected($scope.questions);
+      if (qdata) {
+        qdata = angular.copy(qdata);
+        // change qdata.type to a question type object as expected by dialog
+        qdata.type = questionFactory.getQuestionTypeObj(qdata.type);
+        // set numoptions as that's not part of the model but needed by dialog
+        qdata.numoptions = 0;
+        if (qdata.type.showOptions && qdata.options) {
+          qdata.numoptions = qdata.options.length;
         }
       }
     } 
@@ -235,9 +233,6 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
               }
             );
         }
-        
-        // clear selected question list
-//        initSelected($scope.survey.questions);
       }
     });
 

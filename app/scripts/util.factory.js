@@ -8,10 +8,6 @@ angular.module('canvassTrac')
     var and = 'And',
       or = 'Or';
     return {
-      SET_SEL: 's',
-      CLR_SEL: 'c',
-      TOGGLE_SEL: 't',
-
       OP_AND: and,
       OP_OR: or,
       OP_LIST: [and, or]
@@ -25,19 +21,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-utilFactory.$inject = ['$rootScope', 'miscUtilFactory', 'UTIL'];
+utilFactory.$inject = ['$rootScope', 'miscUtilFactory'];
 
-function utilFactory ($rootScope, miscUtilFactory, UTIL) {
+function utilFactory ($rootScope, miscUtilFactory) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   var factory = {
     formatDate: formatDate,
-    initSelected: initSelected,
-    selectAll: selectAll,
-    setSelected: setSelected,
-    getSelectedList: getSelectedList,
-    countSelected: countSelected,
-    toggleSelection: toggleSelection,
     arrayAdd: arrayAdd,
     arrayRemove: arrayRemove
   };
@@ -51,110 +41,6 @@ function utilFactory ($rootScope, miscUtilFactory, UTIL) {
     return new Date(date).toDateString();
   }
 
-  /**
-   * Initialise the 'selected' property of all objects in an array
-   * @param {Array}    list     Array of objects to initialise
-   * @param {function} callback Optional function to call with each element
-   */
-  function initSelected(list, callback) {
-    return setSelected(list, UTIL.CLR_SEL, callback);
-  }
-  
-  /**
-   * Set the 'selected' property of all objects in an array
-   * @param {Array}    list     Array of objects to initialise
-   * @param {function} callback Optional function to call with each element
-   */
-  function selectAll(list, callback) {
-    return setSelected(list, UTIL.SET_SEL, callback);
-  }
-
-  /**
-   * Set the 'selected' state of all the entries in the array
-   * @param {Array}    list     Array to set
-   * @param {boolean}  set      Value to set; one of UTIL.SET_SEL, UTIL.CLR_SEL or UTIL.TOGGLE_SEL
-   * @param {function} callback Optional function to call with each element
-   */
-  function setSelected(list, set, callback) {
-    var selCount = 0;
-    if (list) {
-      var forceSet = (set === UTIL.SET_SEL),
-        forceClr = (set === UTIL.CLR_SEL),
-        toggle = (set === UTIL.TOGGLE_SEL);
-      if (forceSet || forceClr || toggle) {
-        angular.forEach(list, function (entry) {
-          if (forceSet || (toggle && !entry.isSelected)) {
-            entry.isSelected = true;
-          } else if (entry.isSelected) {
-            delete entry.isSelected;
-          }
-          if (entry.isSelected) {
-            ++selCount;
-          }
-          if (callback) {
-            callback(entry);
-          }
-        });
-      }
-    }
-    return selCount;
-  }
-  
-  /**
-   * Return an array of 'selected' entries 
-   * @param   {Array} fullList Array to extract selected items from
-   * @returns {Array} Array of selected items
-   */
-  function getSelectedList (fullList) {
-    var selectedList = [];
-
-    angular.forEach(fullList, function (entry) {
-      if (entry.isSelected) {
-        selectedList.push(entry);
-      }
-    });
-    return selectedList;
-  }
-
-  
-  /**
-   * Return number of 'selected' entries
-   * @param   {Array} fullList Array to count selected items from
-   * @returns {number} Number of selected items
-   */
-  function countSelected (fullList) {
-    var count = 0;
-
-    angular.forEach(fullList, function (entry) {
-      if (entry.isSelected) {
-        ++count;
-      }
-    });
-    return count;
-  }
-
-
-  /**
-   * Toggle an object's 'selected' state
-   * @param   {object} entry Object to toggle state of
-   * @param   {number} count Current selected count
-   * @returns {number} Updated selected count
-   */
-  function toggleSelection (entry, count) {
-    if (count === undefined) {
-      count = 0;
-    }
-    if (!entry.isSelected) {
-      entry.isSelected = true;
-      count += 1;
-    } else {
-      entry.isSelected = false;
-      count -= 1;
-    }
-    return count;
-  }
-
-  
   /**
    * Add item(s) to an array based on the result of a test function
    * @throws {TypeError} Thrown when incorrect arguments provided

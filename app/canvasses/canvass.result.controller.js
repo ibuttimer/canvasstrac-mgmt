@@ -12,9 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassResultController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'canvassResultFactory', 'questionFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'CANVASSRES_SCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'UTIL', 'QUESTIONSCHEMA', 'CHARTS'];
+CanvassResultController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'canvassResultFactory', 'questionFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'RES', 'ADDRSCHEMA', 'CANVASSRES_SCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'QUESTIONSCHEMA', 'CHARTS'];
 
-function CanvassResultController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, utilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, UTIL, QUESTIONSCHEMA, CHARTS) {
+function CanvassResultController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, QUESTIONSCHEMA, CHARTS) {
 
   var MAX_DISP_PAGE = 5,
     factories = {},
@@ -47,7 +47,6 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterList = filterList;
-  $scope.updateList = updateList;
   $scope.sortList = sortList;
   $scope.getQuestionTypeName = questionFactory.getQuestionTypeName;
   $scope.showPieChart = showPieChart;
@@ -469,56 +468,5 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
 
   }
 
-
-  function updateList (action) {
-    var addrList = utilFactory.getSelectedList($scope.allocatedAddr.list),
-      cnvsList = utilFactory.getSelectedList($scope.allocatedCanvasser.list),
-      aidx, cidx,
-      canvasser, addr,
-      clrSel;
-
-    if (action === 'alloc') {
-      clrSel = true;
-      for (aidx = 0; aidx < addrList.length; ++aidx) {
-        addr = addrList[aidx];
-
-        unlinkAddress(addr);  // unlink addr from previous
-
-        for (cidx = 0; cidx < cnvsList.length; ++cidx) {
-          canvasser = cnvsList[cidx];
-          canvassFactory.linkCanvasserToAddr(canvasser, addr);
-        }
-      }
-    } else if (action === 'unalloc') {
-      clrSel = true;
-
-      // unallocate all addresses allocated to selected canvassers
-      cnvsList.forEach(function (unallocCnvsr) {
-        canvassFactory.unlinkAddrListFromCanvasser(unallocCnvsr, $scope.allocatedAddr.list);
-      });
-      // unallocate all selected addresses
-      addrList.forEach(function (unallocAddr) {
-        unlinkAddress(unallocAddr);
-      });
-    } else if (action === 'show') {
-      // TODO show allocations
-    }
-
-    if (clrSel) {
-      $scope.setItemSel($scope.allocatedAddr, UTIL.CLR_SEL);
-      $scope.setItemSel($scope.allocatedCanvasser, UTIL.CLR_SEL);
-    }
-  }
-
-  function unlinkAddress (addr) {
-    if (addr.canvasser) {
-      var canvasser = $scope.allocatedCanvasser.findInList(function (element) {
-          return (element._id === addr.canvasser);
-        });
-      if (canvasser) {
-        canvassFactory.unlinkAddrFromCanvasser(canvasser, addr);
-      }
-    }
-  }
 }
 

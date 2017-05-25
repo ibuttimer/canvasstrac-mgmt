@@ -46,9 +46,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserDashController.$inject = ['$scope', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'USERSCHEMA', 'STATES', 'UTIL'];
+UserDashController.$inject = ['$scope', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'controllerUtilFactory', 'miscUtilFactory', 'USERSCHEMA', 'STATES', 'UTIL'];
 
-function UserDashController($scope, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, USERSCHEMA, STATES, UTIL) {
+function UserDashController($scope, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, controllerUtilFactory, miscUtilFactory, USERSCHEMA, STATES, UTIL) {
 
   controllerUtilFactory.setScopeVars('USERS', $scope);
 
@@ -133,7 +133,7 @@ function UserDashController($scope, roleFactory, userFactory, userService, NgDia
   }
 
   function dashDelete() {
-    var selectedList = utilFactory.getSelectedList($scope.users);
+    var selectedList = miscUtilFactory.getSelectedList($scope.users);
     userService.confirmDeleteUser($scope, selectedList,
       // on success
       function (/*response*/) {

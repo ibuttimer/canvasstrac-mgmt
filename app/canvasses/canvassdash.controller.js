@@ -45,9 +45,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'canvassService', 'electionFactory', 'utilFactory', 'NgDialogFactory', 'stateFactory', 'controllerUtilFactory', 'CANVASSSCHEMA', 'STATES', 'UTIL'];
+CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'canvassService', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'controllerUtilFactory', 'CANVASSSCHEMA', 'STATES', 'UTIL'];
 
-function CanvassDashController($scope, $rootScope, $state, canvassFactory, canvassService, electionFactory, utilFactory, NgDialogFactory, stateFactory, controllerUtilFactory, CANVASSSCHEMA, STATES, UTIL) {
+function CanvassDashController($scope, $rootScope, $state, canvassFactory, canvassService, electionFactory, NgDialogFactory, stateFactory, miscUtilFactory, controllerUtilFactory, CANVASSSCHEMA, STATES, UTIL) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterOps = UTIL.OP_LIST;
@@ -137,7 +137,7 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, canva
   }
   
   function dashDelete () {
-    var selectedList = utilFactory.getSelectedList($scope.canvasses);
+    var selectedList = miscUtilFactory.getSelectedList($scope.canvasses);
     canvassService.confirmDeleteCanvass($scope, selectedList,
       // on success
       function (/*response*/) {

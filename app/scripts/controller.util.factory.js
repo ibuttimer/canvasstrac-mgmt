@@ -20,7 +20,8 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
     setScopeVars: setScopeVars,
     getStateButton: getStateButton,
     setSelect: setSelect,
-    toggleSelection: toggleSelection
+    toggleSelection: toggleSelection,
+    moveListSelected: moveListSelected
   },
 
   dashTxt = 'Dash',
@@ -141,9 +142,9 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
   function setSelect (scope, list, sel) {
     var allSel = false;
     if (sel) {
-      scope.selectedCnt = utilFactory.selectAll(list);
+      scope.selectedCnt = miscUtilFactory.selectAll(list);
     } else {
-      scope.selectedCnt = utilFactory.initSelected(list);
+      scope.selectedCnt = miscUtilFactory.initSelected(list);
     }
     if (list) {
       allSel = (scope.selectedCnt === list.length);
@@ -156,7 +157,7 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
     var oldCnt = scope.selectedCnt,
       singleSel;
 
-    scope.selectedCnt = utilFactory.toggleSelection(entry, oldCnt);
+    scope.selectedCnt = miscUtilFactory.toggleSelection(entry, oldCnt);
     switch (scope.selectedCnt) {
       case 1:
         if (entry.isSelected) {
@@ -164,7 +165,7 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
           break;
         } else if (oldCnt === 2) {
           // deselected an entry
-          var selectedList = utilFactory.getSelectedList(list);
+          var selectedList = miscUtilFactory.getSelectedList(list);
           singleSel = selectedList[selectedList.length - 1];
           break;
         }
@@ -178,6 +179,58 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
 
     return singleSel;
   }
+
+
+  /**
+   * Move the selected elements of a ResourceList to another ResourceList
+   * @param {ResourceList} fromList Source list
+   * @param {ResourceList} toList   Destination list
+   * @param {function}     testFunc Function to test if itema are the same
+   * @returns {boolean}      [[Description]]
+   */
+  function moveListSelected (fromList, toList, testFunc) {
+    var selList,      // selected items
+      moveList = [];  // items to be moved, i.e. not in target
+
+    selList = miscUtilFactory.getSelectedList(fromList);
+
+    if (selList.length > 0) {
+      selList.forEach(function (element) {
+        if (!toList.findInList(function (entry) {
+          return testFunc(element, entry);
+        })) {
+          // not in target so needs to be moved
+          moveList.push(element);
+        }
+
+        miscUtilFactory.toggleSelection(element);
+      });
+
+      // remove all selected from source
+      utilFactory.arrayRemove(fromList.list, selList);
+      fromList.selCount = 0;
+    }
+
+    if (moveList.length > 0) {
+
+      utilFactory.arrayAdd(toList.list, moveList, function (array, add) {
+        for (var i = 0; i < array.length; ++i) {
+//          if (add._id === array[i]._id) {
+          if (testFunc(add, array[i])) {
+            return false; // already in array
+          }
+        }
+        return true;  // not found, so add
+      });
+    }
+
+    [fromList, toList].forEach(function (resList) {
+      resList.sort();
+      resList.count = resList.list.length;
+      resList.applyFilter();
+    });
+  }
+
 
 
 }
