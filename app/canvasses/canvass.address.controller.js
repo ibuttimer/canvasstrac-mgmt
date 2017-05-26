@@ -20,12 +20,7 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
 
   con.log('CanvassAddressController id', $stateParams.id);
 
-  var MAX_DISP_PAGE = 5;
-
-//  $scope.sortOptions = addressFactory.getSortOptions();
-  
-  $scope.perPageOpt = [5, 10, 15, 20];
-  $scope.perPage = 10;
+  pagerFactory.addPerPageOptions($scope, 5, 5, 4, 1); // 4 opts, from 5 inc 5, dflt 10
 
   setupGroup(RES.ASSIGNED_ADDR, 'Assigned');
   setupGroup(RES.UNASSIGNED_ADDR, 'Unassigned');
@@ -53,7 +48,7 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
     $scope[filter] = storeFactory.newObj(filter, newFilter, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
-    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, 5);
 
     setFilter(id, $scope[filter]);
     addressFactory.setPager(id, $scope[pager]);

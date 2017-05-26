@@ -16,12 +16,9 @@ CanvassCanvasserController.$inject = ['$scope', '$state', '$filter', 'NgDialogFa
 
 function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, userFactory) {
 
-  var MAX_DISP_PAGE = 5;
-
   $scope.sortOptions = userFactory.getSortOptions();
   
-  $scope.perPageOpt = [5, 10, 15, 20];
-  $scope.perPage = 10;
+  pagerFactory.addPerPageOptions($scope, 5, 5, 4, 1); // 4 opts, from 5 inc 5, dflt 10
 
   setupGroup(RES.ASSIGNED_CANVASSER, 'Assigned');
   setupGroup(RES.UNASSIGNED_CANVASSER, 'Unassigned');
@@ -49,7 +46,7 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
     $scope[filter] = storeFactory.newObj(filter, userFactory.newFilter, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
-    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, 5);
 
     setFilter(id, $scope[filter]);
     userFactory.setPager(id, $scope[pager]);

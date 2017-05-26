@@ -16,8 +16,7 @@ CanvassResultController.$inject = ['$scope', '$rootScope', '$state', '$filter', 
 
 function CanvassResultController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, QUESTIONSCHEMA, CHARTS) {
 
-  var MAX_DISP_PAGE = 5,
-    factories = {},
+  var factories = {},
     i,
     quickDetails = [
       { label: 'Not Available',
@@ -37,8 +36,7 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
     detail.dfltValue = CANVASSRES_SCHEMA.SCHEMA.getDfltValue(detail.id);
   });
 
-  $scope.perPageOpt = [5, 10, 15, 20];
-  $scope.perPage = 10;
+  pagerFactory.addPerPageOptions($scope, 5, 5, 4, 1); // 4 opts, from 5 inc 5, dflt 10
 
   setupGroup(RES.ALLOCATED_ADDR, addressFactory, 'Addresses',
              CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
@@ -299,7 +297,7 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
       }, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
-    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, 5);
 
     setFilter(id, $scope[filter]);
     factory.setPager(id, $scope[pager]);

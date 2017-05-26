@@ -25,13 +25,11 @@ CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$filte
 
 function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN) {
 
-  var MAX_DISP_PAGE = 5,
-    factories = {},
+  var factories = {},
     addressAssignmentTests = makeAddressAssignmentTests(),
     canvasserAssignmentTests = makeCanvasserAssignmentTests();
 
-  $scope.perPageOpt = [5, 10, 15, 20];
-  $scope.perPage = 10;
+  pagerFactory.addPerPageOptions($scope, 5, 5, 4, 1); // 4 opts, from 5 inc 5, dflt 10
 
   setupGroup(RES.ALLOCATED_ADDR, addressFactory, 'Addresses',
              CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
@@ -66,7 +64,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
       }, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
-    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, MAX_DISP_PAGE);
+    $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, 5);
 
     setFilter(id, $scope[filter]);
     factory.setPager(id, $scope[pager]);
