@@ -5,9 +5,18 @@
         <p>{{addr.addrLine1}} {{addr.addrLine2}} {{addr.addrLine3}}
           <span ng-if="showBadge" class="text-right label" ng-class="addr.labelClass">{{addr.badge}}</span>
         </p>
-        <p>{{addr.town}} {{addr.city}} {{addr.county}}</p>
-        <p class="text-right">{{addr.postcode}}</p>
       </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-10">
+        {{addr.town}} {{addr.city}} {{addr.county}}
+      </div>
+      <div class="col-sm-2">
+        {{addr.postcode}}
+      </div>
+    </div>
+    <div class="row" ng-if="debug.show">
+      <p><code>{{addr._id}}</code></p>
     </div>
   </button>
 </div>

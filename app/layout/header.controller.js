@@ -16,7 +16,7 @@ angular.module('canvassTrac')
       CRUMBS: []
     };
   })())
-  .config(['MENUS', 'STATES', 'ACCESS', function (MENUS, STATES, ACCESS) {
+  .config(['$provide', 'MENUS', 'STATES', 'ACCESS', 'CONFIG', function ($provide, MENUS, STATES, ACCESS, CONFIG) {
     /* Unicode code point   UTF-8 literal   html
       U+00A0	             \xc2\xa0	       &nbsp; */
     var prop,
@@ -243,6 +243,19 @@ angular.module('canvassTrac')
       }
     });
     MENUS.CRUMBS = tree;
+
+    // setup show debug flag
+    if (CONFIG.DEV_MODE) {
+      $provide.value('DEBUG', {
+        show: true,   // enabled by default in devmode
+        devmode: true // devmode
+      });
+    } else {
+      $provide.constant('DEBUG', {
+        show: false,    // disable in production
+        devmode: false  // production
+      });
+    }
   }])
   .controller('HeaderController', HeaderController);
 
@@ -251,9 +264,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-HeaderController.$inject = ['$scope', '$state', '$rootScope', 'Idle', 'authFactory', 'consoleService', 'stateFactory', 'NgDialogFactory', 'STATES', 'MENUS', 'CONFIG', 'USER', 'HOMESCRN'];
+HeaderController.$inject = ['$scope', '$state', '$rootScope', 'Idle', 'authFactory', 'consoleService', 'stateFactory', 'NgDialogFactory', 'STATES', 'MENUS', 'USER', 'HOMESCRN', 'DEBUG', 'CONFIG'];
 
-function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consoleService, stateFactory, NgDialogFactory, STATES, MENUS, CONFIG, USER, HOMESCRN) {
+function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consoleService, stateFactory, NgDialogFactory, STATES, MENUS, USER, HOMESCRN, DEBUG, CONFIG) {
 
   var con = consoleService.getLogger('HeaderController');
 
@@ -267,6 +280,12 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
   $scope.openLogin = openLogin;
   $scope.openSupport = openSupport;
   $scope.logOut = logOut;
+
+  if (CONFIG.DEV_MODE) {
+    $scope.debug = DEBUG;
+    $scope.toggleDebug = toggleDebug;
+    toggleDebug(DEBUG.show);
+  }
 
   stateFactory.addInterface($scope);  // add stateFactory menthods to scope
 
@@ -534,6 +553,16 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
       menu = undefined; // no menu items so no need for menu
     }
     return menu;
+  }
+
+
+  function toggleDebug (set) {
+    if (set !== undefined) {
+      DEBUG.show = set;
+    } else {
+      DEBUG.show = !DEBUG.show;
+    }
+    $scope.dbgText = (DEBUG.show ? 'Hide debug' : 'Show debug');
   }
 
 

@@ -20,9 +20,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', '$filter', '$injector', 'canvassFactory', 'canvassService', 'canvassAssignmentFactory', 'canvassResultFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'questionFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'pagerFactory', 'storeFactory', 'resourceFactory', 'consoleService', 'controllerUtilFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'SCHEMA_CONST', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'CANVASSASSIGN_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS'];
+CanvassController.$inject = ['$scope', '$state', '$stateParams', '$filter', '$injector', 'canvassFactory', 'canvassService', 'canvassAssignmentFactory', 'canvassResultFactory', 'surveyFactory', 'addressFactory', 'userFactory', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'miscUtilFactory', 'storeFactory', 'resourceFactory', 'consoleService', 'controllerUtilFactory', 'RES', 'roleFactory', 'ROLES', 'STATES', 'LABELS', 'LABELIDX', 'SCHEMA_CONST', 'CANVASSSCHEMA', 'SURVEYSCHEMA', 'CANVASSRES_SCHEMA', 'CANVASSASSIGN_SCHEMA', 'ADDRSCHEMA', 'RESOURCE_CONST', 'QUESTIONSCHEMA', 'CHARTS', 'DEBUG'];
 
-function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $injector, canvassFactory, canvassService, canvassAssignmentFactory, canvassResultFactory, electionFactory, surveyFactory, addressFactory, questionFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, pagerFactory, storeFactory, resourceFactory, consoleService, controllerUtilFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS) {
+function CanvassController($scope, $state, $stateParams, $filter, $injector, canvassFactory, canvassService, canvassAssignmentFactory, canvassResultFactory, surveyFactory, addressFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, storeFactory, resourceFactory, consoleService, controllerUtilFactory, RES, roleFactory, ROLES, STATES, LABELS, LABELIDX, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS, DEBUG) {
 
   var con = consoleService.getLogger('CanvassController');
 
@@ -56,6 +56,10 @@ function CanvassController($scope, $rootScope, $state, $stateParams, $filter, $i
     }
   }
   TAB_BITS.push(TAB_BITS.shift());  // first shall be last
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;

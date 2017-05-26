@@ -60,6 +60,10 @@
 
       </ul>
       <ul class="nav navbar-nav navbar-right">
+        <li ng-if="debug.devmode">
+          <a ng-click="toggleDebug()">
+          <i class="fa fa-bug" aria-hidden="true"></i> {{dbgText}}</a>
+        </li>
         <li>
           <a ng-click="openSupport()">
           <i class="fa fa-life-ring" aria-hidden="true"></i> Support</a>

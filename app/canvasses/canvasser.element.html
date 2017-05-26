@@ -11,5 +11,9 @@
         <p class="text-right">{{user.person.address.postcode}}</p>
       </div>
     </div>
+    <div class="row" ng-if="debug.show">
+      <p><code>user {{user._id}}</code></p>
+      <p><code>person {{user.person._id}}</code></p>
+    </div>
   </button>
 </div>
