@@ -9,6 +9,9 @@
         <div ng-include="'views/state_buttons.html'"></div>
       </div>
     </div>
+    <div class="col-xs-12" ng-if="debug.show">
+      <p><code>canvass: {{canvass._id}}   survey: {{canvass.survey}}   election: {{canvass.election}}</code></p>
+    </div>
     <div class="col-xs-12">
       <uib-tabset active="activeTab">
         <!-- Canvass tab -->

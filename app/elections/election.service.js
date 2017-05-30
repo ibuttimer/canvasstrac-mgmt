@@ -19,7 +19,7 @@ function electionService($state, electionFactory, NgDialogFactory, controllerUti
   this.confirmDeleteElection = function (scope, deleteList, onSuccess, onFailure) {
 
     NgDialogFactory.openAndHandle({
-        template: 'elections/confirmdelete.html',
+        template: 'elections/confirmdelete_election.html',
         scope: scope, className: 'ngdialog-theme-default',
         controller: 'ElectionDeleteController',
         data: { list: deleteList }

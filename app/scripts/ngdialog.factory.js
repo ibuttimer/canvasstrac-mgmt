@@ -188,7 +188,7 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
    */
   function isNgDialogCancel (data) {
     return ((data === undefined) ||   // ngDialog.close
-            (data === 'cancel') || (data === '$closeButton'));
+            (data === 'cancel') || (data === '$closeButton') || (data === '$escape'));
   }
   
 

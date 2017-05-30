@@ -45,14 +45,19 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'canvassService', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'controllerUtilFactory', 'CANVASSSCHEMA', 'STATES', 'UTIL'];
+CanvassDashController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'canvassService', 'electionFactory', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'utilFactory', 'controllerUtilFactory', 'CANVASSSCHEMA', 'STATES', 'UTIL', 'DEBUG'];
 
-function CanvassDashController($scope, $rootScope, $state, canvassFactory, canvassService, electionFactory, NgDialogFactory, stateFactory, miscUtilFactory, controllerUtilFactory, CANVASSSCHEMA, STATES, UTIL) {
+function CanvassDashController($scope, $rootScope, $state, canvassFactory, canvassService, electionFactory, NgDialogFactory, stateFactory, miscUtilFactory, utilFactory, controllerUtilFactory, CANVASSSCHEMA, STATES, UTIL, DEBUG) {
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterOps = UTIL.OP_LIST;
   $scope.initFilter = initFilter;
   $scope.toggleCanvassSel = toggleCanvassSel;
+  $scope.formatDate = utilFactory.formatDate;
 
   $scope.changeStateParam = changeStateParam;
   $scope.dashDelete = dashDelete;

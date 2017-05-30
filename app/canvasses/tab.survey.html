@@ -25,14 +25,7 @@
       <div class="col-sm-10">
         <div class="list-group">
           <button type="button" class="list-group-item" ng-repeat="question in questions.list" ng-class="{active: question.isSelected}" ng-click="toggleQuestionSel(question)">
-            <div class="row">
-              <div class="col-sm-9">
-                <p>{{question.question}}</p>
-              </div>
-              <div class="col-sm-3">
-                <p class="text-right"><span class="label label-default">{{getQuestionTypeName(question.type)}}</span></p>
-              </div>
-            </div>
+            <div ng-include="'canvasses/question.element.html'"></div>
           </button>
         </div>
       </div>

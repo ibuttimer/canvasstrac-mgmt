@@ -10,15 +10,19 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'controllerUtilFactory', 'consoleService', 'STATES', 'ELECTIONSCHEMA', 'RESOURCE_CONST'];
+ElectionController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'controllerUtilFactory', 'consoleService', 'STATES', 'ELECTIONSCHEMA', 'RESOURCE_CONST', 'DEBUG'];
 
-function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, controllerUtilFactory, consoleService, STATES, ELECTIONSCHEMA, RESOURCE_CONST) {
+function ElectionController($scope, $rootScope, $state, $stateParams, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, controllerUtilFactory, consoleService, STATES, ELECTIONSCHEMA, RESOURCE_CONST, DEBUG) {
 
   var con = consoleService.getLogger('ElectionController');
 
   con.debug('ElectionController id', $stateParams.id);
 
   controllerUtilFactory.setScopeVars('ELECTION', $scope);
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;

@@ -8,6 +8,9 @@
       <div ng-include="'views/state_buttons.html'"></div>
     </div>
   </div>
+  <div class="row" ng-if="debug.show">
+    <p><code>user: {{user._id}}  person: {{user.person_id}}  address: {{user.address_id}}  contact: {{user.contact_id}}  role:{{user.role}}</code></p>
+  </div>
 
   <div class="col-xs-12">
     <form class="form-horizontal" name="userForm" role="form" ng-submit="processForm()" novalidate>

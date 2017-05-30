@@ -3,6 +3,9 @@
     <div class="">
       <h3>{{getTitle()}}</h3>
     </div>
+    <div class="row" ng-if="debug.show">
+      <p><code>{{ngDialogData.question._id}}</code></p>
+    </div>
     <div class="">&nbsp;</div>
     <div class="">
       <form role="form" name="questionForm" novalidate>

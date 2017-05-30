@@ -10,15 +10,19 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'consoleService', 'controllerUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'miscUtilFactory', 'consoleService', 'controllerUtilFactory', 'ADDRSCHEMA', 'PEOPLESCHEMA', 'DEBUG'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, miscUtilFactory, consoleService, controllerUtilFactory, ADDRSCHEMA, PEOPLESCHEMA) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, miscUtilFactory, consoleService, controllerUtilFactory, ADDRSCHEMA, PEOPLESCHEMA, DEBUG) {
 
   var con = consoleService.getLogger('UserController');
 
   con.log('UserController id', $stateParams.id);
 
   controllerUtilFactory.setScopeVars('USERS', $scope);
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;
@@ -130,6 +134,13 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
                 'phone', 'mobile', 'email', 'website', 'facebook', 'twitter'
                 ]);
             }
+
+            if (DEBUG.devmode) {
+              user.person_id = miscUtilFactory.readSafe(response, ['person','_id']);
+              user.address_id = miscUtilFactory.readSafe(response, ['person','address','_id']);
+              user.contact_id = miscUtilFactory.readSafe(response, ['person','contactDetails','_id']);
+            }
+
             $scope.user = user;
           },
           // error function

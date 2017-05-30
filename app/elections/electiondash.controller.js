@@ -45,11 +45,15 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-ElectionDashController.$inject = ['$scope', '$rootScope', '$state', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'miscUtilFactory', 'ELECTIONSCHEMA', 'STATES', 'UTIL'];
+ElectionDashController.$inject = ['$scope', '$rootScope', '$state', 'votingsystemFactory', 'electionFactory', 'electionService', 'NgDialogFactory', 'stateFactory', 'utilFactory', 'controllerUtilFactory', 'miscUtilFactory', 'ELECTIONSCHEMA', 'STATES', 'UTIL', 'DEBUG'];
 
-function ElectionDashController($scope, $rootScope, $state, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, miscUtilFactory, ELECTIONSCHEMA, STATES, UTIL) {
+function ElectionDashController($scope, $rootScope, $state, votingsystemFactory, electionFactory, electionService, NgDialogFactory, stateFactory, utilFactory, controllerUtilFactory, miscUtilFactory, ELECTIONSCHEMA, STATES, UTIL, DEBUG) {
 
   controllerUtilFactory.setScopeVars('ELECTION', $scope);
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterOps = UTIL.OP_LIST;

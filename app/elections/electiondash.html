@@ -1,6 +1,12 @@
 
 <div class="container" ng-controller="ElectionDashController">
   <div class="row row-content">
+    <div class="col-xs-12">
+      <div class="col-xs-4">
+        <h2>Election Dashboard</h2>
+      </div>
+    </div>
+
     <div class="col-sm-12 filter-box">
       <form class="form-inline">
         <div class="form-group col-sm-2">
@@ -34,14 +40,24 @@
       <div class="list-group">
         <button type="button" class="list-group-item" ng-repeat="election in elections | filterDashElection: filterText : filterOp : filterSystem" ng-class="{active: election.isSelected}" ng-click="toggleSelection(election)">
           <div class="row">
-            <div class="col-sm-8">
+            <div class="col-sm-4">
               <p>{{election.name}}</p>
+            </div>
+            <div class="col-sm-4">
+              <div ng-if="debug.show">
+                <p><code>{{election._id}}</code></p>
+              </div>
             </div>
             <div class="col-sm-4">
               <p class="text-right">{{formatDate(election.electionDate)}}</p>
             </div>
-            <div class="col-sm-8">
+            <div class="col-sm-4">
               <p>{{election.system.name}}</p>
+            </div>
+            <div class="col-sm-4">
+              <div ng-if="debug.show">
+                <p><code>{{election.system._id}}</code></p>
+              </div>
             </div>
             <div class="col-sm-4">
               <p class="text-right"><span class="label label-default">Seats: {{election.seats}}</span></p>

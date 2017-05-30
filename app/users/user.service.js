@@ -19,7 +19,7 @@ function userService($state, userFactory, NgDialogFactory, controllerUtilFactory
   this.confirmDeleteUSer = function (scope, deleteList, onSuccess, onFailure) {
 
     NgDialogFactory.openAndHandle({
-        template: 'users/confirmdelete.html',
+        template: 'users/confirmdelete_user.html',
         scope: scope, className: 'ngdialog-theme-default',
         controller: 'UserDeleteController',
         data: { list: deleteList }

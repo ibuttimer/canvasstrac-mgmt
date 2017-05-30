@@ -17,9 +17,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-QuestionController.$inject = ['$scope', 'questionFactory', 'NgDialogFactory', 'questionTypes', 'QUESACTION'];
+QuestionController.$inject = ['$scope', 'questionFactory', 'NgDialogFactory', 'questionTypes', 'QUESACTION', 'DEBUG'];
 
-function QuestionController($scope, questionFactory, NgDialogFactory, questionTypes, QUESACTION) {
+function QuestionController($scope, questionFactory, NgDialogFactory, questionTypes, QUESACTION, DEBUG) {
+
+  if (DEBUG.devmode) {
+    $scope.debug = DEBUG;
+  }
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.getTitle = getTitle;

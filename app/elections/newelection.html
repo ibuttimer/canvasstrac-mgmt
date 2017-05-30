@@ -8,7 +8,9 @@
         <div ng-include="'views/state_buttons.html'"></div>
       </div>
     </div>
-
+    <div class="row" ng-if="debug.show">
+      <p><code>election: {{election._id}}  system:{{election.system}}</code></p>
+    </div>
 
     <div class="col-xs-12">
       <form class="form-horizontal" name="electionForm" role="form" ng-submit="processForm()" novalidate>
