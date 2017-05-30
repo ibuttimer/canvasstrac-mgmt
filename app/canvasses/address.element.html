@@ -1,22 +1,19 @@
-<div class="list-group">
-  <button type="button" class="list-group-item" ng-repeat="addr in pager.pageItems" ng-class="{active: addr.isSelected}" ng-click="toggleItemSel(list,addr)">
-    <div class="row">
-      <div class="col-sm-12">
-        <p>{{addr.addrLine1}} {{addr.addrLine2}} {{addr.addrLine3}}
-          <span ng-if="showBadge" class="text-right label" ng-class="addr.labelClass">{{addr.badge}}</span>
-        </p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-sm-10">
-        {{addr.town}} {{addr.city}} {{addr.county}}
-      </div>
-      <div class="col-sm-2">
-        {{addr.postcode}}
-      </div>
-    </div>
-    <div class="row" ng-if="debug.show">
-      <p><code>{{addr._id}}</code></p>
-    </div>
-  </button>
+<div class="row">
+  <div class="col-sm-10">
+    <p>{{addrInfo.addrLine1}} {{addrInfo.addrLine2}} {{addrInfo.addrLine3}}</p>
+  </div>
+  <div class="col-sm-2">
+    <span ng-if="showBadge" class="label" ng-class="addrInfo.labelClass">{{addrInfo.badge}}</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-10">
+    {{addrInfo.town}} {{addrInfo.city}} {{addrInfo.county}}
+  </div>
+  <div class="col-sm-2">
+    {{addrInfo.postcode}}
+  </div>
+</div>
+<div class="row" ng-if="debug.show">
+  <p><code>addr: {{addrInfo._id}}</code></p>
 </div>

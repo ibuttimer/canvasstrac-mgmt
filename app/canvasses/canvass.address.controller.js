@@ -4,6 +4,17 @@
 
 angular.module('canvassTrac')
 
+  .directive("cnvtrcAddrWidget", function() {
+    return {
+      restrict: 'E',          // restrict the directive declaration style to element name
+      scope: {                // new "isolate" scope
+        'addrInfo': '=info',  // bidirectional binding
+        'showBadge': '=badge',
+        'debug': '='
+      },
+      templateUrl: 'canvasses/address.element.html'
+    };
+  })
   .controller('CanvassAddressController', CanvassAddressController);
 
 
