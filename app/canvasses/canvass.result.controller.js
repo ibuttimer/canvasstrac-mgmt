@@ -75,7 +75,6 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
   $scope.canvassComplete = 0;
   $scope.canvassPending = 0;
 
-//  $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
   $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
 
   $scope.addresses = addressFactory.getList(RES.ALLOCATED_ADDR);
@@ -368,16 +367,19 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
   }
 
   function newFilter(factory, data) {
-    var filter = factory.newFilter(data);
+    var customFilter,
+      filter;
+    // override default customFilter with enhanced version
+    if (factory.ID_TAG === ADDRSCHEMA.ID_TAG) {
+      customFilter = addrFilterFunction;
+    } else {
+      customFilter = cnvsrFilterFunction;
+    }
+
+    filter = factory.newFilter(data, customFilter);
     // add assignment specific fields
     if (data && data.assignment) {
       filter.filterBy.assignment = data.assignment;
-    }
-    // override default customFunction with enhanced version
-    if (factory.ID_TAG === ADDRSCHEMA.ID_TAG) {
-      filter.customFunction = addrFilterFunction;
-    } else {
-      filter.customFunction = cnvsrFilterFunction;
     }
     return filter;
   }
@@ -433,7 +435,7 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
         resList.factory.getFilteredResource(resList, list.filter, resList.label);
       }
     } else {  // set filter
-      var filter = angular.copy(resList.filter.filterBy);
+      var filter = angular.copy(resList.filter.getFilterValue());
 
       var dialog = NgDialogFactory.open({ template: 'canvasses/assignmentfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'AssignmentFilterController',
                     data: {action: resList.id,

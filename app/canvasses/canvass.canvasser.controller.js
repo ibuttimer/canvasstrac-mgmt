@@ -12,9 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassCanvasserController.$inject = ['$scope', '$state', '$filter', 'NgDialogFactory', 'miscUtilFactory', 'controllerUtilFactory', 'pagerFactory', 'storeFactory', 'RES', 'ADDRSCHEMA', 'userFactory'];
+CanvassCanvasserController.$inject = ['$scope', '$state', '$filter', 'NgDialogFactory', 'miscUtilFactory', 'controllerUtilFactory', 'pagerFactory', 'storeFactory', 'RES', 'USERSCHEMA', 'SCHEMA_CONST', 'userFactory', 'canvassService'];
 
-function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, RES, ADDRSCHEMA, userFactory) {
+function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, RES, USERSCHEMA, SCHEMA_CONST, userFactory, canvassService) {
 
   $scope.sortOptions = userFactory.getSortOptions();
   
@@ -29,10 +29,9 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
   $scope.updateList = updateList;
   $scope.sortList = sortList;
 
-  // get canvasser role id, followed by inassigned canvassers
+  // get canvasser role id, followed by unassigned canvassers
   $scope.requestCanvasserRole(requestUnassignedCanvassers);
 
-  
   /* function implementation
   -------------------------- */
   
@@ -43,7 +42,7 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
     });
     
     var filter = RES.getFilterName(id);
-    $scope[filter] = storeFactory.newObj(filter, userFactory.newFilter, storeFactory.CREATE_INIT);
+    $scope[filter] = storeFactory.newObj(filter, newFilter, storeFactory.CREATE_INIT);
 
     var pager = RES.getPagerName(id);
     $scope[pager] = pagerFactory.newPager(pager, [], 1, $scope.perPage, 5);
@@ -52,19 +51,19 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
     userFactory.setPager(id, $scope[pager]);
   }
 
+  function newFilter (base) {
+    return canvassService.newCanvasserFilter(base, $scope.canvasser);
+
+  }
+
   function setFilter (id , filter) {
     // unassignedCanvasserFilterStr or assignedCanvasserFilterStr
     var filterStr = RES.getFilterStrName(id);
     if (!filter) {
-      filter = userFactory.newFilter();
+      filter = newFilter();
     }
-    $scope[filterStr] = filter.toString();
+    $scope[filterStr] = filter.toString(/*filterDispTransform*/);
 
-    // add canvasser restriction to filter
-    if ($scope.canvasser) {
-      filter.role = $scope.canvasser._id;
-    }
-    
     return userFactory.setFilter(id, filter);
   }
 
@@ -72,7 +71,9 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
     return resList.sort();
   }
   
-  function filterList (resList, action) {
+  function filterList (resList, btn) {
+
+    var action = btn.cmd;
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
@@ -82,10 +83,10 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
       resList.applyFilter();
     } else if (action === 'a') {  // no filter, get all
       setFilter(resList.id);
-      requestCanvassers(resList);  // request all canvassers
+      requestCanvassers(resList, resList.filter);  // request all canvassers
       
     } else {  // set filter
-      var filter = angular.copy(resList.filter.filterBy);
+      var filter = angular.copy(resList.filter.getFilterValue());
 
       NgDialogFactory.openAndHandle({
           template: 'people/personfilter.html', scope: $scope,
@@ -95,11 +96,11 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
         // process function
         function (value) {
 
-          var filter = userFactory.newFilter(value.filter),
+          var filter = newFilter(value.filter),
             resList = setFilter(value.action, filter);
           if (resList) {
             if (resList.id === RES.UNASSIGNED_CANVASSER) {
-              // request filtered addresses from server
+              // request filtered canvassers from server
               requestCanvassers(resList, filter);
             } else {
               resList.applyFilter();
@@ -116,19 +117,21 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
   function requestUnassignedCanvassers () {
     var resList = userFactory.getList(RES.UNASSIGNED_CANVASSER);
     if (resList) {
-      requestCanvassers(resList);
+      setFilter(RES.UNASSIGNED_CANVASSER);
+      requestCanvassers(resList, resList.filter);
     }
   }
 
   function requestCanvassers (resList, filter) {
     
-    userFactory.getFilteredResource(resList, filter, 
+    userFactory.getFilteredResource('user', resList, filter,
                                     
       // success function
       function (response) {
         if (!response.length) {
           NgDialogFactory.message('No canvassers found', 'No canvassers matched the specified criteria');
         }
+        $scope.setItemSel(resList, miscUtilFactory.CLR_SEL);
       },
       // error function
       function (response) {

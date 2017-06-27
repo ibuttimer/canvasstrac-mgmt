@@ -18,13 +18,16 @@ function AssignmentTabNavController($scope) {
 
   $scope.hasPrev = true;
   $scope.hasReset = false;
+  $scope.prevTooltip = 'Canvasser tab';
   $scope.prevEnabled = function () {
     return this.assignmentForm.$invalid;
   };
   if ($scope.lastTab === $scope.tabs.ASSIGNMENT_TAB) {
     $scope.nextText = 'Done';
+    $scope.nextTooltip = 'Go to dashboard';
   } else {
     $scope.nextText = 'Next';
+    $scope.nextTooltip = 'Results tab';
   }
   $scope.nextEnabled = function () {
     return this.assignmentForm.$invalid;

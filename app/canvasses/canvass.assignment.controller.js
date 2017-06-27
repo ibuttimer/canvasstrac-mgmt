@@ -21,25 +21,31 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN'];
+CanvassAssignmentController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'canvassAssignmentFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'undoFactory', 'RES', 'ADDRSCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN'];
 
-function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN) {
+function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvassFactory, canvassAssignmentFactory, electionFactory, surveyFactory, addressFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, undoFactory, RES, ADDRSCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN) {
 
   var factories = {},
+    customFilters = {},
     addressAssignmentTests = makeAddressAssignmentTests(),
-    canvasserAssignmentTests = makeCanvasserAssignmentTests();
+    canvasserAssignmentTests = makeCanvasserAssignmentTests(),
+    undoStack = storeFactory.newObj(RES.ALLOCATION_UNDOS,
+                                   undoFactory.newUndoStack, storeFactory.CREATE_INIT);
 
   pagerFactory.addPerPageOptions($scope, 5, 5, 4, 1); // 4 opts, from 5 inc 5, dflt 10
 
   setupGroup(RES.ALLOCATED_ADDR, addressFactory, 'Addresses',
-             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false);
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Assigned', false, addrFilterFunction);
   setupGroup(RES.ALLOCATED_CANVASSER, userFactory, 'Canvassers',
-             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true);
+             CANVASSASSIGN.ASSIGNMENTCHOICES, 'Has Allocation', true, cnvsrFilterFunction);
+
+  $scope.undoStack = undoStack;
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.filterList = filterList;
   $scope.updateList = updateList;
   $scope.sortList = sortList;
+  $scope.undo = undo;
 
   // get canvasser role id
   $scope.requestCanvasserRole();
@@ -48,9 +54,10 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
   /* function implementation
   -------------------------- */
 
-  function setupGroup(id, factory, label, assignmentChoices, assignmentLabel,  nameFields) {
+  function setupGroup(id, factory, label, assignmentChoices, assignmentLabel, nameFields, customFilter) {
 
     factories[id] = factory;
+    customFilters[factory.NAME] = customFilter;
     
     $scope[id] = factory.getList(id, storeFactory.CREATE_INIT);
     $scope[id].title = label;
@@ -91,8 +98,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
   }
 
   function addrHasNoAssignmentTest (addr) {
-    // if canvasser set then has assignment
-    return (!addr.canvasser);
+    return !addrHasAssignmentTest(addr);
   }
 
   function makeAddressAssignmentTests () {
@@ -121,8 +127,7 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
   }
 
   function canvasserHasNoAssignmentTest (canvasser) {
-    // if addresses set then has assignment
-    return (!canvasser.addresses || !canvasser.addresses.length);
+    return !canvasserHasAssignmentTest(canvasser);
   }
 
   function makeCanvasserAssignmentTests () {
@@ -152,19 +157,11 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
    * @returns {object} Filter
    */
   function newFilter (factory, data) {
-    var customFilter,
-      filter;
-    // override default customFunction with enhanced version
-    if (factory.NAME === 'addressFactory') {
-      customFilter = addrFilterFunction;
-    } else {
-      customFilter = cnvsrFilterFunction;
-    }
-
-    filter = factory.newFilter(data, customFilter, false);
+    // new filter with custom function & no blanks
+    var filter = factory.newFilter(data, customFilters[factory.NAME], { allowBlank: false });
     // add assignment specific fields
     if (data && data.assignment) {
-      filter.filterBy.assignment = data.assignment;
+      filter.addFilterValue('assignment', data.assignment);
     }
     return filter;
   }
@@ -177,16 +174,18 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
     var factory = factories[id],
       // allocatedAddrFilterStr or allocatedCanvasserFilterStr
       filterStr = RES.getFilterStrName(id),
-      filterStrPrefix;
+      filterStrPrefix,
+      assignment;
     if (!filter) {
       filter = newFilter(factory);
     }
-    if (filter.filterBy.assignment) {
+    assignment = filter.getFilterValue('assignment');
+    if (assignment) {
       // set filter string prefix to assignment text
       var list = factory.getList(id);
       if (list) {
         list.assignmentChoices.forEach(function (choice) {
-          if (choice.val === filter.filterBy.assignment) {
+          if (choice.val === assignment) {
             filterStrPrefix = list.assignmentLabel + ': '+ choice.text;
           }
         });
@@ -207,7 +206,9 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
     return resList.sort();
   }
 
-  function filterList (resList, action) {
+  function filterList (resList, btn) {
+
+    var action = btn.cmd;
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
@@ -215,10 +216,10 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
     } else if (action === 'a') {  // no filter, get all
       var list = setFilter(resList.id);
       if (list) {
-        resList.factory.getFilteredResource(resList, list.filter, resList.label);
+        resList.factory.getFilteredResource(resList.resource, resList, list.filter);
       }
     } else {  // set filter
-      var filter = angular.copy(resList.filter.filterBy);
+      var filter = angular.copy(resList.filter.getFilterValue());
 
       var dialog = NgDialogFactory.open({ template: 'canvasses/assignmentfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'AssignmentFilterController', 
                     data: {action: resList.id, 
@@ -251,32 +252,48 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
       canvasser, addr,
       clrSel;
 
-    if (action === 'alloc') {
+    if (action.indexOf('alloc') >= 0) {
       clrSel = true;
-      for (aidx = 0; aidx < addrList.length; ++aidx) {
-        addr = addrList[aidx];
+      undoStack.startMultiStep();
 
-        unlinkAddress(addr);  // unlink addr from previous
+      if (action === 'alloc') {
+        for (aidx = 0; aidx < addrList.length; ++aidx) {
+          addr = addrList[aidx];
 
-        for (cidx = 0; cidx < cnvsList.length; ++cidx) {
-          canvasser = cnvsList[cidx];
-          canvassFactory.linkCanvasserToAddr(canvasser, addr);
+          for (cidx = 0; cidx < cnvsList.length; ++cidx) {
+            canvasser = cnvsList[cidx];
+
+            if (canvasser._id !== addr.canvasser) {
+              undoStack.addStep(
+                unlinkAddress(addr)  // unlink addr from previous
+              );
+
+              undoStack.addStep(
+                canvassAssignmentFactory.linkCanvasserToAddr(canvasser, addr, true)
+              );
+            }
+          }
         }
+      } else if (action === 'unalloc') {
+        // unallocate all addresses allocated to selected canvassers
+        cnvsList.forEach(function (unallocCnvsr) {
+          undoStack.addStep(
+            canvassAssignmentFactory.unlinkAddrListFromCanvasser(unallocCnvsr, $scope.allocatedAddr.slice(), true)
+          );
+        });
+        // unallocate all selected addresses
+        addrList.forEach(function (unallocAddr) {
+          undoStack.addStep(
+            unlinkAddress(unallocAddr)  // unlink addr from previous
+          );
+        });
       }
-    } else if (action === 'unalloc') {
-      clrSel = true;
 
-      // unallocate all addresses allocated to selected canvassers
-      cnvsList.forEach(function (unallocCnvsr) {
-        canvassFactory.unlinkAddrListFromCanvasser(unallocCnvsr, $scope.allocatedAddr.list);
-      });
-      // unallocate all selected addresses
-      addrList.forEach(function (unallocAddr) {
-        unlinkAddress(unallocAddr);
-      });
+      undoStack.endMultiStep();
     } else if (action === 'show') {
       // TODO show allocations
     }
+
 
     if (clrSel) {
       $scope.setItemSel($scope.allocatedAddr, miscUtilFactory.CLR_SEL);
@@ -285,14 +302,21 @@ function CanvassAssignmentController($scope, $rootScope, $state, $filter, canvas
   }
 
   function unlinkAddress (addr) {
+    var undo;
     if (addr.canvasser) {
       var canvasser = $scope.allocatedCanvasser.findInList(function (element) {
           return (element._id === addr.canvasser);
         });
       if (canvasser) {
-        canvassFactory.unlinkAddrFromCanvasser(canvasser, addr);
+        undo = canvassAssignmentFactory.unlinkAddrFromCanvasser(canvasser, addr, true);
       }
     }
+    return undo;
+  }
+
+
+  function undo () {
+    undoStack.undo(1);
   }
 }
 

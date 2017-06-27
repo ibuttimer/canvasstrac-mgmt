@@ -71,22 +71,21 @@ function UserDashController($scope, roleFactory, userFactory, userService, NgDia
   initFilter();
 
   // get list of roles selecting name field, _id field is always provided
-  $scope.roles = roleFactory.getRoles().query({fields: 'name'})
-    .$promise.then(
-      // success function
-      function (response) {
-        // response is actual data
-        $scope.roles = response;
+  $scope.roles = roleFactory.query('role', {fields: 'name'},
+    // success function
+    function (response) {
+      // response is actual data
+      $scope.roles = response;
 
-        // get list of users
-        getUsers();
-      },
-      // error function
-      function (response) {
-        // response is message
-        NgDialogFactory.error(response);
-      }
-    );
+      // get list of users
+      getUsers();
+    },
+    // error function
+    function (response) {
+      // response is message
+      NgDialogFactory.error(response);
+    }
+  );
 
   /* function implementation
   -------------------------- */
@@ -106,7 +105,7 @@ function UserDashController($scope, roleFactory, userFactory, userService, NgDia
 
   function getUsers() {
     // get list of users
-    $scope.users = userFactory.getUsers().query(
+    $scope.users = userFactory.query('user',
       // success function
       function (response) {
         // response is actual data
@@ -115,7 +114,7 @@ function UserDashController($scope, roleFactory, userFactory, userService, NgDia
       // error function
       function (response) {
         // repose is message
-        NgDialogFactory.error(response);
+        NgDialogFactory.error(response, 'Unable to retrieve users');
       }
     );
   }

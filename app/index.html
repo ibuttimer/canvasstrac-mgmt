@@ -12,7 +12,7 @@
       type="image/png" 
       href="images/favicon.png">
     
-    <title>CanvassTrac</title>    
+    <title idle-disabled="true">CanvassTrac</title>
         <!-- Bootstrap -->
 <!-- build:css({.,../}) styles/main.css -->
     <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -82,10 +82,14 @@
     <script src="canvasstrac-client-common/util/schema.provider.js"></script>
     <script src="canvasstrac-client-common/util/compare.factory.js"></script>
     <script src="canvasstrac-client-common/util/filter.factory.js"></script>
+    <script src="canvasstrac-client-common/util/query.factory.js"></script>
+    <script src="canvasstrac-client-common/util/resourcelist.factory.js"></script>
+    <script src="canvasstrac-client-common/util/standard-factory.factory.js"></script>
     <script src="canvasstrac-client-common/util/resource.factory.js"></script>
     <script src="canvasstrac-client-common/util/pager.factory.js"></script>
     <script src="canvasstrac-client-common/util/console.service.js"></script>
     <script src="canvasstrac-client-common/util/timer.factory.js"></script>
+    <script src="canvasstrac-client-common/util/undo.factory.js"></script>
 
     <!-- login/register functionality -->
     <script src="canvasstrac-client-common/login/auth.factory.js"></script>
@@ -97,15 +101,15 @@
     <script src="canvasstrac-client-common/users/role.factory.js"></script>
     <script src="canvasstrac-client-common/users/user.factory.js"></script>
     <!-- survey functionality -->
-    <script src="canvasstrac-client-common/surveys/survey.factory.js"></script>
     <script src="canvasstrac-client-common/surveys/question.factory.js"></script>
-    <script src="canvasstrac-client-common/surveys/anwser.factory.js"></script>
+    <script src="canvasstrac-client-common/surveys/answer.factory.js"></script>
+    <script src="canvasstrac-client-common/surveys/survey.factory.js"></script>
     <!-- elections functionality -->
-    <script src="canvasstrac-client-common/elections/election.factory.js"></script>
     <script src="canvasstrac-client-common/elections/votingsystem.factory.js"></script>
+    <script src="canvasstrac-client-common/elections/election.factory.js"></script>
     <!-- canvass functionality -->
-    <script src="canvasstrac-client-common/canvasses/canvass.factory.js"></script>
     <script src="canvasstrac-client-common/canvasses/canvassresult.factory.js"></script>
+    <script src="canvasstrac-client-common/canvasses/canvass.factory.js"></script>
     <script src="canvasstrac-client-common/canvasses/canvassassignment.factory.js"></script>
     <!-- message functionality -->
     <script src="canvasstrac-client-common/message/message.factory.js"></script>
@@ -117,6 +121,7 @@
     <script src="scripts/controller.util.factory.js"></script>
     <script src="scripts/state.buttons.controller.js"></script>
     <!-- layout functionality -->
+    <script src="layout/menu.service.js"></script>
     <script src="layout/home.controller.js"></script>
     <script src="layout/header.controller.js"></script>
     <script src="layout/footer.controller.js"></script>
@@ -145,6 +150,7 @@
     <script src="canvasses/canvass.canvass.controller.js"></script>
     <script src="canvasses/canvass.survey.controller.js"></script>
     <script src="canvasses/canvass.address.controller.js"></script>
+    <script src="canvasses/filter.sort.service.js"></script>
     <script src="canvasses/canvass.unassigned.address.controller.js"></script>
     <script src="canvasses/canvass.assigned.address.controller.js"></script>
     <script src="canvasses/canvass.canvasser.controller.js"></script>

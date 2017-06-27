@@ -11,9 +11,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'questionFactory', 'addressFactory', 'miscUtilFactory', 'NgDialogFactory', 'stateFactory', 'QUESACTION', 'RES'];
+CanvassSurveyController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'questionFactory', 'addressFactory', 'miscUtilFactory', 'NgDialogFactory', 'stateFactory', 'QUESACTION', 'RES', 'DECOR'];
 
-function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, questionFactory, addressFactory, miscUtilFactory, NgDialogFactory, stateFactory, QUESACTION, RES) {
+function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, questionFactory, addressFactory, miscUtilFactory, NgDialogFactory, stateFactory, QUESACTION, RES, DECOR) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.toggleQuestionSel = toggleQuestionSel;
@@ -25,18 +25,18 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
   $scope.showQuestionOptions = questionFactory.showQuestionOptions;
   $scope.onSurveyChange = onSurveyChange;
   $scope.quesButtons = [
-    { txt: 'New', icon: 'fa-plus-square-o', tip: 'Create new',
-      class: 'btn-primary', act: QUESACTION.NEW },
-    { txt: 'View', icon: 'fa-eye', tip: 'View selected',
-      class: 'btn-info', act: QUESACTION.VIEW },
-    { txt: 'Edit', icon: 'fa-pencil-square-o', tip: 'Edit selected',
-      class: 'btn-warning', act: QUESACTION.EDIT },
-    { txt: 'Delete', icon: 'fa-trash-o', tip: 'Delete selected',
-      class: 'btn-danger' },
-    { txt: 'Unselect', state: 'unsel', icon: 'fa-square-o', tip: 'Unselect all',
-      class: 'btn-default' },
-    { txt: 'Select', state: 'sel', icon: 'fa-check-square-o', tip: 'Select all',
-      class: 'btn-default' }
+    { txt: 'New', icon: DECOR.NEW.icon, tip: 'Create new',
+      class: DECOR.DASH.class, act: QUESACTION.NEW },
+    { txt: 'View', icon: DECOR.VIEW.icon, tip: 'View selected',
+      class: DECOR.VIEW.class, act: QUESACTION.VIEW },
+    { txt: 'Edit', icon: DECOR.EDIT.icon, tip: 'Edit selected',
+      class: DECOR.EDIT.class, act: QUESACTION.EDIT },
+    { txt: 'Delete', icon: DECOR.DEL.icon, tip: 'Delete selected',
+      class: DECOR.DEL.class },
+    { txt: 'Unselect', state: 'unsel', icon: DECOR.UNSEL.icon, tip: 'Unselect all',
+      class: DECOR.UNSEL.class },
+    { txt: 'Select', state: 'sel', icon: DECOR.SEL.icon, tip: 'Select all',
+      class: DECOR.SEL.class }
   ];
 
   $scope.showQuesButton = showQuesButton;
@@ -45,8 +45,6 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
 
 
 
-  $scope.canvass = canvassFactory.getObj(RES.ACTIVE_CANVASS);
-  $scope.survey = surveyFactory.getObj(RES.ACTIVE_SURVEY);
   $scope.questions = questionFactory.getList(RES.SURVEY_QUESTIONS);
 
   
@@ -114,31 +112,29 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
           }
         });
 
-        questionFactory.getQuestions().delete(delParams)
-          .$promise.then(
-            // success function
-            function (/*response*/) {
-              // update survey's list of questions
-              surveyFactory.getSurveys().update({id: updatedSurvey._id}, updatedSurvey)
-                .$promise.then(
-                  // success function
-                  function (response) {
-                    surveyFactory.readResponse(response, $scope.getSurveyRspOptions());
+        questionFactory.delete('question', delParams,
+          // success function
+          function (/*response*/) {
+            // update survey's list of questions
+            surveyFactory.update('survey', {id: updatedSurvey._id}, updatedSurvey,
+              // success function
+              function (response) {
+                surveyFactory.readResponse(response, $scope.getSurveyRspOptions());
 
-                    countQuestionSel();
-                  },
-                  // error function
-                  function (response) {
-                    // response is message
-                    NgDialogFactory.error(response, 'Unable to retrieve Survey');
-                  }
-                );
-            },
-            // error function
-            function (response) {
-              NgDialogFactory.error(response, 'Delete Unsuccessful');
-            }
-          );
+                countQuestionSel();
+              },
+              // error function
+              function (response) {
+                // response is message
+                NgDialogFactory.error(response, 'Unable to retrieve Survey');
+              }
+            );
+          },
+          // error function
+          function (response) {
+            NgDialogFactory.error(response, 'Delete Unsuccessful');
+          }
+        );
       });
   }
   
@@ -177,61 +173,57 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
     dialog.closePromise.then(function (data) {
       if (!NgDialogFactory.isNgDialogCancel(data.value)) {
 
-        var resource = questionFactory.getQuestions();
-
         // dialog returns question type object, only need the type value for the server
         data.value.question.type = data.value.question.type.type;
 
         if (data.value.action === QUESACTION.NEW) {
-          resource.save(data.value.question)
-            .$promise.then(
-              // success function
-              function (response) {
-                if (!$scope.survey.questions) {
-                  $scope.survey.questions = [];
-                }
-                $scope.survey.questions.push(response._id);
-
-                var surveyProc;
-                if (!$scope.survey._id) {
-                  surveyProc = RES.PROCESS_UPDATE_NEW;
-                } else {
-                  surveyProc = RES.PROCESS_UPDATE;
-                }
-                $scope.processSurvey(surveyProc, countQuestionSel);
-              },
-              // error function
-              function (response) {
-                NgDialogFactory.error(response, 'Creation Unsuccessful');
+          questionFactory.save('question', data.value.question,
+            // success function
+            function (response) {
+              if (!$scope.survey.questions) {
+                $scope.survey.questions = [];
               }
-            );
+              $scope.survey.questions.push(response._id);
+
+              var surveyProc;
+              if (!$scope.survey._id) {
+                surveyProc = RES.PROCESS_UPDATE_NEW;
+              } else {
+                surveyProc = RES.PROCESS_UPDATE;
+              }
+              $scope.processSurvey(surveyProc, countQuestionSel);
+            },
+            // error function
+            function (response) {
+              NgDialogFactory.error(response, 'Creation Unsuccessful');
+            }
+          );
         } else if (data.value.action === QUESACTION.EDIT) {
-          resource.update({id: data.value.question._id}, data.value.question)
-            .$promise.then(
-              // success function
-              function (response) {
+          questionFactory.update('question', {id: data.value.question._id}, data.value.question,
+            // success function
+            function (response) {
 
-                var idx = $scope.questions.findIndexInList(function (entry) {
-                  return (entry._id === response._id);
-                });
-                if (idx >= 0) {
-                  toggleQuestionSel(
-                    $scope.questions.updateInList(idx,
-                                questionFactory.readRspObject(response)));
-                }
-
-                if (!$scope.survey.questions) {
-                  $scope.survey.questions = [];
-                  $scope.survey.questions.push(response._id);
-                }
-
-                $scope.processSurvey(RES.PROCESS_UPDATE);
-              },
-              // error function
-              function (response) {
-                NgDialogFactory.error(response, 'Creation Unsuccessful');
+              var idx = $scope.questions.findIndexInList(function (entry) {
+                return (entry._id === response._id);
+              });
+              if (idx >= 0) {
+                toggleQuestionSel(
+                  $scope.questions.updateInList(idx,
+                              questionFactory.readRspObject(response)));
               }
-            );
+
+              if (!$scope.survey.questions) {
+                $scope.survey.questions = [];
+                $scope.survey.questions.push(response._id);
+              }
+
+              $scope.processSurvey(RES.PROCESS_UPDATE);
+            },
+            // error function
+            function (response) {
+              NgDialogFactory.error(response, 'Creation Unsuccessful');
+            }
+          );
         }
       }
     });
@@ -308,7 +300,7 @@ function CanvassSurveyController($scope, $rootScope, $state, $filter, canvassFac
     /* save the updated survey to the store, as processSurvey in the parent
       controller doesn't see the changes to name & description.
       Something to do with scopes? */
-    surveyFactory.setObj(RES.ACTIVE_SURVEY, $scope.survey);
+//    surveyFactory.setObj(RES.ACTIVE_SURVEY, $scope.survey);
   }
   
   

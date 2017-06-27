@@ -16,12 +16,12 @@ angular.module('canvassTrac')
       CRUMBS: []
     };
   })())
-  .config(['$provide', 'MENUS', 'STATES', 'ACCESS', 'CONFIG', function ($provide, MENUS, STATES, ACCESS, CONFIG) {
+  .config(['$provide', 'MENUS', 'STATES', 'ACCESS', 'CONFIG', 'DECOR', function ($provide, MENUS, STATES, ACCESS, CONFIG, DECOR) {
     /* Unicode code point   UTF-8 literal   html
       U+00A0	             \xc2\xa0	       &nbsp; */
     var prop,
       tree, toCheck,
-      dropdownNew = '\xA0\xA0\xA0New',
+      dropdownNew = '\xA0\xA0\xA0New',  // add nbsp
       configuration = 'Configuration',
       votingSysDash = 'Voting Systems',
       rolesDash = 'Roles',
@@ -67,6 +67,7 @@ angular.module('canvassTrac')
               property: 'root',
               value: {
                 name: configuration,
+                icon: 'fa fa-cog fa-fw',
                 sref: STATES.CONFIG,
                 substates: []
               }
@@ -96,8 +97,14 @@ angular.module('canvassTrac')
               value: {
                 header: userDash,
                 items: [
-                  { name: userDash, sref: STATES.USERS },
-                  { name: dropdownNew, sref: STATES.USERS_NEW }
+                  { name: userDash,
+                    icon: 'fa fa-users fa-fw',
+                    class: DECOR.DASH.class,
+                    sref: STATES.USERS },
+                  { name: dropdownNew,
+                    icon: 'fa fa-user-plus fa-fw',
+                    class: DECOR.NEW.class,
+                    sref: STATES.USERS_NEW }
                 ]
               }
             }
@@ -109,6 +116,7 @@ angular.module('canvassTrac')
               property: 'root',
               value: {
                 name: campaign,
+                icon: 'fa fa-pencil-square fa-fw',
                 sref: STATES.CAMPAIGN,
                 substates: []
               }
@@ -118,8 +126,14 @@ angular.module('canvassTrac')
               value: {
                 header: electionDash,
                 items: [
-                  { name: electionDash, sref: STATES.ELECTION },
-                  { name: dropdownNew, sref: STATES.ELECTION_NEW }
+                  { name: electionDash,
+                    icon:'fa fa-bullhorn fa-fw',
+                    class: DECOR.DASH.class,
+                    sref: STATES.ELECTION },
+                  { name: dropdownNew,
+                    icon: DECOR.NEW.icon,
+                    class: DECOR.NEW.class,
+                    sref: STATES.ELECTION_NEW }
                 ]
               }
             },
@@ -138,8 +152,14 @@ angular.module('canvassTrac')
               value: {
                 header: canvassDash,
                 items: [
-                  { name: canvassDash, sref: STATES.CANVASS },
-                  { name: dropdownNew, sref: STATES.CANVASS_NEW }
+                  { name: canvassDash,
+                    icon: 'fa fa-clipboard fa-fw',
+                    class: DECOR.DASH.class,
+                    sref: STATES.CANVASS },
+                  { name: dropdownNew,
+                    icon: DECOR.NEW.icon,
+                    class: DECOR.NEW.class,
+                    sref: STATES.CANVASS_NEW }
                 ]
               }
             }
@@ -264,19 +284,13 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-HeaderController.$inject = ['$scope', '$state', '$rootScope', 'Idle', 'authFactory', 'consoleService', 'stateFactory', 'NgDialogFactory', 'STATES', 'MENUS', 'USER', 'HOMESCRN', 'DEBUG', 'CONFIG'];
+HeaderController.$inject = ['$scope', '$state', '$rootScope', 'Idle', 'authFactory', 'userService', 'consoleService', 'stateFactory', 'NgDialogFactory', 'menuService', 'STATES', 'MENUS', 'USER', 'HOMESCRN', 'DEBUG', 'CONFIG'];
 
-function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consoleService, stateFactory, NgDialogFactory, STATES, MENUS, USER, HOMESCRN, DEBUG, CONFIG) {
+function HeaderController ($scope, $state, $rootScope, Idle, authFactory, userService, consoleService, stateFactory, NgDialogFactory, menuService, STATES, MENUS, USER, HOMESCRN, DEBUG, CONFIG) {
 
   var con = consoleService.getLogger('HeaderController');
 
-  $scope.status = {
-    cfgIsOpen: false,
-    cmpgnIsOpen: false
-  };
-  
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
-  $scope.setLoggedIn = setLoggedIn;
   $scope.openLogin = openLogin;
   $scope.openSupport = openSupport;
   $scope.logOut = logOut;
@@ -294,14 +308,14 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
   $scope.contactMenu = MENUS.CONTACT;
 
   makeBreadcrumb();
-  $scope.setLoggedIn(CONFIG.NOAUTH ? false : true);
+  setLoggedIn(CONFIG.NOAUTH ? false : true);
 
   $rootScope.$on('login:Successful', function () {
-    $scope.setLoggedIn(true);
+    setLoggedIn(true);
   });
 
   $rootScope.$on('registration:Successful', function () {
-    $scope.setLoggedIn(true);
+    setLoggedIn(true);
   });
 
   $rootScope.$on('$stateChangeSuccess',
@@ -368,38 +382,36 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
    * @param {boolean} loggedIn - logged in flag; false: force logged off state, true: state determined by authentication factory
    */
   function setLoggedIn(loggedIn, type) {
-    var showMenus,
-      override,
-      doConfigMenu,
-      doCampaignMenu;
+
     if (!loggedIn) {
       $scope.loggedIn = false;
       $scope.username = '';
-      showMenus = CONFIG.NOAUTH;  // show menus if authentication disabled
-      override = CONFIG.NOAUTH;   // override access check if authentication disabled
     } else {
       $scope.loggedIn = USER.authenticated;
       $scope.username = USER.username;
-      showMenus = USER.authenticated;
-    }
-    // config menu's if need to show, or menu exists and not showing
-    doConfigMenu = doCampaignMenu = showMenus;
-    if (!showMenus) {
-      doConfigMenu = $scope.configMenu;
-      doCampaignMenu = $scope.campaignMenu;
-    }
-    if (doConfigMenu) {
-      $scope.configMenu = configMenuAccess(MENUS.CONFIG, override);
-    }
-    if (doCampaignMenu) {
-      $scope.campaignMenu = configMenuAccess(MENUS.CAMPAIGN, override);
     }
 
+    menuService.configMenus($scope, loggedIn);
+
     if ($scope.loggedIn) {
-      HOMESCRN.message = undefined;
+      setHomeScrnMsg(undefined);
+
+      userService.getUserDetails(USER.id, false,
+        // success function
+        function (response, user) {
+          USER.person = user.person;
+          setHomeScrnMsg('Welcome ' + USER.person.firstname);
+        }
+      );
+
     } else if (type === 'auto') {
-      HOMESCRN.message = 'Your session has expired, please login again to continue.';
+      setHomeScrnMsg('Your session has expired, please login again to continue.', true);
     }
+  }
+
+  function setHomeScrnMsg (msg, showAfterLogout) {
+    HOMESCRN.message = msg;
+    $scope.showAfterLogout = (showAfterLogout ? true : false);
   }
 
   function openLogin () {
@@ -442,6 +454,12 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
 
   function logOut(type) {
     Idle.unwatch();
+    $rootScope.$broadcast('logout:');
+
+    if (!$scope.showAfterLogout) {
+      setHomeScrnMsg(undefined);
+    }
+
     authFactory.logout(function (/*response*/) {
       // on success
       loggedOut();
@@ -450,7 +468,7 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
       // on error
       loggedOut();
     });
-    $scope.setLoggedIn(false, type);
+    setLoggedIn(false, type);
   }
 
   function loggedOut () {
@@ -518,41 +536,6 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, consol
       }
     }
     return crumb;
-  }
-
-  function configMenuAccess (baseMenu, override) {
-    var menu = {
-      root: baseMenu.root // copy root
-    },
-    substate,
-    count = 0;  // count of menu entries
-
-    Object.getOwnPropertyNames(baseMenu).forEach(function (name) {
-      if (name !== 'root') {
-        // NOTE: name is the property value from the MENUS config phase & matches the access property in the login response
-        menu[name] = {
-          header: baseMenu[name].header,
-          items: []
-        };
-        // add items to the menu if user has access
-        baseMenu[name].items.forEach(function (item) {
-          substate = menu.root.substates.find(function (state) {
-            return (state.state === item.sref);
-          });
-          if (substate) {
-            if (override ||
-                authFactory.hasAccess(name, substate.access.group, substate.access.privilege)) {
-              menu[name].items.push(item);
-              ++count;
-            }
-          }
-        });
-      }
-    });
-    if (!count) {
-      menu = undefined; // no menu items so no need for menu
-    }
-    return menu;
   }
 
 

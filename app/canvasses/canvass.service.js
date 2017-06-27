@@ -11,9 +11,12 @@ angular.module('ct.clientCommon')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-canvassService.$inject = ['$state', 'canvassFactory', 'NgDialogFactory', 'controllerUtilFactory'];
+canvassService.$inject = ['$state', 'canvassFactory', 'NgDialogFactory', 'controllerUtilFactory', 'userFactory', 'miscUtilFactory', 'USERSCHEMA', 'SCHEMA_CONST'];
 
-function canvassService($state, canvassFactory, NgDialogFactory, controllerUtilFactory) {
+function canvassService($state, canvassFactory, NgDialogFactory, controllerUtilFactory, userFactory, miscUtilFactory, USERSCHEMA, SCHEMA_CONST) {
+
+  var roleDialog =
+      USERSCHEMA.SCHEMA.getField(USERSCHEMA.USER_ROLE_IDX, SCHEMA_CONST.DIALOG_PROP);
 
   /*jshint validthis:true */
   this.confirmDeleteCanvass = function (scope, deleteList, onSuccess, onFailure) {
@@ -32,14 +35,9 @@ function canvassService($state, canvassFactory, NgDialogFactory, controllerUtilF
           delParams[entry._id] = true;
         });
 
-        canvassFactory.getCanvasses().delete(delParams)
-          .$promise.then(
+        canvassFactory.delete('canvass', delParams,
             // success function
-            function (response) {
-              if (onSuccess) {
-                onSuccess(response);
-              }
-            },
+            onSuccess,
             // error function
             function (response) {
               if (onFailure) {
@@ -83,6 +81,38 @@ function canvassService($state, canvassFactory, NgDialogFactory, controllerUtilF
 
     return button;
   };
+
+
+  this.newCanvasserFilter = function (base, canvasser) {
+    var opts = {
+        hiddenFilters: [roleDialog] // hide role from filter description
+      },
+      filter;
+
+    // display role name rather than id
+//    if (canvasser) {
+//      opts = {
+//        dispTransform: function (dialog, filterVal) {
+//          var str = filterVal;
+//          if (dialog === roleDialog) {
+//            str = canvasser.name;
+//          }
+//          return str;
+//        }
+//      };
+//    }
+
+    filter = userFactory.newFilter(base, opts);
+
+    // add canvasser restriction to filter
+    if (canvasser) {
+      filter.addFilterValue(roleDialog, canvasser._id);
+    }
+
+    return filter;
+  };
+
+
 
 }
 

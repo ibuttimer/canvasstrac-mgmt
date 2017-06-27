@@ -71,22 +71,21 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, canva
   initFilter();
 
   // get list of elections selecting name field, _id field is always provided
-  $scope.elections = electionFactory.getElections().query({fields: 'name'})
-    .$promise.then(
-      // success function
-      function (response) {
-        // response is actual data
-        $scope.elections = response;
+  $scope.elections = electionFactory.query('election', {fields: 'name'},
+    // success function
+    function (response) {
+      // response is actual data
+      $scope.elections = response;
 
-        getCanvasses();
-      },
-      // error function
-      function (response) {
-        // response is message
-        NgDialogFactory.error(response, 'Unable to retrieve Elections');
-        $state.go(STATES.APP);
-      }
-    );
+      getCanvasses();
+    },
+    // error function
+    function (response) {
+      // response is message
+      NgDialogFactory.error(response, 'Unable to retrieve Elections');
+      $state.go(STATES.APP);
+    }
+  );
 
   
   
@@ -108,7 +107,7 @@ function CanvassDashController($scope, $rootScope, $state, canvassFactory, canva
   }
 
   function getCanvasses() {
-    $scope.canvasses = canvassFactory.getCanvasses().query(
+    $scope.canvasses = canvassFactory.query('canvass',
       // success function
       function (response) {
         // response is actual data

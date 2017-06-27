@@ -4,6 +4,18 @@
 
 angular.module('canvassTrac')
 
+  .constant('DECOR', (function () {
+    return {
+      DASH: { icon: 'fa fa-tachometer fa-fw', class: 'btn btn-default' },
+      NEW: { icon: 'fa fa-plus-square-o fa-fw', class: 'btn btn-primary' },
+      VIEW: { icon: 'fa fa-eye fa-fw', class: 'btn btn-info' },
+      EDIT: { icon: 'fa fa-pencil-square-o fa-fw', class: 'btn btn-warning' },
+      DEL: { icon: 'fa fa-trash-o fa-fw', class: 'btn btn-danger' },
+      SEL: { icon: 'fa fa-check-square-o fa-fw', class: 'btn btn-default' },
+      UNSEL: { icon: 'fa fa-square-o fa-fw', class: 'btn btn-default' }
+    };
+  })())
+
   .factory('controllerUtilFactory', controllerUtilFactory);
 
 
@@ -11,9 +23,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-controllerUtilFactory.$inject = ['authFactory', 'miscUtilFactory', 'utilFactory', 'STATES', 'ACCESS'];
+controllerUtilFactory.$inject = ['authFactory', 'miscUtilFactory', 'utilFactory', 'STATES', 'ACCESS', 'DECOR'];
 
-function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATES, ACCESS) {
+function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATES, ACCESS, DECOR) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   var factory = {
@@ -30,11 +42,11 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
   editTxt = 'Edit',
   delTxt = 'Delete',
   buttons = [
-    { txt: dashTxt, icon: 'fa-tachometer', tip: 'Go to dashboard', class: 'btn-default' },
-    { txt: newTxt, icon: 'fa-plus-square-o', tip: 'Create new', class: 'btn-primary' },
-    { txt: viewTxt, icon: 'fa-eye', tip: 'View selected', class: 'btn-info' },
-    { txt: editTxt, icon: 'fa-pencil-square-o', tip: 'Edit selected', class: 'btn-warning' },
-    { txt: delTxt, icon: 'fa-trash-o', tip: 'Delete selected', class: 'btn-danger' }
+    { txt: dashTxt, icon: DECOR.DASH.icon, tip: 'Go to dashboard', class: DECOR.DASH.class },
+    { txt: newTxt, icon: DECOR.NEW.icon, tip: 'Create new', class: DECOR.NEW.class },
+    { txt: viewTxt, icon: DECOR.VIEW.icon, tip: 'View selected', class: DECOR.VIEW.class },
+    { txt: editTxt, icon: DECOR.EDIT.icon, tip: 'Edit selected', class: DECOR.EDIT.class },
+    { txt: delTxt, icon: DECOR.DEL.icon, tip: 'Delete selected', class: DECOR.DEL.class }
   ];
 
   return factory;
@@ -165,8 +177,7 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
           break;
         } else if (oldCnt === 2) {
           // deselected an entry
-          var selectedList = miscUtilFactory.getSelectedList(list);
-          singleSel = selectedList[selectedList.length - 1];
+          singleSel = miscUtilFactory.findSelected(list);
           break;
         }
         /* falls through */
@@ -189,48 +200,23 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
    * @returns {boolean}      [[Description]]
    */
   function moveListSelected (fromList, toList, testFunc) {
-    var selList,      // selected items
-      moveList = [];  // items to be moved, i.e. not in target
+    var selList;      // selected items
 
-    selList = miscUtilFactory.getSelectedList(fromList);
+    selList = miscUtilFactory.getSelectedList(fromList, function (element) {
+      miscUtilFactory.toggleSelection(element);
+      return element;
+    });
+    fromList.selCount = 0;
 
     if (selList.length > 0) {
-      selList.forEach(function (element) {
-        if (!toList.findInList(function (entry) {
-          return testFunc(element, entry);
-        })) {
-          // not in target so needs to be moved
-          moveList.push(element);
-        }
-
-        miscUtilFactory.toggleSelection(element);
-      });
-
-      // remove all selected from source
-      utilFactory.arrayRemove(fromList.list, selList);
-      fromList.selCount = 0;
-    }
-
-    if (moveList.length > 0) {
-
-      utilFactory.arrayAdd(toList.list, moveList, function (array, add) {
-        for (var i = 0; i < array.length; ++i) {
-//          if (add._id === array[i]._id) {
-          if (testFunc(add, array[i])) {
-            return false; // already in array
-          }
-        }
-        return true;  // not found, so add
-      });
+      fromList.removeFromList(selList, testFunc);
+      toList.addToList(selList, true, testFunc);
     }
 
     [fromList, toList].forEach(function (resList) {
       resList.sort();
-      resList.count = resList.list.length;
       resList.applyFilter();
     });
   }
-
-
 
 }

@@ -4,7 +4,7 @@
 
 angular.module('canvassTrac')
 
-  .directive("cnvtrcAddrWidget", function() {
+  .directive('cnvtrcAddrWidget', function() {
     return {
       restrict: 'E',          // restrict the directive declaration style to element name
       scope: {                // new "isolate" scope
@@ -23,9 +23,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAddressController.$inject = ['$scope', '$state', '$stateParams', '$filter', 'addressFactory', 'NgDialogFactory', 'utilFactory', 'miscUtilFactory', 'controllerUtilFactory', 'pagerFactory', 'storeFactory', 'consoleService', 'RES'];
+CanvassAddressController.$inject = ['$scope', '$state', '$stateParams', '$filter', 'addressFactory', 'NgDialogFactory', 'utilFactory', 'miscUtilFactory', 'controllerUtilFactory', 'pagerFactory', 'storeFactory', 'consoleService', 'resourceFactory', 'RES', 'RESOURCE_CONST', 'SCHEMA_CONST'];
 
-function CanvassAddressController($scope, $state, $stateParams, $filter, addressFactory, NgDialogFactory, utilFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, consoleService, RES) {
+function CanvassAddressController($scope, $state, $stateParams, $filter, addressFactory, NgDialogFactory, utilFactory, miscUtilFactory, controllerUtilFactory, pagerFactory, storeFactory, consoleService, resourceFactory, RES, RESOURCE_CONST, SCHEMA_CONST) {
 
   var con = consoleService.getLogger('CanvassAddressController');
 
@@ -41,6 +41,17 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
   $scope.filterList = filterList;
   $scope.updateList = updateList;
   $scope.sortList = sortList;
+
+  var anyNonBlankQuery = resourceFactory.buildMultiValModelPropQuery(
+      // $or=field1=value1,field2=value2....
+      RESOURCE_CONST.QUERY_OR,
+      addressFactory.getModelPropList({
+        type: SCHEMA_CONST.FIELD_TYPES.STRING,  // get list of properties of type STRING
+      }),
+      function () {
+        return RESOURCE_CONST.QUERY_NBLANK;
+      }
+    );
 
   requestAddressCount();  // get database total address count
 
@@ -67,7 +78,7 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
   
   function newFilter (base) {
     // new filter no blanks
-    return addressFactory.newFilter(base, false);
+    return addressFactory.newFilter(base, { allowBlank: false });
   }
 
   function setFilter (id, filter) {
@@ -86,7 +97,9 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
   }
 
 
-  function filterList (resList, action) {
+  function filterList (resList, btn) {
+
+    var action = btn.cmd;
     
     if (action === 'c') {       // clear filter
       setFilter(resList.id);
@@ -96,10 +109,9 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
       resList.applyFilter();
     } else if (action === 'a') {  // no filter, get all
       setFilter(resList.id);
-      requestAddresses(resList, resList.filter);  // request all addresses
-      
+      requestAddresses(resList, anyNonBlankQuery);  // request all addresses
     } else {  // set filter
-      var filter = angular.copy(resList.filter.filterBy);
+      var filter = angular.copy(resList.filter.getFilterValue());
 
       var dialog = NgDialogFactory.open({ template: 'address/addressfilter.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'AddressFilterController', 
                     data: {action: resList.id, title: resList.title, filter: filter}});
@@ -127,12 +139,13 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
 
   function requestAddresses (resList, filter) {
     
-    addressFactory.getFilteredResource(resList, filter, 
+    addressFactory.getFilteredResource('address', resList, filter,
       // success function
       function (response) {
         if (!response.length) {
           NgDialogFactory.message('No addresses found', 'No addresses matched the specified criteria');
         }
+        $scope.setItemSel(resList, miscUtilFactory.CLR_SEL);
 
         requestAddressCount();
       },
@@ -144,20 +157,18 @@ function CanvassAddressController($scope, $state, $stateParams, $filter, address
   }
 
   function requestAddressCount () {
-    $scope.dbAddrCount = addressFactory.getCount().get()
-      .$promise.then(
-        // success function
-        function (response) {
-          $scope.dbAddrCount = response.count;
-        },
-        // error function
-        function (response) {
-          NgDialogFactory.error(response, 'Unable to retrieve address count');
-        }
-      );
+    $scope.dbAddrCount = addressFactory.get('count', anyNonBlankQuery,
+      // success function
+      function (response) {
+        $scope.dbAddrCount = response.count; // total count
+      },
+      // error function
+      function (response) {
+        NgDialogFactory.error(response, 'Unable to retrieve address count');
+      }
+    );
   }
 
-  
   function updateList (fromList, toList) {
 
     controllerUtilFactory.moveListSelected(fromList, toList, function (item1, item2) {

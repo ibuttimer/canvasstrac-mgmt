@@ -11,9 +11,9 @@ angular.module('ct.clientCommon')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-userService.$inject = ['$state', 'userFactory', 'NgDialogFactory', 'controllerUtilFactory', 'miscUtilFactory'];
+userService.$inject = ['$state', 'userFactory', 'NgDialogFactory', 'controllerUtilFactory', 'miscUtilFactory', 'SCHEMA_CONST', 'PEOPLESCHEMA', 'ADDRSCHEMA', 'DEBUG'];
 
-function userService($state, userFactory, NgDialogFactory, controllerUtilFactory, miscUtilFactory) {
+function userService($state, userFactory, NgDialogFactory, controllerUtilFactory, miscUtilFactory, SCHEMA_CONST, PEOPLESCHEMA, ADDRSCHEMA, DEBUG) {
 
   /*jshint validthis:true */
   this.confirmDeleteUSer = function (scope, deleteList, onSuccess, onFailure) {
@@ -32,23 +32,22 @@ function userService($state, userFactory, NgDialogFactory, controllerUtilFactory
           delParams[entry._id] = true;
         });
 
-        userFactory.getUsers().delete(delParams)
-          .$promise.then(
-            // success function
-            function (response) {
-              if (onSuccess) {
-                onSuccess(response);
-              }
-            },
-            // error function
-            function (response) {
-              if (onFailure) {
-                onFailure(response);
-              } else {
-                NgDialogFactory.error(response, 'Delete Unsuccessful');
-              }
+        userFactory.delete('user', delParams,
+          // success function
+          function (response) {
+            if (onSuccess) {
+              onSuccess(response);
             }
-          );
+          },
+          // error function
+          function (response) {
+            if (onFailure) {
+              onFailure(response);
+            } else {
+              NgDialogFactory.error(response, 'Delete Unsuccessful');
+            }
+          }
+        );
       });
   };
 
@@ -99,6 +98,87 @@ function userService($state, userFactory, NgDialogFactory, controllerUtilFactory
     } else {
       return button;
     }
+  };
+
+  this.getUserDetails = function (id, flat, onSuccess, onFailure) {
+    if (typeof flat === 'function') {
+      onFailure = onSuccess;
+      onSuccess = flat;
+      flat = false;
+    }
+
+    userFactory.get('user', {id: id},
+      // success function
+      function (response) {
+
+        var user = {
+          // from user model
+          username: response.username,
+          role: response.role._id,
+          _id: response._id
+        };
+
+        if (flat) {
+          // flatten object
+          PEOPLESCHEMA.SCHEMA.forModelProps([
+              PEOPLESCHEMA.IDs.FNAME,
+              PEOPLESCHEMA.IDs.LNAME,
+              PEOPLESCHEMA.IDs.NOTE
+            ], function (field) {
+              var model = field[SCHEMA_CONST.MODELNAME_PROP];
+              if (model) {
+                user[model] = response.person[model];
+              }
+          });
+          ADDRSCHEMA.SCHEMA.forModelProps([
+              ADDRSCHEMA.IDs.ADDR1,
+              ADDRSCHEMA.IDs.ADDR2,
+              ADDRSCHEMA.IDs.ADDR3,
+              ADDRSCHEMA.IDs.TOWN,
+              ADDRSCHEMA.IDs.CITY,
+              ADDRSCHEMA.IDs.COUNTY,
+              ADDRSCHEMA.IDs.COUNTRY,
+              ADDRSCHEMA.IDs.PCODE,
+              ADDRSCHEMA.IDs.GPS
+            ], function (field) {
+              var model = field[SCHEMA_CONST.MODELNAME_PROP];
+              if (model) {
+                user[model] = response.person.address[model];
+              }
+          });
+
+          // TODO contactDetails schema & factory
+
+          if (response.person.contactDetails) {
+            miscUtilFactory.copyProperties(response.person.contactDetails, user, [
+              // from contactDetails model
+              'phone', 'mobile', 'email', 'website', 'facebook', 'twitter'
+              ]);
+          }
+        } else {
+          user.person = response.person;
+        }
+
+        if (DEBUG.devmode) {
+          user.person_id = miscUtilFactory.readSafe(response, ['person','_id']);
+          user.address_id = miscUtilFactory.readSafe(response, ['person','address','_id']);
+          user.contact_id = miscUtilFactory.readSafe(response, ['person','contactDetails','_id']);
+        }
+
+        if (onSuccess) {
+          onSuccess(response, user);
+        }
+      },
+      // error function
+      function (response) {
+        // response is message
+        NgDialogFactory.error(response, 'Unable to retrieve User');
+
+        if (onFailure) {
+          onFailure(response);
+        }
+      }
+    );
   };
 
 

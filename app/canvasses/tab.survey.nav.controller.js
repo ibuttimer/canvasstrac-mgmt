@@ -18,10 +18,12 @@ function SurveyTabNavController($scope) {
 
   $scope.hasPrev = true;
   $scope.hasReset = true;
+  $scope.prevTooltip = 'Canvass tab';
   $scope.prevEnabled = function () {
     return this.surveyForm.$invalid;
   };
   $scope.nextText = 'Next';
+  $scope.nextTooltip = 'Address tab';
   $scope.nextEnabled = function () {
     return this.surveyForm.$invalid;
   };

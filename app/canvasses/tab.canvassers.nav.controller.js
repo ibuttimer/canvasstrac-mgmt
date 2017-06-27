@@ -18,10 +18,12 @@ function CanvassersTabNavController($scope) {
 
   $scope.hasPrev = true;
   $scope.hasReset = false;
+  $scope.prevTooltip = 'Address tab';
   $scope.prevEnabled = function () {
     return this.canvasserForm.$invalid;
   };
   $scope.nextText = 'Next';
+  $scope.nextTooltip = 'Assignment tab';
   $scope.nextEnabled = function () {
     return this.canvasserForm.$invalid;
   };

@@ -10,9 +10,9 @@ angular.module('NgDialogUtil', ['ngDialog'])
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-NgDialogFactory.$inject = ['$rootScope', 'authFactory', 'ngDialog', '$state', 'STATES', 'RSPCODE'];
+NgDialogFactory.$inject = ['authFactory', 'ngDialog', '$state', 'STATES', 'RSPCODE'];
 
-function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSPCODE) {
+function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   var factory = {
@@ -24,6 +24,7 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
     message: message,
     errormessage: errormessage,
     isNgDialogCancel: isNgDialogCancel,
+    yesNoDialog: yesNoDialog
   };
   
   return factory;
@@ -92,9 +93,12 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
    * @param {object} response http response
    * @param {string} title    Dialog title
    */
-  function error(response, title) {
+  function error (response, title) {
     var authErr = false,
-      options = { template: 'views/errormodal.html', scope: $rootScope },
+      options = {
+        template: 'views/errormodal.html',
+        className: 'ngdialog-theme-default'
+      },
       msg;
 
     // response is message
@@ -131,8 +135,10 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
       msg = 'Unknown error';
     }
 
-    $rootScope.errortitle = title;
-    $rootScope.errormessage = msg;
+    options.data = {
+      title: title,
+      message: msg
+    };
 
     if (authErr) {
       ngDialog.openConfirm(options)
@@ -163,9 +169,11 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
   function message (title, message) {
 
     // response is message
-    $rootScope.title = title;
-    $rootScope.message = message;
-    ngDialog.openConfirm({ template: 'views/messagemodal.html', scope: $rootScope });
+    ngDialog.openConfirm({
+      template: 'views/messagemodal.html',
+      className: 'ngdialog-theme-default',
+      data: { title: title, message: message }
+    });
   }
 
   /**
@@ -174,11 +182,11 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
    * @param {string} message message to display
    */
   function errormessage (title, message) {
-
-    // response is message
-    $rootScope.errortitle = title;
-    $rootScope.errormessage = message;
-    ngDialog.openConfirm({ template: 'views/errormodal.html', scope: $rootScope });
+    ngDialog.openConfirm({
+      template: 'views/errormodal.html',
+      className: 'ngdialog-theme-default',
+      data: { title: title, message: message }
+    });
   }
 
   /**
@@ -188,9 +196,26 @@ function NgDialogFactory ($rootScope, authFactory, ngDialog, $state, STATES, RSP
    */
   function isNgDialogCancel (data) {
     return ((data === undefined) ||   // ngDialog.close
-            (data === 'cancel') || (data === '$closeButton') || (data === '$escape'));
+            (data === 'cancel') || (data === '$closeButton') || (data === '$escape') || (data === '$document'));
   }
   
+  /**
+   * Display a message dialog with yes/no buttons
+   * @param {string} title   Dialog title
+   * @param {string} message message to display
+   * @param {function} process Function to process result
+   * @param {function} cancel  Function to handle a dialog cancel
+   * @returns {object} dialog properties
+   * @see https://github.com/likeastore/ngDialog#returns
+   */
+  function yesNoDialog (title, message, process, cancel) {
 
+    var options = {
+      template: 'views/yesno.modal.html',
+      className: 'ngdialog-theme-default',
+      data: { title: title, message: message }
+    };
+    return openAndHandle(options, process, cancel);
+  }
   
 }

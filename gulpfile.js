@@ -130,7 +130,12 @@ var vendorFiles = {
 gulp.task('jshint', function () {
   return gulp.src(appFiles.scripts)
     .pipe(jshint())
-    .pipe(jshint.reporter(stylish));
+    .pipe(jshint.reporter(stylish /*, { verbose: true }*/))
+    .pipe(jshint.reporter('fail', {
+      // only fail task on errors
+      ignoreWarning: true,
+      ignoreInfo: true
+    }));
 });
 
 // Clean all output files
@@ -154,8 +159,9 @@ function noTrailingSlash (path) {
 }
 
 // Clean just the app files
-gulp.task('clean', function () {
-  return del([basePaths.dest + '**',  // NOTE this deletes both parent & comtent!
+gulp.task('clean', function (cb) {
+  var err;
+  del([basePaths.dest + '**',  // NOTE this deletes both parent & comtent!
               '!' + noTrailingSlash(basePaths.dest),  // exclude parent
               '!' + paths.vendor.dest + '**'          // exclude vendor files
         ], {
@@ -166,9 +172,10 @@ gulp.task('clean', function () {
 //          console.log('Deleted files and folders:\n', paths.join('\n'));
 //        }
        );
+  cb(err);
 });
 
-gulp.task('replace', function () {
+gulp.task('replace', function (cb) {
   // based on http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
 
   // Get the environment from the command line
@@ -179,7 +186,7 @@ gulp.task('replace', function () {
     settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
     flags = fs.readFileSync(basePaths.config + 'dbgFlags.txt', 'utf8'),
     patterns = [],
-    keyVal, dfltVal, setDflt;
+    keyVal, dfltVal, setDflt, err;
 
     [ // server/management app common settings
       { prop: 'baseURL', type: 'str' },
@@ -242,6 +249,8 @@ gulp.task('replace', function () {
     .pipe(notify({ message: 'Creating ' + envfilename + ' from ' + filename }))
     .pipe(replace({ patterns: patterns }))
     .pipe(gulp.dest(basePaths.src));
+
+  cb(err);
 });
 
 // Less css preprocessor
@@ -262,10 +271,11 @@ function cssProcessChain() {
   return [cleancss()  /*, rev()*/];
 }
 
-gulp.task('usemin', ['jshint'], function () {
+gulp.task('usemin', ['jshint', 'less'], function () {
   var cmt;
 
   if (!production) {
+    // copy individual script & css files
     cmt = 'non-usemin: '
     gulp.src(appFiles.scripts)
       .pipe(changed(basePaths.dest))
@@ -278,6 +288,7 @@ gulp.task('usemin', ['jshint'], function () {
     cmt = 'usemin: '
   }
 
+  // copy html files & in production minified script & css files
   return gulp.src(appFiles.views)
     .pipe(gulpif(production,
       usemin({
@@ -304,9 +315,10 @@ gulp.task('imagemin', function () {
     .pipe(notify({ message: 'Images task complete' }));
 });
 
-gulp.task('copyfonts', /*['clean'],*/ function () {
+gulp.task('copyfonts', function (cb) {
   var src = (production ? vendorFiles.fonts : vendorFiles.dev_fonts),
-    dest = (production ? paths.fonts.dest : paths.vendor.dest);
+    dest = (production ? paths.fonts.dest : paths.vendor.dest),
+    err;
   gulp.src(src)
     .pipe(changed(dest))
     .pipe(print())
@@ -315,46 +327,57 @@ gulp.task('copyfonts', /*['clean'],*/ function () {
       return "copied: " + filepath;
     }))
     .pipe(notify({ message: 'Fonts task complete' }));
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
-gulp.task('copyvendorscripts', function () {
-  var src = vendorFiles.scripts,
-    dest = paths.vendor.dest;
-  gulp.src(src)
-    .pipe(changed(dest))
-    .pipe(print())
-    .pipe(gulp.dest(dest))
-    .pipe(notify({ message: 'Vendor scripts task complete' }));
+gulp.task('copyvendorscripts', function (cb) {
+  var err;
+  if (!production) {
+    var src = vendorFiles.scripts,
+      dest = paths.vendor.dest;
+    gulp.src(src)
+      .pipe(changed(dest))
+      .pipe(print())
+      .pipe(gulp.dest(dest))
+      .pipe(notify({ message: 'Vendor scripts task complete' }));
+  } // else nothing to do in production mode
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
-gulp.task('copyvendorcss', function () {
-  var src = vendorFiles.css,
-    dest = paths.vendor.dest;
-  gulp.src(src)
-    .pipe(changed(dest))
-    .pipe(print())
-    .pipe(gulp.dest(dest))
-    .pipe(notify({ message: 'Vendor css task complete' }));
+gulp.task('copyvendorcss', function (cb) {
+  var err;
+  if (!production) {
+    var src = vendorFiles.css,
+      dest = paths.vendor.dest;
+    gulp.src(src)
+      .pipe(changed(dest))
+      .pipe(print())
+      .pipe(gulp.dest(dest))
+      .pipe(notify({ message: 'Vendor css task complete' }));
+  } // else nothing to do in production mode
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
 //gulp.task('copyvendor', [/*'copyvendorcss',*/ 'copyvendorscripts'], function () {
-gulp.task('copyvendor', function () {
+gulp.task('copyvendor', function (cb) {
+  var err;
+  if (!production) {
   
   // TODO need the prints otherwise some files are not copied
   
-  var src = vendorFiles.scriptscss,
-    dest = paths.vendor.dest;
-  gulp.src(src)
-    .pipe(changed(dest))
-    .pipe(print())
-    .pipe(gulp.dest(dest))
-    .pipe(print(function(filepath) {
-      return "Vendor script/css: " + filepath;
-    }));
+    var src = vendorFiles.scriptscss,
+      dest = paths.vendor.dest;
+    gulp.src(src)
+      .pipe(changed(dest))
+      .pipe(print())
+      .pipe(gulp.dest(dest))
+      .pipe(print(function(filepath) {
+        return "Vendor script/css: " + filepath;
+      }));
 
 //    .pipe(notify({ message: 'Vendor script/css task complete' }));
-  
-  
+  } // else nothing to do in production mode
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
 
@@ -391,22 +414,28 @@ gulp.task('browser-sync', ['default'], function () {
     gulp.watch([basePaths.dest + '**/*']).on('change', browserSync.reload);
 });
 
-// Default task
-gulp.task('default', ['clean', 'replace', 'less'], function () {
-  // TODO needs update, default shouldn't finish until these tasks are finished
-
-  if (!production) {
-    gulp.start('copyfonts',
-             'usemin', 
-             'imagemin',
+// copy task task
+gulp.task('copy', ['copyfonts', 'usemin', 'imagemin',
 //        'copyvendorcss',
 //        'copyvendorscripts',
-            'copyvendor');
-  } else {
-    gulp.start('copyfonts',
-             'usemin',
-             'imagemin');
-  }
+            'copyvendor']);
+
+// initial task
+gulp.task('initial', ['clean'], function(cb) {
+  var err;
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
+});
+
+// postinitial task
+gulp.task('postinitial', ['initial'], function(cb) {
+  var err;
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
+});
+
+// Default task
+gulp.task('default', ['postinitial', 'copy', 'replace'], function (cb) {
+  var err;
+  cb(err);
 });
 
 // additional added tasks

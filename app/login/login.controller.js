@@ -13,9 +13,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-LoginController.$inject = ['$scope', '$state', '$rootScope', 'NgDialogFactory', 'Idle', 'authFactory', 'timerFactory', 'CONFIG', 'STATES'];
+LoginController.$inject = ['$scope', '$state', '$rootScope', 'NgDialogFactory', 'Idle', 'authFactory', 'userFactory', 'userService', 'timerFactory', 'CONFIG', 'STATES'];
 
-function LoginController($scope, $state, $rootScope, NgDialogFactory, Idle, authFactory, timerFactory, CONFIG, STATES) {
+function LoginController($scope, $state, $rootScope, NgDialogFactory, Idle, authFactory, userFactory, userService, timerFactory, CONFIG, STATES) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.doLogin = doLogin;

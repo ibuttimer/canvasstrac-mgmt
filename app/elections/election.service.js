@@ -32,23 +32,18 @@ function electionService($state, electionFactory, NgDialogFactory, controllerUti
           delParams[entry._id] = true;
         });
 
-        electionFactory.getElections().delete(delParams)
-          .$promise.then(
-            // success function
-            function (response) {
-              if (onSuccess) {
-                onSuccess(response);
-              }
-            },
-            // error function
-            function (response) {
-              if (onFailure) {
-                onFailure(response);
-              } else {
-                NgDialogFactory.error(response, 'Delete Unsuccessful');
-              }
+        electionFactory.delete('election', delParams,
+          // success function
+          onSuccess,
+          // error function
+          function (response) {
+            if (onFailure) {
+              onFailure(response);
+            } else {
+              NgDialogFactory.error(response, 'Delete Unsuccessful');
             }
-          );
+          }
+        );
       });
   };
 

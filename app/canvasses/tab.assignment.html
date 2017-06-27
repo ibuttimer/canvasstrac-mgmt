@@ -69,11 +69,21 @@
       <!-- show/assign/unassign buttons -->
       <div class="col-sm-2">
         <div class="btn-group-vertical" role="group">
+<!--  TODO show allocations
           <button type="button" class="btn btn-primary btn-sm" ng-click="updateList('show')" ng-disabled=" (allocatedCanvasser.selCount == 1)">Show&nbsp;<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
           </button>
-          <button type="button" class="btn btn-primary btn-sm" ng-click="updateList('alloc')" ng-disabled="(allocatedAddr.selCount < 1) || (allocatedCanvasser.selCount != 1)">Allocate&nbsp;<span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+-->
+          <button type="button" class="btn btn-primary btn-sm" ng-click="updateList('alloc')" ng-disabled="(allocatedAddr.selCount < 1) || (allocatedCanvasser.selCount != 1)">
+            <span class="fa fa-link" aria-hidden="true"></span>
+            &nbsp;Allocate
           </button>
-          <button type="button" class="btn btn-primary btn-sm" ng-click="updateList('unalloc')" ng-disabled="(allocatedAddr.selCount < 1) && (allocatedCanvasser.selCount < 1)">Unallocate&nbsp;<span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>
+          <button type="button" class="btn btn-primary btn-sm" ng-click="updateList('unalloc')" ng-disabled="(allocatedAddr.selCount < 1) && (allocatedCanvasser.selCount < 1)">
+            <span class="fa fa-chain-broken" aria-hidden="true"></span>
+            &nbsp;Unallocate
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" ng-click="undo()" ng-disabled="undoStack.size < 1">
+            <span class="fa fa-undo" aria-hidden="true"></span>
+            &nbsp;Undo
           </button>
         </div>
       </div>

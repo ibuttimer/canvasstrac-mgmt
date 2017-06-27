@@ -71,22 +71,21 @@ function ElectionDashController($scope, $rootScope, $state, votingsystemFactory,
   initFilter();
 
   // get list of systems selecting name field, _id field is always provided
-  $scope.votingSystems = votingsystemFactory.getVotingSystems().query({fields: 'name'})
-    .$promise.then(
-      // success function
-      function (response) {
-        // response is actual data
-        $scope.votingSystems = response;
+  $scope.votingSystems = votingsystemFactory.query('system', {fields: 'name'},
+    // success function
+    function (response) {
+      // response is actual data
+      $scope.votingSystems = response;
 
-        getElections();
-      },
-      // error function
-      function (response) {
-        // response is message
-        NgDialogFactory.error(response, 'Unable to retrieve Voting Systems');
-        $state.go(STATES.APP);
-      }
-    );
+      getElections();
+    },
+    // error function
+    function (response) {
+      // response is message
+      NgDialogFactory.error(response, 'Unable to retrieve Voting Systems');
+      $state.go(STATES.APP);
+    }
+  );
 
 
   /* function implementation
@@ -107,7 +106,7 @@ function ElectionDashController($scope, $rootScope, $state, votingsystemFactory,
 
 
   function getElections () {
-    $scope.elections = electionFactory.getElections().query(
+    $scope.elections = electionFactory.query('election',
       // success function
       function (response) {
         // response is actual data

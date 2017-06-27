@@ -15,10 +15,15 @@ SubmenuPageController.$inject = ['$scope', 'SUBMENU'];
 
 function SubmenuPageController ($scope, SUBMENU) {
 
-  var menuEntries = [];
+  var menuEntries = [],
+    entry;
   for (var prop in SUBMENU) {
     if (SUBMENU[prop].header) {
-      menuEntries.push(SUBMENU[prop]);
+      entry = angular.copy(SUBMENU[prop]);
+      entry.items.forEach(function (item) {
+        item.name = item.name.trim(); // remove any whitespace used to set alignment in dropdown menu
+      });
+      menuEntries.push(entry);
     }
   }
 

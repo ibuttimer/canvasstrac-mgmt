@@ -13,18 +13,16 @@ angular.module('canvassTrac')
 
       var resource;
       if ($state.is(STATES.CONTACTUS)) {
-        resource = messageFactory.getFeedback();
+        resource = 'feedback';
       } else if ($state.is(STATES.SUPPORT)) {
-        resource = messageFactory.getSupport();
+        resource = 'support';
       }
 
-      // post message to server
-      resource.save($scope.message)
-        .$promise.then(
+      if (resource) {
+        // post message to server
+        messageFactory.save(resource, $scope.message,
           // success function
           function (/*response*/) {
-            // response is actual data
-
             // re-init for next comment entry
             $scope.initMessage(true);
 
@@ -36,6 +34,7 @@ angular.module('canvassTrac')
             NgDialogFactory.error(response, 'Error saving');
           }
         );
+      }
     };
   }])
 

@@ -37,20 +37,19 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
   stateFactory.addInterface($scope);  // add stateFactory menthods to scope
 
   // get list of systems selecting name field, _id field is always provided
-  $scope.votingSystems = votingsystemFactory.getVotingSystems().query({fields: 'name'})
-    .$promise.then(
-      // success function
-      function (response) {
-        // response is actual data
-        $scope.votingSystems = response;
-      },
-      // error function
-      function (response) {
-        // response is message
-        NgDialogFactory.error(response, 'Unable to retrieve Voting Systems');
-        $state.go(STATES.APP);
-      }
-    );
+  $scope.votingSystems = votingsystemFactory.query('system', {fields: 'name'},
+    // success function
+    function (response) {
+      // response is actual data
+      $scope.votingSystems = response;
+    },
+    // error function
+    function (response) {
+      // response is message
+      NgDialogFactory.error(response, 'Unable to retrieve Voting Systems');
+      $state.go(STATES.APP);
+    }
+  );
 
   initItem($stateParams.id);
   
@@ -90,32 +89,31 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
     if (!id) {
       $scope.election = ELECTIONSCHEMA.SCHEMA.getObject();
     } else {
-      $scope.election = electionFactory.getElections().get({id: id})
-        .$promise.then(
-          // success function
-          function (response) {
+      $scope.election = electionFactory.get('election', {id: id},
+        // success function
+        function (response) {
 
-            $scope.election = electionFactory.readResponse(response, {
-                objId: undefined, // no objId means not stored, just returned
-                factory: 'electionFactory',
-                storage: RESOURCE_CONST.STORE_OBJ,
-                subObj: { // storage infor for election
-                    objId: undefined, // no objId means not stored, just returned
-                    factory: 'votingsystemFactory',
-                    schema: ELECTIONSCHEMA.SCHEMA,
-                    schemaId: ELECTIONSCHEMA.IDs.SYSTEM,
-                    //type: can be retrieved using schema & schemaId
-                    //path: can be retrieved using schema & schemaId
-                    storage: RESOURCE_CONST.STORE_OBJ,
-                  }
-              });
-          },
-          // error function
-          function (response) {
-            // response is message
-            NgDialogFactory.error(response, 'Unable to retrieve Election');
-          }
-        );
+          $scope.election = electionFactory.readResponse(response, {
+            objId: undefined, // no objId means not stored, just returned
+            factory: 'electionFactory',
+            storage: RESOURCE_CONST.STORE_OBJ,
+            subObj: { // storage infor for election
+              objId: undefined, // no objId means not stored, just returned
+              factory: 'votingsystemFactory',
+              schema: ELECTIONSCHEMA.SCHEMA,
+              schemaId: ELECTIONSCHEMA.IDs.SYSTEM,
+              //type: can be retrieved using schema & schemaId
+              //path: can be retrieved using schema & schemaId
+              storage: RESOURCE_CONST.STORE_OBJ,
+            }
+          });
+        },
+        // error function
+        function (response) {
+          // response is message
+          NgDialogFactory.error(response, 'Unable to retrieve Election');
+        }
+      );
     }
   }
 
@@ -124,38 +122,36 @@ function ElectionController($scope, $rootScope, $state, $stateParams, votingsyst
 
     con.log('createElection', $scope.election);
 
-    electionFactory.getElections().save($scope.election)
-      .$promise.then(
-        // success function
-        function (/*response*/) {
-          initItem();
-          gotoDash();
-        },
-        // error function
-        function (response) {
-          // response is message
-          NgDialogFactory.error(response, 'Creation Unsuccessful');
-        }
-      );
+    electionFactory.save('election', $scope.election,
+      // success function
+      function (/*response*/) {
+        initItem();
+        gotoDash();
+      },
+      // error function
+      function (response) {
+        // response is message
+        NgDialogFactory.error(response, 'Creation Unsuccessful');
+      }
+    );
   }
 
   function updateElection() {
 
     con.log('updateElection', $scope.election);
 
-    electionFactory.getElections().update({id: $scope.election._id}, $scope.election)
-      .$promise.then(
-        // success function
-        function (/*response*/) {
-          initItem();
-          gotoDash();
-        },
-        // error function
-        function (response) {
-          // response is message
-          NgDialogFactory.error(response, 'Update Unsuccessful');
-        }
-      );
+    electionFactory.update('election', {id: $scope.election._id}, $scope.election,
+      // success function
+      function (/*response*/) {
+        initItem();
+        gotoDash();
+      },
+      // error function
+      function (response) {
+        // response is message
+        NgDialogFactory.error(response, 'Update Unsuccessful');
+      }
+    );
   }
 
   function changeStateParam () {

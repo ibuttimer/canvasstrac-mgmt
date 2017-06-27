@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-StateButtonsController.$inject = ['$scope', '$state', 'controllerUtilFactory'];
+StateButtonsController.$inject = ['$scope', '$state', 'controllerUtilFactory', 'DECOR'];
 
-function StateButtonsController($scope, $state, controllerUtilFactory) {
+function StateButtonsController($scope, $state, controllerUtilFactory, DECOR) {
 
   var allSelected = false,
     buttons;
@@ -35,8 +35,10 @@ function StateButtonsController($scope, $state, controllerUtilFactory) {
   if ($state.is($scope.dashState)) {
     // add select/unselect all in dash state
     buttons = buttons.concat([
-      { txt: 'Unselect', state: 'unsel', icon: 'fa-square-o', tip: 'Unselect all', class: 'btn-default' },
-      { txt: 'Select', state: 'sel', icon: 'fa-check-square-o', tip: 'Select all', class: 'btn-default' }
+      { txt: 'Unselect', state: 'unsel', icon: DECOR.UNSEL.icon, tip: 'Unselect all',
+        class: DECOR.UNSEL.class },
+      { txt: 'Select', state: 'sel', icon: DECOR.SEL.icon, tip: 'Select all',
+        class: DECOR.SEL.class }
     ]);
   }
 

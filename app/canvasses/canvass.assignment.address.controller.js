@@ -12,17 +12,16 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassAssignmentAddressController.$inject = ['$scope', 'addressFactory', 'RES', 'miscUtilFactory'];
+CanvassAssignmentAddressController.$inject = ['$scope', 'addressFactory', 'RES', 'filterSortService'];
 
-function CanvassAssignmentAddressController($scope, addressFactory, RES, miscUtilFactory) {
+function CanvassAssignmentAddressController($scope, addressFactory, RES, filterSortService) {
 
   $scope.list = addressFactory.getList(RES.ALLOCATED_ADDR);
   $scope.sortOptions = $scope.list.sortOptions;
   $scope.pager = $scope.list.pager;
-  $scope.reqAll = true; // enable request all button
   $scope.showBadge = true; // enable badge display
-  miscUtilFactory.addSelectionCmds($scope);
-  
+  $scope.reqButtons = filterSortService.getRequestButtons('addresses', filterSortService.FILTER_CLEAR);
+  $scope.selButtons = filterSortService.getSelectButtons();
 
   /* function implementation
   -------------------------- */

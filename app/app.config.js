@@ -233,11 +233,14 @@ angular.module('ct.config', [])
       SURVEY_QUESTIONS: 'surveyQuestions',        // survey questions object name
 
       ASSIGNED_ADDR: 'assignedAddr',              // all addresses assigned to canvass
+      BACKUP_ASSIGNED_ADDR: 'backupAssignedAddr', // backup of all addresses assigned to canvass
       UNASSIGNED_ADDR: 'unassignedAddr',          // addresses not assigned to canvass
       ASSIGNED_CANVASSER: 'assignedCanvasser',    // all canvassers assigned to canvass
+      BACKUP_ASSIGNED_CANVASSER: 'backupAssignedCanvasser', // backup all canvassers assigned to canvass
       UNASSIGNED_CANVASSER: 'unassignedCanvasser',// canvassers not assigned to canvass
       ALLOCATED_ADDR: 'allocatedAddr',            // addresses allocated to canvassers in canvass
-      ALLOCATED_CANVASSER: 'allocatedCanvasser',  // canvassers with allocated allocated addresses in canvass
+      ALLOCATED_CANVASSER: 'allocatedCanvasser',  // canvassers with allocated addresses in canvass
+      ALLOCATION_UNDOS: 'allocationUndos',        // undo objects for allocations
       getPagerName: function (base) {
           // eg assignedAddrPager
         return base + 'Pager';

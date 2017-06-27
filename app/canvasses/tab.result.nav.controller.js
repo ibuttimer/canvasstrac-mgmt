@@ -18,10 +18,12 @@ function ResultTabNavController($scope) {
 
   $scope.hasPrev = true;
   $scope.hasReset = false;
+  $scope.prevTooltip = 'Assignment tab';
   $scope.prevEnabled = function () {
     return this.resultForm.$invalid;
   };
   $scope.nextText = 'Done';
+  $scope.nextTooltip = 'Go to dashboard';
   $scope.nextEnabled = function () {
     return this.resultForm.$invalid;
   };
