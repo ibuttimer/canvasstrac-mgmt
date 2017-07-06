@@ -62,7 +62,7 @@ function CanvassCanvasserController($scope, $state, $filter, NgDialogFactory, mi
     if (!filter) {
       filter = newFilter();
     }
-    $scope[filterStr] = filter.toString(/*filterDispTransform*/);
+    $scope[filterStr] = filter.toString();
 
     return userFactory.setFilter(id, filter);
   }

@@ -27,16 +27,7 @@ CanvassController.$inject = ['$scope', '$state', '$stateParams', '$filter', '$in
 
 function CanvassController($scope, $state, $stateParams, $filter, $injector, canvassFactory, canvassService, canvassAssignmentFactory, surveyFactory, addressFactory, userFactory, NgDialogFactory, stateFactory, utilFactory, miscUtilFactory, storeFactory, resourceFactory, consoleService, controllerUtilFactory, RES, roleFactory, ROLES, STATES, LABELS, SCHEMA_CONST, CANVASSSCHEMA, SURVEYSCHEMA, CANVASSRES_SCHEMA, CANVASSASSIGN_SCHEMA, ADDRSCHEMA, RESOURCE_CONST, QUESTIONSCHEMA, CHARTS, DEBUG) {
 
-  var con = consoleService.getLogger('CanvassController'),
-    checkArgsInfo = [
-      { name: 'factory', test: angular.isString, dflt: undefined },
-      { name: 'resource', test: angular.isString, dflt: undefined },
-      { name: 'subObj', test: angular.isArray, dflt: undefined },
-      { name: 'schema', test: angular.isObject, dflt: {} },
-      { name: 'flags', test: angular.isNumber, dflt: storeFactory.NOFLAG },
-      { name: 'next', test: angular.isFunction, dflt: undefined },
-      { name: 'custom', test: angular.isObject, dflt: {} }
-    ];
+  var con = consoleService.getLogger('CanvassController');
 
   con.debug('CanvassController id', $stateParams.id);
 
@@ -441,64 +432,66 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
                                               }));
   }
 
-  function getCanvassRspOptions (schema, flags, next, custom) {
-    var args = checkArgs('canvassFactory', 'canvass', schema, flags, next, custom),
-      addrObjId,
-      canvsrObjId;
+  function getCanvassRspOptions (schema, flags, next, customArgs) {
 
-    if (!miscUtilFactory.isEmpty(args.schema) && args.schema.schema &&
-        (args.schema.schema.name === CANVASSASSIGN_SCHEMA.SCHEMA.name)) {
-      // for canvass assignment processing so only want allocated addr/canvasser
-      addrObjId = RES.ALLOCATED_ADDR;
-      canvsrObjId = RES.ALLOCATED_CANVASSER;
+    var args = resourceFactory.getStandardArgsObject(
+                        undefined, // no id, this obj will not be used
+                        'canvassFactory', 'canvass', schema, flags, next, customArgs),
+      addrObjId,
+      canvsrObjId,
+      schemaLink;
+
+    if (!miscUtilFactory.isEmpty(args.schema)) {
+      schemaLink = {
+        schema: args.schema,
+        schemaId: args.schemaId
+      };
+      if (args.schema.name === CANVASSASSIGN_SCHEMA.SCHEMA.name) {
+        // for canvass assignment processing so only want allocated addr/canvasser
+        addrObjId = RES.ALLOCATED_ADDR;
+        canvsrObjId = RES.ALLOCATED_CANVASSER;
+      }
     } else {
       // for canvass processing
       addrObjId = [RES.ASSIGNED_ADDR, RES.BACKUP_ASSIGNED_ADDR, RES.ALLOCATED_ADDR];
       canvsrObjId = [RES.ASSIGNED_CANVASSER, RES.BACKUP_ASSIGNED_CANVASSER, RES.ALLOCATED_CANVASSER];
+      schemaLink = {};
     }
 
-    var addrOpts = getRspAddressOptions(addrObjId, {
-        schema: CANVASSSCHEMA.SCHEMA,
-        schemaId: CANVASSSCHEMA.IDs.ADDRESSES,
-      }, (args.flags | storeFactory.COPY_SET)),  // make copy of addresses
-      canvsrOpts = getRspCanvasserOptions(canvsrObjId, {
-        schema: CANVASSSCHEMA.SCHEMA,
-        schemaId: CANVASSSCHEMA.IDs.CANVASSERS,
-      }, (args.flags | storeFactory.COPY_SET)),  // make copy of canvassers
-      resltsOpts = getRspResultOptions(RES.CANVASS_RESULT, {
-        schema: CANVASSSCHEMA.SCHEMA,
-        schemaId: CANVASSSCHEMA.IDs.RESULTS,
-      }, (args.flags | storeFactory.COPY_SET)),   // make copy of results
-    rspOptions = {
-      objId: [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
-      factory: args.factory,
-      schema: args.schema.schema,
-      schemaId: args.schema.schemaId,
-      storage: RESOURCE_CONST.STORE_OBJ,
-      flags: args.flags,
-      next: args.next,
-      subObj: [
-        // storage arguments for specific sub sections of survey info
-        { // storage info for election
-          objId: RES.ACTIVE_ELECTION, // id of election object to save response data to
-          schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.ELECTION,
-          //type/path/storage/factory: can be retrieved using schema & schemaId
-          flags: args.flags
-        },
-        // storage info for survey
-        getSurveyRspOptions({
-          schema: CANVASSSCHEMA.SCHEMA,
-          schemaId: CANVASSSCHEMA.IDs.SURVEY
-        }, args.flags),
-        // storage info for addresses
-        addrOpts,
-        // storage info for canvassers
-        canvsrOpts,
-        // storage info for results
-        resltsOpts
-      ]
-    };
+    var addrOpts = getRspAddressOptions(addrObjId,
+                      CANVASSSCHEMA.SCHEMA.getSchemaLink(CANVASSSCHEMA.IDs.ADDRESSES),
+                      (args.flags | storeFactory.COPY_SET)),  // make copy of addresses
+      canvsrOpts = getRspCanvasserOptions(canvsrObjId,
+                      CANVASSSCHEMA.SCHEMA.getSchemaLink(CANVASSSCHEMA.IDs.CANVASSERS),
+                      (args.flags | storeFactory.COPY_SET)),  // make copy of canvassers
+      resltsOpts = getRspResultOptions(RES.CANVASS_RESULT,
+                      CANVASSSCHEMA.SCHEMA.getSchemaLink(CANVASSSCHEMA.IDs.RESULTS),
+                      (args.flags | storeFactory.COPY_SET)),   // make copy of results
+      rspOptions = resourceFactory.getStandardArgsObject(
+                      [RES.ACTIVE_CANVASS,  RES.BACKUP_CANVASS],
+                      args.factory, args.resource,
+                      [ // storage arguments for specific sub sections of survey info
+                        // storage info for election
+                        getRspElectionOptions(
+                          RES.ACTIVE_ELECTION, // id of election object to save
+                          CANVASSSCHEMA.SCHEMA.getSchemaLink(CANVASSSCHEMA.IDs.ELECTION),
+                          args.flags),
+                        // storage info for survey
+                        getSurveyRspOptions(
+                          CANVASSSCHEMA.SCHEMA.getSchemaLink(CANVASSSCHEMA.IDs.SURVEY),
+                          args.flags),
+                        // storage info for addresses
+                        addrOpts,
+                        // storage info for canvassers
+                        canvsrOpts,
+                        // storage info for results
+                        resltsOpts
+                      ],
+                      schemaLink, args.flags, args.next, args.customArgs);
+
+    angular.extend(rspOptions, {
+      storage: RESOURCE_CONST.STORE_OBJ
+    });
 
     // mark address & result objects for linking
     addrOpts[canvassFactory.ADDR_RES_LINKADDRESS] = true;
@@ -512,22 +505,22 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
     addrOpts[canvassAssignmentFactory.ADDR_CANVSR_ADDRESSLIST] = true;
     canvsrOpts[canvassAssignmentFactory.ADDR_CANVSR_CANVASSERLIST] = true;
 
-    if (args.custom) {
-      // add custom items
-      miscUtilFactory.copyProperties(args.custom, rspOptions);
-    }
-
     return rspOptions;
   }
 
-  function getRspAddressOptions (objId, schema, flags, next, custom) {
+  function getRspAddressOptions (objId, schema, flags, next, customArgs) {
     // storage info for addresses
-    return getRspOptionsObject(objId, 'addressFactory', 'address', schema, flags, next, custom);
+    return getRspOptionsObject(objId, 'addressFactory', 'address', schema, flags, next, customArgs);
   }
 
-  function getRspCanvasserOptions (objId, schema, flags, next, custom) {
+  function getRspCanvasserOptions (objId, schema, flags, next, customArgs) {
     // storage info for canvassers
-    return getRspOptionsObject(objId, 'userFactory', 'user', schema, flags, next, custom);
+    return getRspOptionsObject(objId, 'userFactory', 'user', schema, flags, next, customArgs);
+  }
+
+  function getRspElectionOptions (objId, schema, flags, next, customArgs) {
+    // storage info for canvassers
+    return getRspOptionsObject(objId, 'electionFactory', 'election', schema, flags, next, customArgs);
   }
 
   function getRspResultOptions (objId, schema, flags, next) {
@@ -566,80 +559,43 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
       });
     });
 
-    var optObj = getRspOptionsObject(objId, 'canvassResultFactory', 'result', subObj, schema, flags, next);
-    optObj.customArgs = {
-      getChartType: function (type) {
-        /* chart.js pie, polarArea & doughnut charts may be displayed using
-          single data series (i.e. data = []), whereas chart.js radar, line &
-          bar require multiple data series (i.e. data = [[], []]) */
-        switch (type) {
-          case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
-          case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
-          case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
-            return CHARTS.PIE;
-          case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
-            return CHARTS.BAR;
-          case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
-            return CHARTS.POLAR;
-          default:
-            return undefined;
-        }
-      }
-    };
+    var optObj = getRspOptionsObject(
+                  objId, 'canvassResultFactory', 'result',
+                  subObj, schema, flags, next, {
+                    getChartType: function (type) {
+                      /* chart.js pie, polarArea & doughnut charts may be displayed using
+                        single data series (i.e. data = []), whereas chart.js radar, line &
+                        bar require multiple data series (i.e. data = [[], []]) */
+                      switch (type) {
+                        case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO:
+                        case QUESTIONSCHEMA.TYPEIDs.QUESTION_YES_NO_MAYBE:
+                        case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_SINGLESEL:
+                          return CHARTS.PIE;
+                        case QUESTIONSCHEMA.TYPEIDs.QUESTION_CHOICE_MULTISEL:
+                          return CHARTS.BAR;
+                        case QUESTIONSCHEMA.TYPEIDs.QUESTION_RANKING:
+                          return CHARTS.POLAR;
+                        default:
+                          return undefined;
+                      }
+                    }
+                  });
     return optObj;
   }
 
-  function getRspOptionsObject(objId, factory, resource, subObj, schema, flags, next, custom) {
-    var args = checkArgs(factory, resource, subObj, schema, flags, next, custom);
-    return { // storage info for results
-      objId: objId,
-      factory: args.factory,
-      resource: args.resource,
-      schema: args.schema.schema,
-      schemaId: args.schema.schemaId,
-      //type/path/storage/factory: can be retrieved using schema & schemaId
-      subObj: args.subObj,
-      flags: args.flags,
-      next: args.next,
-      custom: args.custom
-    };
+  function getRspOptionsObject(objId, factory, resource, subObj, schema, flags, next, customArgs) {
+
+    return resourceFactory.getStandardArgsObject(objId, factory, resource, subObj, schema, flags, next, customArgs);
   }
 
-  /**
-   * Check arguments for standard response options
-   * @param {string}   factory  Name of StandardFactory to handle response
-   * @param {string}   resource Name of factory resource to access resources on server
-   * @param {Array}    subObj   Array of sub-object options
-   * @param {object}   schema   Schema object & id for object within response
-   * @param {number}   flags    storeFactory flags
-   * @param {function} next     Function to call following response processing
-   * @param {object}   custom   Custom options
-   */
-  function checkArgs (factory, resource, subObj, schema, flags, next, custom) {
-    var args = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)),
-      arg,
-      checked = {};
 
-    for (var i = 0, ll = checkArgsInfo.length; i < ll; ++i) {
-      arg = checkArgsInfo[i];
-      if (!arg.test(args[i])) {
-        if (args.length < checkArgs.length) {
-          args.splice(i, 0, arg.dflt);  // insert argument default value
-        } else {
-          // right shift arguments
-          for (var j = args.length - 1; j > i; --j) {
-            args[j] = args[j - 1];
-          }
-          args[i] = arg.dflt;   // set argument to default value
-        }
-      }
-      checked[arg.name] = args[i];
-    }
-    return checked;
-  }
+  function getSurveyRspOptions (schema, flags, next, customArgs) {
 
-  function getSurveyRspOptions (schema, flags, next) {
-    var args = checkArgs('surveyFactory', 'survey', schema, flags, next),
+    var args = resourceFactory.getStandardArgsObject(
+                                  [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
+                                  'surveyFactory', 'survey',
+                                  // will set subObj here
+                                  schema, flags, next, customArgs),
       subObj = {
         // storage arguments for specific sub sections of survey info
         objId: RES.SURVEY_QUESTIONS,
@@ -652,18 +608,10 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
     // mark question & result objects for linking
     subObj[canvassFactory.QUES_RES_LINKQUES] = true;
 
-    return {
-      // storage info for survey
-      objId: [RES.ACTIVE_SURVEY, RES.BACKUP_SURVEY],
-      factory: args.factory,
-      schema: args.schema.schema,
-      schemaId: args.schema.schemaId,
-      //type/path/storage: can be retrieved using schema & schemaId
-      storage: RESOURCE_CONST.STORE_OBJ,
-      flags: args.flags,
-      next: args.next,
-      subObj: subObj
-    };
+    return angular.extend(args, {
+      subObj: subObj,
+      storage: RESOURCE_CONST.STORE_OBJ
+    });
   }
 
 
@@ -682,59 +630,58 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
       next = undefined;
     }
 
-    // TODO currently only support single assignment
-//    var toProcess = response;
-//    if (Array.isArray(response)) {
-//      toProcess = response[0];
-//    }
-//    if (toProcess) {
-      canvassAssignmentFactory.readResponse(response,
-                                            getAssignmentRspOptions(flags, next));
-//    }
+    canvassAssignmentFactory.readResponse(response,
+                                          getAssignmentRspOptions(flags, next));
   }
 
   function getAssignmentRspOptions (schema, flags, next) {
-    var args = checkArgs(schema, flags, next),
-      custom = {
+
+    var args = resourceFactory.getStandardArgsObject(
+                                undefined, // no objId as don't need to save the assignments response
+                                'canvassAssignmentFactory', 'assignment',
+                                // subObj will be set here
+                                schema, flags, next),
+      commonArgs = {
         processArg: RESOURCE_CONST.PROCESS_READ,  // argument only for use during read
       },
-      addrOpts = getRspAddressOptions(undefined /*RES.ALLOCATED_ADDR*/, {
-          schema: CANVASSASSIGN_SCHEMA.SCHEMA,
-          schemaId: CANVASSASSIGN_SCHEMA.IDs.ADDRESSES,
-        }, (args.flags | storeFactory.COPY_SET),  // make copy of addresses
-        custom),
-      canvsrOpts = getRspCanvasserOptions(undefined /*RES.ALLOCATED_CANVASSER*/, {
-          schema: CANVASSASSIGN_SCHEMA.SCHEMA,
-          schemaId: CANVASSASSIGN_SCHEMA.IDs.CANVASSER,
-        }, (args.flags | storeFactory.COPY_SET),  // make copy of canvasser
-        custom);
-
-    // mark address & canvasser objects for linking
-    addrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKADDRESS] = true;
-    canvsrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKCANVASSER] = true;
-
-    return {
-      // no objId as don't need to save the assignments response
-      flags: args.flags,
-      next: args.next,
-      subObj: [
+      addrOpts = getRspAddressOptions(undefined /* not being saved */,
+                          CANVASSASSIGN_SCHEMA.SCHEMA.getSchemaLink(
+                                CANVASSASSIGN_SCHEMA.IDs.ADDRESSES
+                          ),
+                          (args.flags | storeFactory.COPY_SET)),  // make copy of addresses
+      canvsrOpts = getRspCanvasserOptions(undefined /* not being saved */,
+                          CANVASSASSIGN_SCHEMA.SCHEMA.getSchemaLink(
+                                CANVASSASSIGN_SCHEMA.IDs.CANVASSER
+                          ),
+                          (args.flags | storeFactory.COPY_SET)),  // make copy of canvasser
+      subObj = [
           // storage info for canvasser
           canvsrOpts,
           // storage info for addresses
           addrOpts,
           // storage info for canvass
-          getCanvassRspOptions({
-            schema: CANVASSASSIGN_SCHEMA.SCHEMA,
-            schemaId: CANVASSASSIGN_SCHEMA.IDs.CANVASS
-          }, args.flags, custom)
-      ],
-      linkAddressAndCanvasser: {
-        labeller: labeller
-      }
-    };
+          getCanvassRspOptions(
+                          CANVASSASSIGN_SCHEMA.SCHEMA.getSchemaLink(
+                                CANVASSASSIGN_SCHEMA.IDs.CANVASS
+                          ),
+                          args.flags)
+      ];
+
+    subObj.forEach(function (obj) {
+      angular.extend(obj, commonArgs);
+    });
+
+    // mark address & canvasser objects for linking
+    addrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKADDRESS] = true;
+    canvsrOpts[canvassAssignmentFactory.ADDR_CANVSR_LINKCANVASSER] = true;
+
+    return angular.extend(args, {
+                          subObj: subObj,
+                          linkAddressAndCanvasser: {
+                            labeller: labeller
+                          }
+                        }, commonArgs);
   }
-
-
 
   
   function requestAssignments (next) {
