@@ -22,9 +22,26 @@ function CanvassAssignmentCanvasserController($scope, userFactory, RES, filterSo
   $scope.showBadge = true; // enable badge display
   $scope.reqButtons = filterSortService.getRequestButtons('canvassers', filterSortService.FILTER_CLEAR);
   $scope.selButtons = filterSortService.getSelectButtons();
+  $scope.addressCountStr = addressCountStr;
 
   /* function implementation
   -------------------------- */
+
+  function addressCountStr (count) {
+    var str;
+    switch (count) {
+      case 0:
+        str = 'No addresses';
+        break;
+      case 1:
+        str = count + ' address';
+        break;
+      default:
+        str = count + ' addresses';
+        break;
+    }
+    return str;
+  }
 
 }
 

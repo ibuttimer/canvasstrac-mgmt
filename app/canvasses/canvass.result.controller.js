@@ -12,9 +12,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-CanvassResultController.$inject = ['$scope', '$rootScope', '$state', '$filter', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'canvassResultFactory', 'questionFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'RES', 'ADDRSCHEMA', 'CANVASSRES_SCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'QUESTIONSCHEMA', 'CHARTS'];
+CanvassResultController.$inject = ['$scope', '$rootScope', '$state', 'canvassFactory', 'electionFactory', 'surveyFactory', 'addressFactory', 'canvassResultFactory', 'questionFactory', 'NgDialogFactory', 'stateFactory', 'pagerFactory', 'storeFactory', 'miscUtilFactory', 'RES', 'ADDRSCHEMA', 'CANVASSRES_SCHEMA', 'roleFactory', 'ROLES', 'userFactory', 'CANVASSASSIGN', 'QUESTIONSCHEMA', 'CHARTS', 'SCHEMA_CONST', 'compareFactory', 'filterFactory'];
 
-function CanvassResultController($scope, $rootScope, $state, $filter, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, QUESTIONSCHEMA, CHARTS) {
+function CanvassResultController($scope, $rootScope, $state, canvassFactory, electionFactory, surveyFactory, addressFactory, canvassResultFactory, questionFactory, NgDialogFactory, stateFactory, pagerFactory, storeFactory, miscUtilFactory, RES, ADDRSCHEMA, CANVASSRES_SCHEMA, roleFactory, ROLES, userFactory, CANVASSASSIGN, QUESTIONSCHEMA, CHARTS, SCHEMA_CONST, compareFactory, filterFactory) {
 
   var factories = {},
     i,
@@ -106,29 +106,43 @@ function CanvassResultController($scope, $rootScope, $state, $filter, canvassFac
   }
 
   function processsResults (resList) {
-    $scope.resultCount = resList.count;
 
-    $scope.quickData.fill(0);
-    $scope.supportData.fill(0);
+    /* TODO curently only support a single canvass result per address
+       TODO preventing the multiple counting of results for an address should be handled on the server
+    */
 
-    resList.forEachInList(function (result) {
+    var i,
+      filteredList = canvassResultFactory.filterResultsLatestPerAddress(resList.slice());
+
+    $scope.resultCount = filteredList.length;
+
+    var quickData = new Array($scope.quickData.length),
+      supportData = new Array($scope.supportData.length);
+    quickData.fill(0);
+    supportData.fill(0);
+
+    filteredList.forEach(function (result) {
       // calc quick responses
       for (i = 0; i < quickDetails.length; ++i) {
         if (result[quickDetails[i].property] !== quickDetails[i].dfltValue) {
-          ++$scope.quickData[i];
+          // quick responses are mutually exclusive, so if one isn't its default value, thats it
+          ++quickData[i];
+          break;
         }
       }
 
       // ca;c support
       if (result[supportProperty] === CANVASSRES_SCHEMA.SUPPORT_UNKNOWN) {
-        ++$scope.supportData[0];
+        ++supportData[0];
       } else {
         i = result[supportProperty] - CANVASSRES_SCHEMA.SUPPORT_MIN + 1;
-        if (i < $scope.supportData.length) {
-          ++$scope.supportData[i];
+        if (i < supportData.length) {
+          ++supportData[i];
         }
       }
     });
+    $scope.quickData = quickData;
+    $scope.supportData = supportData;
   }
 
   function processQuestions (resList) {

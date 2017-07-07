@@ -5,7 +5,10 @@
         <p>{{user.person.firstname}} <b>{{user.person.lastname}}</b></p>
       </div>
       <div class="col-sm-2">
-        <span ng-if="showBadge" class="text-right label" ng-class="user.labelClass">{{user.addresses.length}}</span>
+        <span ng-if="showBadge" class="text-right label" ng-class="user.labelClass"
+              data-toggle="tooltip" title="Allocation: {{addressCountStr(user.addresses.length)}}">
+          <i class="fa fa-map-marker" aria-hidden="true"></i>&nbsp;{{user.addresses.length}}
+        </span>
       </div>
     </div>
 
