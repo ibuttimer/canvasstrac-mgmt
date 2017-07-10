@@ -34,7 +34,24 @@ var gulp = require('gulp'),
   del = require('del'),
   gutil = require('gulp-util'),
   argv = require('yargs')
-    .usage('Usage: $0 -production')
+    .usage('Usage: gulp <command> [options]')
+    .command('default', 'Run default tasks')
+    .command('watch', 'Start server and watch application files')
+    .command('jshint', 'Run JsHint on application files')
+    .option('p', {
+            alias: 'production',
+            default: 'false',
+            describe: 'Enable production mode',
+            type: 'boolean'
+        })
+    .option('e', {
+            alias: 'env',
+            default: 'localdev',
+            describe: 'Specify name of configuration file to use',
+            type: 'string'
+        })
+    .help('h')
+    .alias('h', 'help')
     .argv,
     production = argv.production,
   gulpif = require('gulp-if'),
@@ -272,11 +289,14 @@ function cssProcessChain() {
 }
 
 gulp.task('usemin', ['jshint', 'less'], function () {
-  var cmt;
+  var cmt,
+    msg;
 
   if (!production) {
     // copy individual script & css files
     cmt = 'non-usemin: '
+    msg = 'Built dev to ' + basePaths.dest;
+
     gulp.src(appFiles.scripts)
       .pipe(changed(basePaths.dest))
       .pipe(gulp.dest(basePaths.dest));
@@ -286,6 +306,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
       .pipe(gulp.dest(paths.styles.dest));
   } else {
     cmt = 'usemin: '
+    msg = 'Built production to ' + basePaths.dest;
   }
 
   // copy html files & in production minified script & css files
@@ -300,10 +321,8 @@ gulp.task('usemin', ['jshint', 'less'], function () {
     .pipe(gulp.dest(basePaths.dest))
     .pipe(print(function(filepath) {
       return cmt + filepath;
-    }));
-//    .pipe(notify(production ?
-//                 { message: 'Usemin task complete' } :
-//                 { message: 'Usemin task skipped in dev mode' }));
+    }))
+    .pipe(notify({ message: msg, onLast: true }));
 });
 
 // Images
@@ -312,7 +331,7 @@ gulp.task('imagemin', function () {
   return gulp.src(appFiles.images)
     .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
     .pipe(gulp.dest(paths.images.dest))
-    .pipe(notify({ message: 'Images task complete' }));
+    .pipe(notify({ message: 'Images task complete', onLast: true }));
 });
 
 gulp.task('copyfonts', function (cb) {
@@ -326,7 +345,7 @@ gulp.task('copyfonts', function (cb) {
     .pipe(print(function(filepath) {
       return "copied: " + filepath;
     }))
-    .pipe(notify({ message: 'Fonts task complete' }));
+    .pipe(notify({ message: 'Fonts task complete', onLast: true }));
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
@@ -339,7 +358,7 @@ gulp.task('copyvendorscripts', function (cb) {
       .pipe(changed(dest))
       .pipe(print())
       .pipe(gulp.dest(dest))
-      .pipe(notify({ message: 'Vendor scripts task complete' }));
+      .pipe(notify({ message: 'Vendor scripts task complete', onLast: true }));
   } // else nothing to do in production mode
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
@@ -353,7 +372,7 @@ gulp.task('copyvendorcss', function (cb) {
       .pipe(changed(dest))
       .pipe(print())
       .pipe(gulp.dest(dest))
-      .pipe(notify({ message: 'Vendor css task complete' }));
+      .pipe(notify({ message: 'Vendor css task complete', onLast: true }));
   } // else nothing to do in production mode
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
@@ -375,7 +394,7 @@ gulp.task('copyvendor', function (cb) {
         return "Vendor script/css: " + filepath;
       }));
 
-//    .pipe(notify({ message: 'Vendor script/css task complete' }));
+//    .pipe(notify({ message: 'Vendor script/css task complete', onLast: true }));
   } // else nothing to do in production mode
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
