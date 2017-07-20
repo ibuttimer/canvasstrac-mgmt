@@ -68,7 +68,7 @@ angular.module('ct.config', [])
         return state + '_' + substate;
       },
       substates = [
-        'NEW', 'VIEW', 'EDIT', 'DEL'
+        'NEW', 'VIEW', 'EDIT', 'DEL', 'BATCH'
       ],
       makeStdStateName = function (name) {
         // e.g. dashState
@@ -100,9 +100,12 @@ angular.module('ct.config', [])
         { property: 'CANDIDATE', path: campaignState, base: 'candidate', disabled: true },
         { property: 'CANVASS', path: campaignState, base: 'canvass' }
       ].forEach(function (state) {
-        stateConstant[state.property] = makeStates(state.path, state.base);
+        /* make state properties, e.g. USERS = 'app.cfg.user'
+                                        USERS_NEW = 'app.cfg.user-new' */
+        stateConstant[state.property] = makeStates(state.path, state.base); // path.base
         substates.forEach(function (substate) {
-          stateConstant[makeSubStatePropName(state.property, substate)] = makeStates(state.path, state.base, substate.toLowerCase());
+          stateConstant[makeSubStatePropName(state.property, substate)] = // state_substate
+            makeStates(state.path, state.base, substate.toLowerCase()); // path.base-substate
         });
 
         if (state.disabled) {

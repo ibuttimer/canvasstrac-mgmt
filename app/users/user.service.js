@@ -137,6 +137,7 @@ function userService($state, userFactory, NgDialogFactory, controllerUtilFactory
               ADDRSCHEMA.IDs.TOWN,
               ADDRSCHEMA.IDs.CITY,
               ADDRSCHEMA.IDs.COUNTY,
+              ADDRSCHEMA.IDs.STATE,
               ADDRSCHEMA.IDs.COUNTRY,
               ADDRSCHEMA.IDs.PCODE,
               ADDRSCHEMA.IDs.GPS

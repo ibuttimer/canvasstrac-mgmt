@@ -22,6 +22,7 @@ angular.module('canvassTrac')
     var prop,
       tree, toCheck,
       dropdownNew = '\xA0\xA0\xA0New',  // add nbsp
+      dropdownBatch = '\xA0\xA0\xA0Batch',  // add nbsp
       configuration = 'Configuration',
       votingSysDash = 'Voting Systems',
       rolesDash = 'Roles',
@@ -31,6 +32,7 @@ angular.module('canvassTrac')
       candidateDash = 'Candidates',
       canvassDash = 'Canvasses',
       accessAllRead = { group: 'a', privilege: 'r' },
+      accessAllBatch = { group: 'a', privilege: 'b' },
       access1Read = { group: '1', privilege: 'r' },
       access1Update = { group: '1', privilege: 'u' },
       access1Create = { group: '1', privilege: 'c' },
@@ -104,7 +106,11 @@ angular.module('canvassTrac')
                   { name: dropdownNew,
                     icon: 'fa fa-user-plus fa-fw',
                     class: DECOR.NEW.class,
-                    sref: STATES.USERS_NEW }
+                    sref: STATES.USERS_NEW },
+                  { name: dropdownBatch,
+                    icon: DECOR.BATCH.icon,
+                    class: DECOR.BATCH.class,
+                    sref: STATES.USERS_BATCH }
                 ]
               }
             }
@@ -246,7 +252,8 @@ angular.module('canvassTrac')
           { state: STATES.USERS, name: userDash, access: accessAllRead },
           { state: STATES.USERS_VIEW, name: 'View User', access: access1Read },
           { state: STATES.USERS_EDIT, name: 'Update User', access: access1Update },
-          { state: STATES.USERS_NEW, name: 'New User', access: access1Create }
+          { state: STATES.USERS_NEW, name: 'New User', access: access1Create },
+          { state: STATES.USERS_BATCH, name: 'User Batch Mode', access: accessAllBatch }
         ]
       }
     ].forEach(function (cfgBlock) {

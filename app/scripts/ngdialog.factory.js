@@ -10,9 +10,9 @@ angular.module('NgDialogUtil', ['ngDialog'])
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-NgDialogFactory.$inject = ['authFactory', 'ngDialog', '$state', 'STATES', 'RSPCODE'];
+NgDialogFactory.$inject = ['authFactory', 'ngDialog', '$state', 'STATES', 'RSPCODE', 'miscUtilFactory'];
 
-function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE) {
+function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE, miscUtilFactory) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   var factory = {
@@ -137,7 +137,7 @@ function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE) {
 
     options.data = {
       title: title,
-      message: msg
+      message: [msg]
     };
 
     if (authErr) {
@@ -167,12 +167,11 @@ function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE) {
    * @param {string} message message to display
    */
   function message (title, message) {
-
-    // response is message
+    var messages = miscUtilFactory.toArray(message);
     ngDialog.openConfirm({
       template: 'views/messagemodal.html',
       className: 'ngdialog-theme-default',
-      data: { title: title, message: message }
+      data: { title: title, message: messages }
     });
   }
 
@@ -182,10 +181,11 @@ function NgDialogFactory (authFactory, ngDialog, $state, STATES, RSPCODE) {
    * @param {string} message message to display
    */
   function errormessage (title, message) {
+    var messages = miscUtilFactory.toArray(message);
     ngDialog.openConfirm({
       template: 'views/errormodal.html',
       className: 'ngdialog-theme-default',
-      data: { title: title, message: message }
+      data: { title: title, message: messages }
     });
   }
 

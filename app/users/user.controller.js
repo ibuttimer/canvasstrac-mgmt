@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'consoleService', 'controllerUtilFactory', 'DEBUG'];
+UserController.$inject = ['$scope', '$rootScope', '$state', '$stateParams', 'roleFactory', 'userFactory', 'userService', 'NgDialogFactory', 'stateFactory', 'consoleService', 'controllerUtilFactory', 'DEBUG', 'MISC'];
 
-function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, consoleService, controllerUtilFactory, DEBUG) {
+function UserController($scope, $rootScope, $state, $stateParams, roleFactory, userFactory, userService, NgDialogFactory, stateFactory, consoleService, controllerUtilFactory, DEBUG, MISC) {
 
   var con = consoleService.getLogger('UserController');
 
@@ -51,17 +51,20 @@ function UserController($scope, $rootScope, $state, $stateParams, roleFactory, u
       NgDialogFactory.error(response);
     }
   );
+  $scope.countries = MISC.COUNTRIES;
 
   /* function implementation
   -------------------------- */
 
   function getTitle() {
     $scope.editDisabled = true;
+    $scope.passSetable = false;
 
     var title;
     if ($state.is($scope.newState)) {
       title = 'Create User';
       $scope.editDisabled = false;
+      $scope.passSetable = true;
     } else if ($state.is($scope.viewState)) {
       title = 'View User';
     } else if ($state.is($scope.editState)) {

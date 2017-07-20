@@ -3,7 +3,7 @@ Web management application for CanvassTrac suite.
 
 ## Development Environment
 The development environment:
-* Nodejs v6.10.1
+* Node.js v6.11.1
 * npm v2.15.9
 * bower v1.7.9
 * gulp v3.9.1

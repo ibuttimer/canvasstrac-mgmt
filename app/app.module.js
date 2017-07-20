@@ -125,6 +125,17 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             }
           }
         },
+        { state: STATES.USERS_BATCH,
+          config: {
+            url: getUrl(STATES.USERS_BATCH),
+            views: {
+              'content@': {
+                templateUrl : 'users/batchuser.html',
+                controller  : 'UserBatchController'
+              }
+            }
+          }
+        },
         { state: STATES.CAMPAIGN,
           config: {
             url: getUrl(STATES.CAMPAIGN),

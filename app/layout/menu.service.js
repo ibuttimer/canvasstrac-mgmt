@@ -53,11 +53,15 @@ function menuService(authFactory, MENUS, CONFIG, USER) {
 
     Object.getOwnPropertyNames(baseMenu).forEach(function (name) {
       if (name !== 'root') {
-        // NOTE: name is the property value from the MENUS config phase & matches the access property in the login response
-        menu[name] = {
+        /* NOTE: name is the property value from the MENUS config phase in 
+            header.controller.js, matches the access property in the login 
+            response (e.g. ACCESS.VOTINGSYS etc.)
+        */
+        var submenu = {
           header: baseMenu[name].header,
           items: []
-        };
+        }; 
+
         // add items to the menu if user has access
         baseMenu[name].items.forEach(function (item) {
           substate = menu.root.substates.find(function (state) {
@@ -70,11 +74,14 @@ function menuService(authFactory, MENUS, CONFIG, USER) {
               entry = angular.copy(item);
               entry.name = entry.name.trim(); // remove any whitespace used to set alignment in dropdown menu
 
-              menu[name].items.push(entry);
+              submenu.items.push(entry);
               ++count;
             }
           }
         });
+        if (submenu.items.length) {
+          menu[name] = submenu;
+        }
       }
     });
     if (!count) {

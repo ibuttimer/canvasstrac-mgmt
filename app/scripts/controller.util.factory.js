@@ -11,6 +11,7 @@ angular.module('canvassTrac')
       VIEW: { icon: 'fa fa-eye fa-fw', class: 'btn btn-info' },
       EDIT: { icon: 'fa fa-pencil-square-o fa-fw', class: 'btn btn-warning' },
       DEL: { icon: 'fa fa-trash-o fa-fw', class: 'btn btn-danger' },
+      BATCH: { icon: 'fa fa-files-o fa-fw', class: 'btn btn-secondary' },
       SEL: { icon: 'fa fa-check-square-o fa-fw', class: 'btn btn-default' },
       UNSEL: { icon: 'fa fa-square-o fa-fw', class: 'btn btn-default' }
     };
@@ -23,9 +24,9 @@ angular.module('canvassTrac')
   https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y091
 */
 
-controllerUtilFactory.$inject = ['authFactory', 'miscUtilFactory', 'utilFactory', 'STATES', 'ACCESS', 'DECOR'];
+controllerUtilFactory.$inject = ['authFactory', 'miscUtilFactory', 'utilFactory', 'STATES', 'ACCESS', 'DECOR', 'CONFIG'];
 
-function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATES, ACCESS, DECOR) {
+function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATES, ACCESS, DECOR, CONFIG) {
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   var factory = {
@@ -47,41 +48,58 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
     { txt: viewTxt, icon: DECOR.VIEW.icon, tip: 'View selected', class: DECOR.VIEW.class },
     { txt: editTxt, icon: DECOR.EDIT.icon, tip: 'Edit selected', class: DECOR.EDIT.class },
     { txt: delTxt, icon: DECOR.DEL.icon, tip: 'Delete selected', class: DECOR.DEL.class }
-  ];
+  ],
+  StateAccessMap = {
+    // map mwnu names to access names
+    VOTINGSYS: ACCESS.VOTINGSYS,
+    ROLES: ACCESS.ROLES,
+    USERS: ACCESS.USERS,
+    ELECTION: ACCESS.ELECTIONS,
+    CANDIDATE: ACCESS.CANDIDATES,
+    CANVASS: ACCESS.CANVASSES
+  };
 
   return factory;
 
   /* function implementation
     -------------------------- */
 
+  /**
+   * Set standard scope variables
+   * @param {string} menu  Name of menu, as per STATES properties e.g. 'CANVASS', 'USERS. etc.
+   * @param {object} scope Scope to add variables to
+   */
   function setScopeVars (menu, scope) {
     var states = STATES.SET_SCOPE_VARS(menu),
       props = Object.getOwnPropertyNames(states),
       access;
 
+    /* group is combination of 'a' (access to all) & '1' (access to one)
+      privilege is combination of 'c' (create), 'r' (read), 'u' (update) & 'd' (delete) */
     props.forEach(function (prop) {
       switch (prop) {
         case 'dashState':
-          access = { group: 'a', privilege: 'r' };
+          access = { group: 'a', privilege: 'r' };  // need all read for dash
           break;
         case 'newState':
-          access = { group: '1', privilege: 'c' };
+          access = { group: '1', privilege: 'c' };  // need 1 create for new
           break;
         case 'viewState':
-          access = { group: '1', privilege: 'r' };
+          access = { group: '1', privilege: 'r' };  // need 1 read for view
           break;
         case 'editState':
-          access = { group: '1', privilege: 'u' };
+          access = { group: '1', privilege: 'u' };  // need 1 update for edit
           break;
         case 'delState':
-          access = { group: 'a1', privilege: 'd' };
+          access = { group: 'a1', privilege: 'd' };  // need all/1 delete for delete
           break;
         default:
           access = undefined;
           break;
       }
       if (access) {
-        if (!authFactory.isAccess(ACCESS.CANVASSES, access.group, access.privilege)) {
+        if (!CONFIG.NOAUTH &&
+            !authFactory.isAccess(StateAccessMap[menu], access.group, access.privilege)) {
           // no access so remove state
           states[prop] = undefined;
         }

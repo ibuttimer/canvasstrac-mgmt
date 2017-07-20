@@ -2,11 +2,14 @@
 @black: #000000;
 @lt-black: #0f0f0f;
 @off-white: #eeeeee;
+@near-white: #f2f2f2;
+@close-white: #fafafa;
 @lt-gray: #dddddd;
 @gray: #afafaf;
 @indigo: #303f9f;
 @dark-indigo: #1a237e;
 @light-indigo: #7986CB;
+@dark-pink: #f7cac9;
 
 // Height variables
 @carousel-height: 300px;
@@ -62,6 +65,11 @@
 			color: @white;
 		}
 	}
+	.navbar-nav>li>a {
+		background: @indigo;
+		color: @off-white;
+    cursor: pointer;
+	}
 	.navbar-nav>.open>a {
 		background: @dark-indigo;
 		color: @white;
@@ -82,6 +90,10 @@
 				&:hover {
 					color: @black;
 				}
+			}
+			.dropdown-header {
+				background-color: @indigo;
+				color: @dark-pink;
 			}
 			.dropdown-menu {
 				background-color: @indigo;
