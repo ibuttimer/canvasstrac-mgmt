@@ -30,6 +30,7 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
   $scope.getOkText = getOkText;
   $scope.selectedItemChanged = selectedItemChanged;
 	$scope.questionTypes = questionTypes;
+  $scope.isRequired = isRequired;
 
   if ($scope.ngDialogData.question.type) {
     selectedItemChanged('init', $scope.ngDialogData.question);
@@ -81,6 +82,7 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
 
       if (!showNumOpts) {
         value.numoptions = 0;
+        value.rangeMin = value.rangeMax = 0;
         value.options = undefined;
       }
       
@@ -90,6 +92,8 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
       if (value.options === undefined) {
         value.options = [];
       }
+      value.rangeMin = 1;
+      value.rangeMax = value.numoptions;
       if (value.options.length < value.numoptions) {
         for (var i = value.options.length; i < value.numoptions; ++i) {
           value.options.push('');
@@ -98,9 +102,17 @@ function QuestionController($scope, questionFactory, NgDialogFactory, questionTy
         value.options.splice(value.numoptions, (value.options.length - value.numoptions)) ;
       }
     }
-    
-    
-    
+  }
+
+  function isRequired (index, options) {
+    var required = $scope.showNumOptions; // default all options are required if displayed
+    if (required && $scope.showRankingNumber) {
+      // only first & last are required for ranking
+      if ((index > 0) && (index < (options.length - 1))) {
+        required = false;
+      }
+    }
+    return required;
   }
 
 }
