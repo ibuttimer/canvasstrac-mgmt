@@ -96,6 +96,7 @@ angular.module('ct.config', [])
       [ { property: 'VOTINGSYS', path: cfgState, base: 'votingsystem', disabled: true },
         { property: 'ROLES', path: cfgState, base: 'role', disabled: true },
         { property: 'USERS', path: cfgState, base: 'user' },
+        { property: 'NOTICE', path: cfgState, base: 'notice' },
         { property: 'ELECTION', path: campaignState, base: 'election' },
         { property: 'CANDIDATE', path: campaignState, base: 'candidate', disabled: true },
         { property: 'CANVASS', path: campaignState, base: 'canvass' }
@@ -245,7 +246,7 @@ angular.module('ct.config', [])
       ALLOCATED_CANVASSER: 'allocatedCanvasser',  // canvassers with allocated addresses in canvass
       ALLOCATION_UNDOS: 'allocationUndos',        // undo objects for allocations
       getPagerName: function (base) {
-          // eg assignedAddrPager
+        // eg assignedAddrPager
         return base + 'Pager';
       },
       getFilterName: function (base) {

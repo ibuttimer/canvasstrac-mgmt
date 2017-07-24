@@ -136,6 +136,50 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordov
             }
           }
         },
+        { state: STATES.NOTICE,
+          config: {
+            url: getUrl(STATES.NOTICE),
+            views: {
+              'content@': {
+                templateUrl : 'notices/noticedash.html',
+                controller  : 'NoticeDashController'
+              }
+            }
+          }
+        },
+        { state: STATES.NOTICE_VIEW,
+          config: {
+            url: getUrl(STATES.NOTICE_VIEW, ':id'),
+            views: {
+              'content@': {
+                templateUrl : 'notices/newnotice.html',
+                controller  : 'NoticeController'
+              }
+            }
+          }
+        },
+        { state: STATES.NOTICE_EDIT,
+          config: {
+            url: getUrl(STATES.NOTICE_EDIT, ':id'),
+            views: {
+              'content@': {
+                templateUrl : 'notices/newnotice.html',
+                controller  : 'NoticeController'
+              }
+            }
+          }
+        },
+        { state: STATES.NOTICE_NEW,
+          config: {
+            url: getUrl(STATES.NOTICE_NEW),
+            views: {
+              'content@': {
+                templateUrl : 'notices/newnotice.html',
+                controller  : 'NoticeController'
+              }
+            }
+          }
+        },
         { state: STATES.CAMPAIGN,
           config: {
             url: getUrl(STATES.CAMPAIGN),

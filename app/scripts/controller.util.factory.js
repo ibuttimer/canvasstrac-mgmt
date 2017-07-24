@@ -56,7 +56,8 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
     USERS: ACCESS.USERS,
     ELECTION: ACCESS.ELECTIONS,
     CANDIDATE: ACCESS.CANDIDATES,
-    CANVASS: ACCESS.CANVASSES
+    CANVASS: ACCESS.CANVASSES,
+    NOTICE: ACCESS.NOTICES
   };
 
   return factory;
@@ -92,6 +93,9 @@ function controllerUtilFactory (authFactory, miscUtilFactory, utilFactory, STATE
           break;
         case 'delState':
           access = { group: 'a1', privilege: 'd' };  // need all/1 delete for delete
+          break;
+        case 'batchState':
+          access = { group: 'a1', privilege: 'b' };  // need all/1 batch for delete
           break;
         default:
           access = undefined;

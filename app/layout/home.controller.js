@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   .controller('HomeController', HomeController);
 
 
-HomeController.$inject = ['$scope', '$rootScope', 'menuService', 'HOMESCRN', 'CONFIG'];
+HomeController.$inject = ['$scope', '$rootScope', 'menuService', 'noticeFactory', 'HOMESCRN', 'CONFIG'];
 
-function HomeController ($scope, $rootScope, menuService, HOMESCRN, CONFIG) {
+function HomeController ($scope, $rootScope, menuService, noticeFactory, HOMESCRN, CONFIG) {
 
 
   $scope.message = HOMESCRN.message;
@@ -40,6 +40,24 @@ function HomeController ($scope, $rootScope, menuService, HOMESCRN, CONFIG) {
     setMenus(false);
   });
 
+  $scope.levelToIcon = levelToIcon;
+  $scope.levelToStyle = levelToStyle;
+
+
+  $scope.notices = noticeFactory.query('current',
+    // success function
+    function (response) {
+      // response is actual data
+      $scope.notices = response;
+    },
+    // error function
+    function (response) {
+      // response is message
+      NgDialogFactory.error(response, 'Unable to retrieve Notices');
+    }
+  );
+
+
 
   function setMenus (loggedIn) {
     var menus = {},
@@ -54,6 +72,15 @@ function HomeController ($scope, $rootScope, menuService, HOMESCRN, CONFIG) {
       }
     }
     $scope.menuEntries = menuEntries;
+  }
+
+
+  function levelToIcon (level) {
+    return noticeFactory.getNoticeTypeObj(level, 'icon');
+  }
+
+  function levelToStyle (level) {
+    return noticeFactory.getNoticeTypeObj(level, 'style');
   }
 
 }

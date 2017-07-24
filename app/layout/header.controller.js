@@ -27,6 +27,7 @@ angular.module('canvassTrac')
       votingSysDash = 'Voting Systems',
       rolesDash = 'Roles',
       userDash = 'Users',
+      noticeDash = 'Notices',
       campaign = 'Campaign',
       electionDash = 'Elections',
       candidateDash = 'Candidates',
@@ -111,6 +112,22 @@ angular.module('canvassTrac')
                     icon: DECOR.BATCH.icon,
                     class: DECOR.BATCH.class,
                     sref: STATES.USERS_BATCH }
+                ]
+              }
+            },
+            { sref: STATES.NOTICE,
+              property: ACCESS.NOTICES,  // NOTE: matches access property in login response
+              value: {
+                header: noticeDash,
+                items: [
+                  { name: noticeDash,
+                    icon: 'fa fa-comments fa-fw',
+                    class: DECOR.DASH.class,
+                    sref: STATES.NOTICE },
+                  { name: dropdownNew,
+                    icon: DECOR.NEW.icon,
+                    class: DECOR.NEW.class,
+                    sref: STATES.NOTICE_NEW }
                 ]
               }
             }
@@ -254,6 +271,13 @@ angular.module('canvassTrac')
           { state: STATES.USERS_EDIT, name: 'Update User', access: access1Update },
           { state: STATES.USERS_NEW, name: 'New User', access: access1Create },
           { state: STATES.USERS_BATCH, name: 'User Batch Mode', access: accessAllBatch }
+        ]
+      },
+      { state: STATES.NOTICE, entries: [
+          { state: STATES.NOTICE, name: noticeDash, access: accessAllRead },
+          { state: STATES.NOTICE_VIEW, name: 'View Notice', access: access1Read },
+          { state: STATES.NOTICE_EDIT, name: 'Update Notice', access: access1Update },
+          { state: STATES.NOTICE_NEW, name: 'New Notice', access: access1Create }
         ]
       }
     ].forEach(function (cfgBlock) {

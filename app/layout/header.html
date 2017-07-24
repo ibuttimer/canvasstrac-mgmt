@@ -51,6 +51,12 @@
                 <span class="{{entry.icon}}" aria-hidden="true"></span>&nbsp;{{entry.name}}
               </a>
             </li>
+            <li class="dropdown-header">{{configMenu.noticePriv.header}}</li>
+            <li role="menuitem" ng-repeat="entry in configMenu.noticePriv.items">
+              <a ui-sref="{{entry.sref}}">
+                <span class="{{entry.icon}}" aria-hidden="true"></span>&nbsp;{{entry.name}}
+              </a>
+            </li>
           </ul>
         </li>
 
