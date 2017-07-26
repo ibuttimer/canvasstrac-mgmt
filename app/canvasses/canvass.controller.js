@@ -1010,9 +1010,6 @@ function CanvassController($scope, $state, $stateParams, $filter, $injector, can
   }
 
   function setPerPage(pagers, pages) {
-    // jic no native implementation is available
-    miscUtilFactory.arrayPolyfill();
-    
     var list;
     if (Array.isArray(pagers)) {
       list = pagers;

@@ -19,10 +19,12 @@ function ResultDetailController ($scope, CHARTS) {
   $scope.showPieChart = showPieChart;
   $scope.showBarChart = showBarChart;
   $scope.showPolarAreaChart = showPolarAreaChart;
+  $scope.indexToStyle = indexToStyle;
 
   $scope.question = $scope.ngDialogData.question;
   $scope.chart = $scope.ngDialogData.chart;
   $scope.details = $scope.ngDialogData.details;
+  $scope.respCnt = $scope.ngDialogData.respCnt;
 
   /* function implementation
   -------------------------- */
@@ -39,6 +41,10 @@ function ResultDetailController ($scope, CHARTS) {
     return (chart === CHARTS.POLAR);
   }
 
+  function indexToStyle (index) {
+    // different colours for alternate entries
+    return (((indexToStyle % 2) === 0) ? 'bg-info' : 'bg-primary');
+  }
 
 }
 

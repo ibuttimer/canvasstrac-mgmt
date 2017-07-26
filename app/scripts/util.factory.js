@@ -119,9 +119,6 @@ function utilFactory ($rootScope, miscUtilFactory) {
   }
   
   function arrayFxnTests(array, test) {
-    // jic no native implementation is available
-    miscUtilFactory.arrayPolyfill();
-    
     if (typeof test !== 'function') {
       throw new TypeError('test is non-function');
     }
