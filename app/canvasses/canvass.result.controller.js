@@ -135,7 +135,7 @@ function CanvassResultController($scope, $rootScope, $state, canvassFactory, ele
         }
       }
 
-      // ca;c support
+      // calc support
       if (result[supportProperty] === CANVASSRES_SCHEMA.SUPPORT_UNKNOWN) {
         ++supportData[0];
       } else {
@@ -150,18 +150,31 @@ function CanvassResultController($scope, $rootScope, $state, canvassFactory, ele
     $scope.quickLabelData = makeLabelData($scope.quickLabels, quickData, quickCnt);
     $scope.quickData = quickData;
     $scope.quickDataCnt = quickCnt;
-    $scope.supportLabelData = makeLabelData($scope.supportLabels, supportData, supportCnt);
+    $scope.supportLabelData = makeLabelData($scope.supportLabels, supportData,
+      function (index) {
+        if (index === 0) {  // unknown
+          return $scope.resultCount;
+        } else {
+          return supportCnt;
+        }
+      });
     $scope.supportData = supportData;
     $scope.supportDataCnt = supportCnt;
   }
 
   function makeLabelData (labels, values, total) {
     var ll = labels.length,
-      labelData = new Array(ll);
+      labelData = new Array(ll),
+      totalCnt;
     for (var i = 0; i < ll; ++i) {
+      if (angular.isFunction(total)) {
+        totalCnt = total(i);
+      } else {
+        totalCnt = total;
+      }
       labelData[i] = {
         label: labels[i],
-        data: makeCountPercent(values[i], total)
+        data: makeCountPercent(values[i], totalCnt)
       };
     }
     return labelData;

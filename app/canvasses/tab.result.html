@@ -73,16 +73,19 @@
           <table class="table table-bordered">
             <tbody>
               <tr>
-                <th data-toggle="tooltip" data-placement="left" data-container="body" title="Number of support responses submitted">Responses
+                <th data-toggle="tooltip" data-placement="left" data-container="body" title="Number of support indications submitted">Indications
                 </th>
                 <td>{{supportDataCnt}}</td>
-                <td data-toggle="tooltip" data-placement="left" data-container="body" title="Number of support responses submitted as a percent of total responses">{{toPercent(supportDataCnt,canvassComplete.value)}} %
+                <td data-toggle="tooltip" data-placement="left" data-container="body" title="Number of support indications submitted as a percent of total responses">{{toPercent(supportDataCnt,canvassComplete.value)}} %
                 </td>
               </tr>
               <tr ng-repeat="qr in supportLabelData">
                 <th>{{qr.label}}</th>
                 <td>{{qr.data.value}}</td>
-                <td>{{qr.data.percent}} %</td>
+                <td ng-if="$index === 0" data-toggle="tooltip" data-placement="left" data-container="body" title="Number of {{qr.label}} support responses as a percent of total responses">{{qr.data.percent}} %
+                </td>
+                <td ng-if="$index > 0" data-toggle="tooltip" data-placement="left" data-container="body" title="Number of {{qr.label}} support indications as a percent of support indications">{{qr.data.percent}} %
+                </td>
               </tr>
             </tbody>
           </table>
