@@ -10,9 +10,9 @@ angular.module('canvassTrac')
   .controller('HomeController', HomeController);
 
 
-HomeController.$inject = ['$scope', '$rootScope', 'menuService', 'noticeFactory', 'HOMESCRN', 'CONFIG'];
+HomeController.$inject = ['$scope', '$rootScope', 'menuService', 'noticeFactory', 'NgDialogFactory', 'HOMESCRN', 'CONFIG'];
 
-function HomeController ($scope, $rootScope, menuService, noticeFactory, HOMESCRN, CONFIG) {
+function HomeController ($scope, $rootScope, menuService, noticeFactory, NgDialogFactory, HOMESCRN, CONFIG) {
 
 
   $scope.message = HOMESCRN.message;

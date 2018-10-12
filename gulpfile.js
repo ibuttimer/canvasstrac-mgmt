@@ -1,3 +1,5 @@
+/*jslint node: true */ /*eslint-env node*/
+'use strict';
 /**************************************************************************
  * Copyleft Ian Buttimer
  *
@@ -15,7 +17,7 @@
  */
 
 var gulp = require('gulp'),
-  print = require('gulp-print'),
+  print = require('gulp-print').default,
   cleancss = require('gulp-clean-css'),
   less = require('gulp-less'),
   jshint = require('gulp-jshint'),
@@ -39,21 +41,21 @@ var gulp = require('gulp'),
     .command('watch', 'Start server and watch application files')
     .command('jshint', 'Run JsHint on application files')
     .option('p', {
-            alias: 'production',
-            default: 'false',
-            describe: 'Enable production mode',
-            type: 'boolean'
-        })
+      alias: 'production',
+      default: 'false',
+      describe: 'Enable production mode',
+      type: 'boolean'
+    })
     .option('e', {
-            alias: 'env',
-            default: 'localdev',
-            describe: 'Specify name of configuration file to use',
-            type: 'string'
-        })
+      alias: 'env',
+      default: 'localdev',
+      describe: 'Specify name of configuration file to use',
+      type: 'string'
+    })
     .help('h')
     .alias('h', 'help')
     .argv,
-    production = argv.production,
+  production = argv.production,
   gulpif = require('gulp-if'),
   gulpIgnore = require('gulp-ignore'),
   ngannotate = require('gulp-ng-annotate'),
@@ -141,13 +143,15 @@ var vendorFiles = {
                 '!' + paths.vendor.src + 'moment/benchmarks/**/*.js',
                 '!' + paths.vendor.src + 'moment/locale/**/*.js',
                 '!' + paths.vendor.src + 'moment/meteor/**/*.js'
-  ]
+              ]
 };
+var envfilename = 'env.js';
+var httpPort;
 
 gulp.task('jshint', function () {
   return gulp.src(appFiles.scripts)
     .pipe(jshint())
-    .pipe(jshint.reporter(stylish /*, { verbose: true }*/))
+    .pipe(jshint.reporter(stylish/*, { verbose: true }*/))
     .pipe(jshint.reporter('fail', {
       // only fail task on errors
       ignoreWarning: true,
@@ -160,11 +164,10 @@ gulp.task('cleanall', function () {
   return del([basePaths.dest], {
 //          force: true,  // Allow deleting the current working directory and outside
 //          dryRun: true  // See what would be deleted
-        }
-       );
+  });
 });
 
-function noTrailingSlash (path) {
+function noTrailingSlash(path) {
   var slashless,
     idx = path.length - 1;
   if (path.lastIndexOf('/') === idx) {
@@ -179,16 +182,16 @@ function noTrailingSlash (path) {
 gulp.task('clean', function (cb) {
   var err;
   del([basePaths.dest + '**',  // NOTE this deletes both parent & comtent!
-              '!' + noTrailingSlash(basePaths.dest),  // exclude parent
-              '!' + paths.vendor.dest + '**'          // exclude vendor files
-        ], {
+        '!' + noTrailingSlash(basePaths.dest),  // exclude parent
+        '!' + paths.vendor.dest + '**'          // exclude vendor files
+    ], {
 //          force: true,  // Allow deleting the current working directory and outside
 //          dryRun: true  // See what would be deleted
-        }
+  }
 //        ).then(paths => {
 //          console.log('Deleted files and folders:\n', paths.join('\n'));
 //        }
-       );
+    );
   cb(err);
 });
 
@@ -197,56 +200,58 @@ gulp.task('replace', function (cb) {
 
   // Get the environment from the command line
   var env = argv.env || 'localdev',
-    envfilename = 'env.js',
     // Read the settings from the right file
     filename = env + '.json',
     settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
     flags = fs.readFileSync(basePaths.config + 'dbgFlags.txt', 'utf8'),
     patterns = [],
-    keyVal, dfltVal, setDflt, err;
+    keyVal,
+    dfltVal,
+    setDflt,
+    err;
 
-    [ // server/management app common settings
-      { prop: 'baseURL', type: 'str' },
-      { prop: 'forceHttps', type: 'bool', dflt: true },
-      { prop: 'httpPort', type: 'num' },
-      { prop: 'httpsPortOffset', type: 'num' },
-      { prop: 'socketTimeout', type: 'num' },
-      { prop: 'disableAuth', type: 'bool', dflt: false },
-      // management app settings
-      { prop: 'mapsApiKey', type: 'str' },
-      { prop: 'autoLogout', type: 'num|str' },
-      { prop: 'autoLogoutCount', type: 'num|str' },
-      { prop: 'tokenRefresh', type: 'num|str' },
-      { prop: 'reloadMargin', type: 'num|str' },
-      { prop: 'DEV_MODE', type: 'bool', dflt: false },
-      { prop: 'DEV_USER1', type: 'str' },
-      { prop: 'DEV_PASSWORD1', type: 'str' },
-      { prop: 'DEV_USER2', type: 'str' },
-      { prop: 'DEV_PASSWORD2', type: 'str' },
-      { prop: 'DEV_USER3', type: 'str' },
-      { prop: 'DEV_PASSWORD3', type: 'str' }
-    ].forEach(function (key) {
-      keyVal = settings[key.prop];
-      setDflt = (keyVal === undefined);
-      if (!setDflt && (typeof keyVal === 'string')) {
-        setDflt = (keyVal.indexOf('@@') === 0); // no replacement in settings file
-      }
-      if (setDflt) {
-        dfltVal = undefined;
+  [ // server/management app common settings
+    { prop: 'baseURL', type: 'str' },
+    { prop: 'forceHttps', type: 'bool', dflt: true },
+    { prop: 'httpPort', type: 'num' },
+    { prop: 'httpsPortOffset', type: 'num' },
+    { prop: 'socketTimeout', type: 'num' },
+    { prop: 'disableAuth', type: 'bool', dflt: false },
+    // management app settings
+    { prop: 'mapsApiKey', type: 'str' },
+    { prop: 'autoLogout', type: 'num|str' },
+    { prop: 'autoLogoutCount', type: 'num|str' },
+    { prop: 'tokenRefresh', type: 'num|str' },
+    { prop: 'reloadMargin', type: 'num|str' },
+    { prop: 'DEV_MODE', type: 'bool', dflt: false },
+    { prop: 'DEV_USER1', type: 'str' },
+    { prop: 'DEV_PASSWORD1', type: 'str' },
+    { prop: 'DEV_USER2', type: 'str' },
+    { prop: 'DEV_PASSWORD2', type: 'str' },
+    { prop: 'DEV_USER3', type: 'str' },
+    { prop: 'DEV_PASSWORD3', type: 'str' }
+  ].forEach(function (key) {
+    keyVal = settings[key.prop];
+    setDflt = (keyVal === undefined);
+    if (!setDflt && (typeof keyVal === 'string')) {
+      setDflt = (keyVal.indexOf('@@') === 0); // no replacement in settings file
+    }
+    if (setDflt) {
+      dfltVal = undefined;
 
-        if (key.dflt) {
-          dfltVal = key.dflt;
-        } else if (key.type.indexOf('num') >= 0) {
-          dfltVal = '0';
-        } else if (key.type.indexOf('str') >= 0) {
-          dfltVal = '';
-        } else if (key.type.indexOf('bool') >= 0) {
-          dfltVal = false;
-        }
-        keyVal = dfltVal;
+      if (key.dflt) {
+        dfltVal = key.dflt;
+      } else if (key.type.indexOf('num') >= 0) {
+        dfltVal = '0';
+      } else if (key.type.indexOf('str') >= 0) {
+        dfltVal = '';
+      } else if (key.type.indexOf('bool') >= 0) {
+        dfltVal = false;
       }
-      patterns.push({ match: key.prop, replacement: keyVal });
-    });
+      keyVal = dfltVal;
+    }
+    patterns.push({ match: key.prop, replacement: keyVal });
+  });
 
   // TODO better method of setting debug options
 
@@ -272,7 +277,6 @@ gulp.task('replace', function (cb) {
 
 // Less css preprocessor
 gulp.task('less', function () {
-
   return gulp.src(appFiles.less)
     .pipe(less())
     .pipe(gulp.dest(paths.less.dest));
@@ -294,7 +298,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
 
   if (!production) {
     // copy individual script & css files
-    cmt = 'non-usemin: '
+    cmt = 'non-usemin: ';
     msg = 'Built dev to ' + basePaths.dest;
 
     gulp.src(appFiles.scripts)
@@ -305,7 +309,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
       .pipe(changed(paths.styles.dest))
       .pipe(gulp.dest(paths.styles.dest));
   } else {
-    cmt = 'usemin: '
+    cmt = 'usemin: ';
     msg = 'Built production to ' + basePaths.dest;
   }
 
@@ -319,7 +323,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
         appjs: jsProcessChain()
       })))
     .pipe(gulp.dest(basePaths.dest))
-    .pipe(print(function(filepath) {
+    .pipe(print(function (filepath) {
       return cmt + filepath;
     }))
     .pipe(notify({ message: msg, onLast: true }));
@@ -342,7 +346,7 @@ gulp.task('copyfonts', function (cb) {
     .pipe(changed(dest))
     .pipe(print())
     .pipe(gulp.dest(dest))
-    .pipe(print(function(filepath) {
+    .pipe(print(function (filepath) {
       return "copied: " + filepath;
     }))
     .pipe(notify({ message: 'Fonts task complete', onLast: true }));
@@ -350,10 +354,10 @@ gulp.task('copyfonts', function (cb) {
 });
 
 gulp.task('copyvendorscripts', function (cb) {
-  var err;
+  var err,
+    src = vendorFiles.scripts,
+    dest = paths.vendor.dest;
   if (!production) {
-    var src = vendorFiles.scripts,
-      dest = paths.vendor.dest;
     gulp.src(src)
       .pipe(changed(dest))
       .pipe(print())
@@ -364,10 +368,10 @@ gulp.task('copyvendorscripts', function (cb) {
 });
 
 gulp.task('copyvendorcss', function (cb) {
-  var err;
+  var err,
+    src = vendorFiles.css,
+    dest = paths.vendor.dest;
   if (!production) {
-    var src = vendorFiles.css,
-      dest = paths.vendor.dest;
     gulp.src(src)
       .pipe(changed(dest))
       .pipe(print())
@@ -379,18 +383,18 @@ gulp.task('copyvendorcss', function (cb) {
 
 //gulp.task('copyvendor', [/*'copyvendorcss',*/ 'copyvendorscripts'], function () {
 gulp.task('copyvendor', function (cb) {
-  var err;
+  var err,
+    src = vendorFiles.scriptscss,
+    dest = paths.vendor.dest;
   if (!production) {
   
   // TODO need the prints otherwise some files are not copied
-  
-    var src = vendorFiles.scriptscss,
-      dest = paths.vendor.dest;
+
     gulp.src(src)
       .pipe(changed(dest))
       .pipe(print())
       .pipe(gulp.dest(dest))
-      .pipe(print(function(filepath) {
+      .pipe(print(function (filepath) {
         return "Vendor script/css: " + filepath;
       }));
 
@@ -411,6 +415,33 @@ gulp.task('watch', ['browser-sync'], function() {
 
 });
 
+
+
+gulp.task('port', function () {
+  var env = fs.readFileSync(basePaths.src + envfilename, 'utf8');
+
+  env.split('\n').forEach(function (key) {
+    if (key) {
+      var keyText = key.trim();
+      if (keyText.length && (keyText.indexOf('httpPort') > 0)) {
+        // e.g. window.__env.httpPort = 4000;
+        var splits = keyText.split('=');
+        if (splits.length > 0) {
+          var split = splits[splits.length - 1].trim(),
+            eol = split.indexOf(';');
+          if (eol > 0) {
+            var port = split.substring(0, eol);
+            if (port) {
+              httpPort = port;
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
+
 gulp.task('browser-sync', ['default'], function () {
   // files to watch  
   var files = [
@@ -419,18 +450,23 @@ gulp.task('browser-sync', ['default'], function () {
 //      appFiles.images,
 //      appFiles.scripts//,
       basePaths.dest + '**/*'
-    ];
-
-    browserSync.init(/*files,*/ {
-      files: files, 
+    ],
+    options = {
+      files: files,
       server: {
         baseDir: basePaths.dest,
         index: 'index.html'
       }
-    });
-    
-    // Watch any files in destination, reload on change
-    gulp.watch([basePaths.dest + '**/*']).on('change', browserSync.reload);
+    };
+
+  if (httpPort) {
+    options.port = httpPort;
+  }
+
+  browserSync.init(options);
+
+  // Watch any files in destination, reload on change
+  gulp.watch([basePaths.dest + '**/*']).on('change', browserSync.reload);
 });
 
 // copy task task
@@ -440,13 +476,13 @@ gulp.task('copy', ['copyfonts', 'usemin', 'imagemin',
             'copyvendor']);
 
 // initial task
-gulp.task('initial', ['clean'], function(cb) {
+gulp.task('initial', ['clean'], function (cb) {
   var err;
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
 // postinitial task
-gulp.task('postinitial', ['initial'], function(cb) {
+gulp.task('postinitial', ['initial'], function (cb) {
   var err;
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
@@ -469,5 +505,5 @@ gulp.task('clearCache', function () {
 
 // Default task with acache clean
 gulp.task('postmove', ['clean', 'clearCache'], function () {
-    gulp.start('usemin', 'imagemin', 'copyfonts');
+  gulp.start('usemin', 'imagemin', 'copyfonts');
 });
