@@ -2,7 +2,7 @@
 /*global angular */
 'use strict';
 
-angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ngCordova', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon', 'chart.js', 'ngIdle', 'timer'])
+angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.bootstrap', 'NgDialogUtil', 'ct.clientCommon', 'chart.js', 'ngIdle', 'timer'])
 
   .config(['$stateProvider', '$urlRouterProvider', 'STATES', function ($stateProvider, $urlRouterProvider, STATES) {
 
