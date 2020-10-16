@@ -352,27 +352,28 @@ angular.module('canvassTrac', ['ct.config', 'ui.router', 'ngResource', 'ui.boots
         }]
       })
     
+      // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
       // route for the contactus page
-      .state(STATES.CONTACTUS, {
-        url: getUrl(STATES.CONTACTUS),
-        views: {
-          'content@': {
-            templateUrl : 'views/contactus.html',
-            controller  : 'ContactController'
-          }
-        }
-      })
+      // .state(STATES.CONTACTUS, {
+      //   url: getUrl(STATES.CONTACTUS),
+      //   views: {
+      //     'content@': {
+      //       templateUrl : 'views/contactus.html',
+      //       controller  : 'ContactController'
+      //     }
+      //   }
+      // })
 
-      // route for the support page
-      .state(STATES.SUPPORT, {
-        url: getUrl(STATES.SUPPORT),
-        views: {
-          'content@': {
-            templateUrl : 'views/contactus.html',
-            controller  : 'ContactController'
-          }
-        }
-      });
+      // // route for the support page
+      // .state(STATES.SUPPORT, {
+      //   url: getUrl(STATES.SUPPORT),
+      //   views: {
+      //     'content@': {
+      //       templateUrl : 'views/contactus.html',
+      //       controller  : 'ContactController'
+      //     }
+      //   }
+      // });
 
     routes.forEach(function (route) {
       if (!STATES.ISDISABLED(route.state)) {

@@ -84,8 +84,9 @@ angular.module('ct.config', [])
         CAMPAIGN: campaignState,
 
         LOGIN: 'app.login',
-        CONTACTUS: 'app.contactus',
-        SUPPORT: 'app.support'
+        // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+        // CONTACTUS: 'app.contactus',
+        // SUPPORT: 'app.support'
       },
       disabledStates = [
         // add entries to disbale a state and any substates
