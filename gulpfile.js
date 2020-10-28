@@ -16,7 +16,13 @@
  * Run 'gulp --production' to enable production mode
  */
 
-var gulp = require('gulp'),
+ const basePaths = {
+    src: 'app/',
+    dest: 'dist/',
+    config: 'config/',
+    node_modules: 'node_modules/'
+  },
+  gulp = require('gulp'),
   print = require('gulp-print').default,
   cleancss = require('gulp-clean-css'),
   less = require('gulp-less'),
@@ -34,7 +40,6 @@ var gulp = require('gulp'),
   rev = require('gulp-rev'),            // Static asset revisioning by appending content hash to filenames
   browserSync = require('browser-sync'),
   del = require('del'),
-  gutil = require('gulp-util'),
   argv = require('yargs')
     .usage('Usage: gulp <command> [options]')
     .command('default', 'Run default tasks')
@@ -42,7 +47,7 @@ var gulp = require('gulp'),
     .command('jshint', 'Run JsHint on application files')
     .option('p', {
       alias: 'production',
-      default: 'false',
+      default: false,
       describe: 'Enable production mode',
       type: 'boolean'
     })
@@ -51,6 +56,24 @@ var gulp = require('gulp'),
       default: 'localdev',
       describe: 'Specify name of configuration file to use',
       type: 'string'
+    })
+    .option('c', {
+      alias: 'cfgdir',
+      default: basePaths.config,
+      describe: 'Specify the directory containing the configuration file to use',
+      type: 'string'
+    })
+    .option('f', {
+      alias: 'force',
+      default: false,
+      describe: 'Allow deleting the current working directory and outside',
+      type: 'boolean'
+    })
+    .option('d', {
+      alias: 'dryrun',
+      default: false,
+      describe: 'See what would be deleted',
+      type: 'boolean'
     })
     .help('h')
     .alias('h', 'help')
@@ -63,12 +86,6 @@ var gulp = require('gulp'),
   path = require('path'),
   fs = require('fs');
 
-var basePaths = {
-    src: 'app/',
-    dest: 'dist/',
-    config: 'config/',
-    bower: 'bower_components/'
-  };
 var paths = {
     images: {
       src: basePaths.src + 'images/',
@@ -91,8 +108,8 @@ var paths = {
       dest: basePaths.dest
     },
     vendor: {
-      src: basePaths.bower,
-      dest: basePaths.dest + 'bower_components/'
+      src: basePaths.node_modules,
+      dest: basePaths.dest
     }
   };
 paths.less = {
@@ -115,34 +132,34 @@ var appFiles = {
   styles: paths.styles.src + '**/*.css',
   views: paths.views.src + '**/*.html',
   images: paths.images.src + '**/*',
-  scripts: [paths.scripts.src + '**/*.js']  // all js files in paths.scripts.src or subdirectories
+  scripts: paths.scripts.src + '**/*.js'  // all js files in paths.scripts.src or subdirectories
 };
+var fontExt = '{ttf,woff,eof,eot,svg,otf}*';
 var vendorFiles = {
-  fonts: [paths.vendor.src + 'font-awesome/fonts/**/*.{ttf,woff,eof,svg}*',
-          paths.vendor.src + 'bootstrap/dist/fonts/**/*.{ttf,woff,eof,svg}*'],
-  dev_fonts: [paths.vendor.src + '**/*.{ttf,woff,eof,svg}*'],
+  fonts: [[paths.vendor.src, 'font-awesome/fonts', '/**/*.' + fontExt],
+          [paths.vendor.src, 'bootstrap/dist/fonts', '/**/*.' + fontExt]],
+  dev_fonts: [paths.vendor.src + '**/*.*.' + fontExt],
   styles: '',
-//  scripts: [paths.vendor.src + '**/*.js'],
-//  css: [paths.vendor.src + '**/*.css']
-  scriptscss: [paths.vendor.src + '**/*.+(js|css)', // vendor js & css files
-                // vendor js folders to exclude
-                '!' + paths.vendor.src + 'angular-ui-router/src/*.js',
-                '!' + paths.vendor.src + 'bootstrap/grunt/*.js',
-                '!' + paths.vendor.src + 'bootstrap/js/*.js',
-                '!' + paths.vendor.src + 'chart.js/samples/*.js',
-                '!' + paths.vendor.src + 'chart.js/src/*.js',
-                '!' + paths.vendor.src + 'chart.js/test/*.js',
-                '!' + paths.vendor.src + 'jquery/src/*.js',
-                '!' + paths.vendor.src + 'nya-bootstrap-select/e2e-test/*.js',
-                '!' + paths.vendor.src + 'nya-bootstrap-select/tasks/*.js',
-                '!' + paths.vendor.src + 'ng-idle/src/**/*.js',
-                '!' + paths.vendor.src + 'angular-timer/test/**/*.js',
-                '!' + paths.vendor.src + 'angular-timer/docs/**/*.js',
-                '!' + paths.vendor.src + 'angular-timer/config/**/*.js',
-                '!' + paths.vendor.src + 'angular-timer/app/**/*.js',
-                '!' + paths.vendor.src + 'moment/benchmarks/**/*.js',
-                '!' + paths.vendor.src + 'moment/locale/**/*.js',
-                '!' + paths.vendor.src + 'moment/meteor/**/*.js'
+  scriptscss: [[paths.vendor.src, 'bootstrap/dist/css', '/**/*.*'],
+                [paths.vendor.src, 'font-awesome/css', '/**/*.*'],
+                [paths.vendor.src, 'ng-dialog/css', '/**/*.*'],
+                [paths.vendor.src, 'bootstrap-social', '/**/*.css'],
+                [paths.vendor.src, 'nya-bootstrap-select/dist/css', '/**/*.*'],
+                [paths.vendor.src, 'angular', '/**/angular*.*'],
+                [paths.vendor.src, 'angular-animate', '/**/angular-animate.min*.*'],
+                [paths.vendor.src, 'angular-ui-bootstrap/dist', '/**/ui-bootstrap-tpls*.*'],
+                [paths.vendor.src, 'angular-ui-router/release', '/**/angular-ui-router.min*.*'],
+                [paths.vendor.src, 'angular-sanitize', '/**/angular-sanitize*.*'],
+                [paths.vendor.src, 'angular-resource', '/**/angular-resource.min*.*'],
+                [paths.vendor.src, 'angular-cookies', '/**/angular-cookies.min*.*'],
+                [paths.vendor.src, 'ng-idle', '/**/angular-idle*.*'],
+                [paths.vendor.src, 'chart.js/dist', '/**/*.*'],
+                [paths.vendor.src, 'angular-chart.js/dist', '/**/*.*'],
+                [paths.vendor.src, 'ng-dialog/js', '/**/*.*'],
+                [paths.vendor.src, 'angular-timer/dist', '/**/angular-timer*.js'],
+                [paths.vendor.src, 'humanize-duration', '/**/*.js'],
+                [paths.vendor.src, 'moment/min', '/**/*.*'],
+                [paths.vendor.src, 'js-polyfills', '/**/*.js'],
               ]
 };
 var envfilename = 'env.js';
@@ -160,11 +177,19 @@ gulp.task('jshint', function () {
 });
 
 // Clean all output files
-gulp.task('cleanall', function () {
-  return del([basePaths.dest], {
-//          force: true,  // Allow deleting the current working directory and outside
-//          dryRun: true  // See what would be deleted
-  });
+gulp.task('cleanall', async function () {
+
+  const toDeletePaths = [basePaths.dest];
+  console.log('Glob pattern:\n', toDeletePaths.join('\n'));
+
+  const deletedPaths = await del(toDeletePaths, {
+      force: argv.force,  // Allow deleting the current working directory and outside
+      dryRun: argv.dryrun // See what would be deleted
+    });
+
+  if (argv.dryrun) {
+    console.log('Files and directories that would be deleted:\n', deletedPaths.join('\n'));
+  }
 });
 
 function noTrailingSlash(path) {
@@ -179,31 +204,34 @@ function noTrailingSlash(path) {
 }
 
 // Clean just the app files
-gulp.task('clean', function (cb) {
-  var err;
-  del([basePaths.dest + '**',  // NOTE this deletes both parent & comtent!
-        '!' + noTrailingSlash(basePaths.dest),  // exclude parent
-        '!' + paths.vendor.dest + '**'          // exclude vendor files
-    ], {
-//          force: true,  // Allow deleting the current working directory and outside
-//          dryRun: true  // See what would be deleted
+gulp.task('clean', async function () {
+
+  const toDeletePaths = [path.posix.join(basePaths.dest, '**'),  // NOTE this deletes both parent & content!
+    '!' + noTrailingSlash(basePaths.dest),          // exclude parent
+    '!' + path.posix.join(paths.vendor.dest, '**'), // exclude vendor files
+  ];
+  console.log('Glob pattern:\n', toDeletePaths.join('\n'));
+
+  const deletedPaths = await del(toDeletePaths, {
+      force: argv.force,  // Allow deleting the current working directory and outside
+      dryRun: argv.dryrun // See what would be deleted
+    });
+
+  if (argv.dryrun) {
+    console.log('Files and directories that would be deleted:\n', deletedPaths.join('\n'));
   }
-//        ).then(paths => {
-//          console.log('Deleted files and folders:\n', paths.join('\n'));
-//        }
-    );
-  cb(err);
 });
+
 
 gulp.task('replace', function (cb) {
   // based on http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
 
   // Get the environment from the command line
-  var env = argv.env || 'localdev',
+  var env = argv.env,
     // Read the settings from the right file
     filename = env + '.json',
-    settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
-    flags = fs.readFileSync(basePaths.config + 'dbgFlags.txt', 'utf8'),
+    settings = JSON.parse(fs.readFileSync(path.join(argv.cfgdir, filename), 'utf8')),
+    flags = fs.readFileSync(path.join(basePaths.config, 'dbgFlags.txt'), 'utf8'),
     patterns = [],
     keyVal,
     dfltVal,
@@ -267,7 +295,7 @@ gulp.task('replace', function (cb) {
   });
 
   // Replace each placeholder with the correct value for the variable.
-  gulp.src(basePaths.config + envfilename)
+  gulp.src(path.posix.join(basePaths.config, envfilename))
     .pipe(notify({ message: 'Creating ' + envfilename + ' from ' + filename }))
     .pipe(replace({ patterns: patterns }))
     .pipe(gulp.dest(basePaths.src));
@@ -292,7 +320,7 @@ function cssProcessChain() {
   return [cleancss()  /*, rev()*/];
 }
 
-gulp.task('usemin', ['jshint', 'less'], function () {
+gulp.task('usemin', gulp.series('jshint', 'less', function () {
   var cmt,
     msg;
 
@@ -305,7 +333,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
       .pipe(changed(basePaths.dest))
       .pipe(gulp.dest(basePaths.dest));
 
-    gulp.src(appFiles.styles)
+      gulp.src(appFiles.styles)
       .pipe(changed(paths.styles.dest))
       .pipe(gulp.dest(paths.styles.dest));
   } else {
@@ -327,7 +355,7 @@ gulp.task('usemin', ['jshint', 'less'], function () {
       return cmt + filepath;
     }))
     .pipe(notify({ message: msg, onLast: true }));
-});
+}));
 
 // Images
 gulp.task('imagemin', function () {
@@ -339,82 +367,104 @@ gulp.task('imagemin', function () {
 });
 
 gulp.task('copyfonts', function (cb) {
-  var src = (production ? vendorFiles.fonts : vendorFiles.dev_fonts),
-    dest = (production ? paths.fonts.dest : paths.vendor.dest),
+  var source = vendorFiles.fonts,
+    destination = (production ? paths.fonts.dest : paths.vendor.dest),
     err;
-  gulp.src(src)
-    .pipe(changed(dest))
-    .pipe(print())
-    .pipe(gulp.dest(dest))
-    .pipe(print(function (filepath) {
-      return "copied: " + filepath;
+  source.forEach(element => {
+    gulp.src(path.posix.join(element[0], element[1], element[2]))
+      .pipe(changed(destination))
+      .pipe(print())
+      .pipe(gulp.dest(destination))
+      .pipe(print(function (filepath) {
+        return "Copied font: " + filepath;
     }))
     .pipe(notify({ message: 'Fonts task complete', onLast: true }));
+  });
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
-gulp.task('copyvendorscripts', function (cb) {
-  var err,
-    src = vendorFiles.scripts,
-    dest = paths.vendor.dest;
-  if (!production) {
-    gulp.src(src)
-      .pipe(changed(dest))
-      .pipe(print())
-      .pipe(gulp.dest(dest))
-      .pipe(notify({ message: 'Vendor scripts task complete', onLast: true }));
-  } // else nothing to do in production mode
-  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
-});
-
-gulp.task('copyvendorcss', function (cb) {
-  var err,
-    src = vendorFiles.css,
-    dest = paths.vendor.dest;
-  if (!production) {
-    gulp.src(src)
-      .pipe(changed(dest))
-      .pipe(print())
-      .pipe(gulp.dest(dest))
-      .pipe(notify({ message: 'Vendor css task complete', onLast: true }));
-  } // else nothing to do in production mode
-  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
-});
-
-//gulp.task('copyvendor', [/*'copyvendorcss',*/ 'copyvendorscripts'], function () {
 gulp.task('copyvendor', function (cb) {
   var err,
-    src = vendorFiles.scriptscss,
-    dest = paths.vendor.dest;
+    destination = paths.vendor.dest;
   if (!production) {
   
   // TODO need the prints otherwise some files are not copied
 
-    gulp.src(src)
-      .pipe(changed(dest))
-      .pipe(print())
-      .pipe(gulp.dest(dest))
-      .pipe(print(function (filepath) {
-        return "Vendor script/css: " + filepath;
-      }));
-
+    vendorFiles.scriptscss.forEach(element => {
+      gulp.src(path.join(element[0], element[1], element[2]))
+        .pipe(changed(destination))
+        .pipe(print())
+        .pipe(gulp.dest(destination))
+        .pipe(print(function (filepath) {
+          return "Vendor script/css: " + filepath;
+        }));
+    });
 //    .pipe(notify({ message: 'Vendor script/css task complete', onLast: true }));
   } // else nothing to do in production mode
   cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
 });
 
+// copy task task
+gulp.task('copy', gulp.series('copyfonts', 'usemin', 'imagemin',
+            'copyvendor'));
+
+// initial task
+gulp.task('initial', gulp.series('clean', function (cb) {
+  var err;
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
+}));
+
+// postinitial task
+gulp.task('postinitial', gulp.series('initial', function (cb) {
+  var err;
+  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
+}));
+
+// Default task
+gulp.task('default', gulp.series('postinitial', 'replace', 'copy', function (cb) {
+  var err;
+  cb(err);
+}));
+
+
+gulp.task('browser_sync', gulp.series('default', function () {
+  // files to watch  
+  var files = [
+//      appFiles.views,
+//      appFiles.styles,
+//      appFiles.images,
+//      appFiles.scripts//,
+      basePaths.dest + '**/*'
+    ],
+    options = {
+      files: files,
+      server: {
+        baseDir: basePaths.dest,
+        index: 'index.html'
+      }
+    };
+
+  if (httpPort) {
+    options.port = httpPort;
+  }
+
+  browserSync.init(options);
+
+  // Watch any files in destination, reload on change
+  gulp.watch([basePaths.dest + '**/*']).on('change', browserSync.reload);
+}));
+
 
 // Watch
-gulp.task('watch', ['browser-sync'], function() {
+gulp.task('watch', gulp.series('browser_sync', function () {
   // Watch less files
-  gulp.watch([appFiles.less], ['less']);
+  gulp.watch([appFiles.less], gulp.series('less'));
   // Watch js, css & html files
-  gulp.watch([appFiles.scripts, appFiles.styles, appFiles.views], ['usemin']);
+  gulp.watch([appFiles.scripts, appFiles.styles, appFiles.views], gulp.series('usemin'));
   // Watch image files
-  gulp.watch(appFiles.images, ['imagemin']);
+  gulp.watch(appFiles.images, gulp.series('imagemin'));
 
-});
-
+}));
 
 
 gulp.task('port', function () {
@@ -441,58 +491,6 @@ gulp.task('port', function () {
   });
 });
 
-
-gulp.task('browser-sync', ['default'], function () {
-  // files to watch  
-  var files = [
-//      appFiles.views,
-//      appFiles.styles,
-//      appFiles.images,
-//      appFiles.scripts//,
-      basePaths.dest + '**/*'
-    ],
-    options = {
-      files: files,
-      server: {
-        baseDir: basePaths.dest,
-        index: 'index.html'
-      }
-    };
-
-  if (httpPort) {
-    options.port = httpPort;
-  }
-
-  browserSync.init(options);
-
-  // Watch any files in destination, reload on change
-  gulp.watch([basePaths.dest + '**/*']).on('change', browserSync.reload);
-});
-
-// copy task task
-gulp.task('copy', ['copyfonts', 'usemin', 'imagemin',
-//        'copyvendorcss',
-//        'copyvendorscripts',
-            'copyvendor']);
-
-// initial task
-gulp.task('initial', ['clean'], function (cb) {
-  var err;
-  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
-});
-
-// postinitial task
-gulp.task('postinitial', ['initial'], function (cb) {
-  var err;
-  cb(err); // if err is not null and not undefined, the run will stop, and note that it failed
-});
-
-// Default task
-gulp.task('default', ['postinitial', 'copy', 'replace'], function (cb) {
-  var err;
-  cb(err);
-});
-
 // additional added tasks
 gulp.task('clearCache', function () {
   // Still pass the files to clear cache for
@@ -503,7 +501,7 @@ gulp.task('clearCache', function () {
 //  cache.clearAll();
 });
 
-// Default task with acache clean
-gulp.task('postmove', ['clean', 'clearCache'], function () {
+// Default task with a cache clean
+gulp.task('postmove', gulp.series('clean', 'clearCache', function () {
   gulp.start('usemin', 'imagemin', 'copyfonts');
-});
+}));
