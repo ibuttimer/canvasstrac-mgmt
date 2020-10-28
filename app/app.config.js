@@ -1,11 +1,10 @@
 /*jslint node: true */
 /*global angular */
-/*global window */
 'use strict';
 
- /**************************************************************************
-   * Set environment values
-   *************************************************************************/
+/**************************************************************************
+ * Set environment values
+ *************************************************************************/
 
 // Default environment variables
 var appenv = {};
@@ -92,29 +91,29 @@ angular.module('ct.config', [])
         // add entries to disbale a state and any substates
       ];
 
-      /* make state values, e.g. VOTINGSYS, VOTINGSYS_NEW etc.
+    /* make state values, e.g. VOTINGSYS, VOTINGSYS_NEW etc.
           add a disabled flag to disable the state and any substates */
-      [ { property: 'VOTINGSYS', path: cfgState, base: 'votingsystem', disabled: true },
-        { property: 'ROLES', path: cfgState, base: 'role', disabled: true },
-        { property: 'USERS', path: cfgState, base: 'user' },
-        { property: 'NOTICE', path: cfgState, base: 'notice' },
-        { property: 'ELECTION', path: campaignState, base: 'election' },
-        { property: 'CANDIDATE', path: campaignState, base: 'candidate', disabled: true },
-        { property: 'CANVASS', path: campaignState, base: 'canvass' }
-      ].forEach(function (state) {
-        /* make state properties, e.g. USERS = 'app.cfg.user'
+    [ { property: 'VOTINGSYS', path: cfgState, base: 'votingsystem', disabled: true },
+      { property: 'ROLES', path: cfgState, base: 'role', disabled: true },
+      { property: 'USERS', path: cfgState, base: 'user' },
+      { property: 'NOTICE', path: cfgState, base: 'notice' },
+      { property: 'ELECTION', path: campaignState, base: 'election' },
+      { property: 'CANDIDATE', path: campaignState, base: 'candidate', disabled: true },
+      { property: 'CANVASS', path: campaignState, base: 'canvass' }
+    ].forEach(function (state) {
+      /* make state properties, e.g. USERS = 'app.cfg.user'
                                         USERS_NEW = 'app.cfg.user-new' */
-        stateConstant[state.property] = makeStates(state.path, state.base); // path.base
-        substates.forEach(function (substate) {
-          stateConstant[makeSubStatePropName(state.property, substate)] = // state_substate
+      stateConstant[state.property] = makeStates(state.path, state.base); // path.base
+      substates.forEach(function (substate) {
+        stateConstant[makeSubStatePropName(state.property, substate)] = // state_substate
             makeStates(state.path, state.base, substate.toLowerCase()); // path.base-substate
-        });
-
-        if (state.disabled) {
-          // disbale the state and any substates
-          disabledStates.push(stateConstant[state.property]);
-        }
       });
+
+      if (state.disabled) {
+        // disbale the state and any substates
+        disabledStates.push(stateConstant[state.property]);
+      }
+    });
 
     // add function to check for disabled states
     stateConstant.ISDISABLED = function (state) {

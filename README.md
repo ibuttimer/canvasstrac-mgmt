@@ -23,14 +23,14 @@ See <code>gulp --help</code> for development workflow options.
 
 See [configuration file readme](config/readme.txt) for details of creating a configuration file.
 
-For example, to start a local server using a configuation file called localdev.json, use the following:
-  <code>gulp watch --env localdev</code>
+For example, to start a local server using a configuation file called <code>localdev.json</code> in a directory called <code>config</code> above the project root directory, use the following:
+  <code>gulp watch --env localdev --cfgdir ../config</code>
 
 ### Make a build
 From the project folder run the following commands:
 * for a development build
-<code>gulp --env 'config file name'</code>
+<code>gulp --env 'config file name' --cfgdir 'config dir'</code>
 * for a production build
-<code>gulp --production --env 'config file name'</code>
+<code>gulp --production --env 'config file name' --cfgdir 'config dir'</code>
 
 

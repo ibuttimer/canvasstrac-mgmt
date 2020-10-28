@@ -16,7 +16,13 @@
  * Run 'gulp --production' to enable production mode
  */
 
- const gulp = require('gulp'),
+ const basePaths = {
+    src: 'app/',
+    dest: 'dist/',
+    config: 'config/',
+    node_modules: 'node_modules/'
+  },
+  gulp = require('gulp'),
   print = require('gulp-print').default,
   cleancss = require('gulp-clean-css'),
   less = require('gulp-less'),
@@ -51,6 +57,12 @@
       describe: 'Specify name of configuration file to use',
       type: 'string'
     })
+    .option('c', {
+      alias: 'cfgdir',
+      default: basePaths.config,
+      describe: 'Specify the directory containing the configuration file to use',
+      type: 'string'
+    })
     .option('f', {
       alias: 'force',
       default: false,
@@ -74,12 +86,6 @@
   path = require('path'),
   fs = require('fs');
 
-var basePaths = {
-    src: 'app/',
-    dest: 'dist/',
-    config: 'config/',
-    node_modules: 'node_modules/'
-  };
 var paths = {
     images: {
       src: basePaths.src + 'images/',
@@ -135,7 +141,6 @@ var vendorFiles = {
   dev_fonts: [paths.vendor.src + '**/*.*.' + fontExt],
   styles: '',
   scriptscss: [[paths.vendor.src, 'bootstrap/dist/css', '/**/*.*'],
-                // [paths.vendor.src, 'bootstrap/dist/fonts', '/**/*.*'],
                 [paths.vendor.src, 'font-awesome/css', '/**/*.*'],
                 [paths.vendor.src, 'ng-dialog/css', '/**/*.*'],
                 [paths.vendor.src, 'bootstrap-social', '/**/*.css'],
@@ -222,11 +227,11 @@ gulp.task('replace', function (cb) {
   // based on http://geekindulgence.com/environment-variables-in-angularjs-and-ionic/
 
   // Get the environment from the command line
-  var env = argv.env || 'localdev',
+  var env = argv.env,
     // Read the settings from the right file
     filename = env + '.json',
-    settings = JSON.parse(fs.readFileSync(basePaths.config + filename, 'utf8')),
-    flags = fs.readFileSync(basePaths.config + 'dbgFlags.txt', 'utf8'),
+    settings = JSON.parse(fs.readFileSync(path.join(argv.cfgdir, filename), 'utf8')),
+    flags = fs.readFileSync(path.join(basePaths.config, 'dbgFlags.txt'), 'utf8'),
     patterns = [],
     keyVal,
     dfltVal,
@@ -290,7 +295,7 @@ gulp.task('replace', function (cb) {
   });
 
   // Replace each placeholder with the correct value for the variable.
-  gulp.src(basePaths.config + envfilename)
+  gulp.src(path.posix.join(basePaths.config, envfilename))
     .pipe(notify({ message: 'Creating ' + envfilename + ' from ' + filename }))
     .pipe(replace({ patterns: patterns }))
     .pipe(gulp.dest(basePaths.src));
@@ -363,10 +368,10 @@ gulp.task('imagemin', function () {
 
 gulp.task('copyfonts', function (cb) {
   var source = vendorFiles.fonts,
-    destination = paths.vendor.dest,
+    destination = (production ? paths.fonts.dest : paths.vendor.dest),
     err;
-  vendorFiles.fonts.forEach(element => {
-    gulp.src(path.join(element[0], element[1], element[2]))
+  source.forEach(element => {
+    gulp.src(path.posix.join(element[0], element[1], element[2]))
       .pipe(changed(destination))
       .pipe(print())
       .pipe(gulp.dest(destination))
@@ -400,7 +405,7 @@ gulp.task('copyvendor', function (cb) {
 });
 
 // copy task task
-gulp.task('copy', gulp.parallel('copyfonts', 'usemin', 'imagemin',
+gulp.task('copy', gulp.series('copyfonts', 'usemin', 'imagemin',
             'copyvendor'));
 
 // initial task
@@ -416,7 +421,7 @@ gulp.task('postinitial', gulp.series('initial', function (cb) {
 }));
 
 // Default task
-gulp.task('default', gulp.series('postinitial', 'copy', 'replace', function (cb) {
+gulp.task('default', gulp.series('postinitial', 'replace', 'copy', function (cb) {
   var err;
   cb(err);
 }));
