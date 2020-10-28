@@ -28,7 +28,7 @@
   window.__env = window.__env || {};
 
   // server/management app common settings
-  window.__env.baseURL = "@@baseURL";
+  window.__env.baseURL = '@@baseURL';
   window.__env.forceHttps = @@forceHttps;
   window.__env.httpPort = @@httpPort;
   window.__env.httpsPortOffset = @@httpsPortOffset;
@@ -37,20 +37,20 @@
   window.__env.disableAuth = @@disableAuth;
 
   // management app settings
-  window.__env.mapsApiKey = "@@mapsApiKey";
+  window.__env.mapsApiKey = '@@mapsApiKey';
 
-  window.__env.autoLogout = "@@autoLogout";
-  window.__env.autoLogoutCount = "@@autoLogoutCount";
-  window.__env.tokenRefresh = "@@tokenRefresh";
-  window.__env.reloadMargin = "@@reloadMargin";
+  window.__env.autoLogout = '@@autoLogout';
+  window.__env.autoLogoutCount = '@@autoLogoutCount';
+  window.__env.tokenRefresh = '@@tokenRefresh';
+  window.__env.reloadMargin = '@@reloadMargin';
 
   window.__env.DEV_MODE = @@DEV_MODE;
-  window.__env.DEV_USER1 = "@@DEV_USER1";
-  window.__env.DEV_PASSWORD1 = "@@DEV_PASSWORD1";
-  window.__env.DEV_USER2 = "@@DEV_USER2";
-  window.__env.DEV_PASSWORD2 = "@@DEV_PASSWORD2";
-  window.__env.DEV_USER3 = "@@DEV_USER3";
-  window.__env.DEV_PASSWORD3 = "@@DEV_PASSWORD3";
+  window.__env.DEV_USER1 = '@@DEV_USER1';
+  window.__env.DEV_PASSWORD1 = '@@DEV_PASSWORD1';
+  window.__env.DEV_USER2 = '@@DEV_USER2';
+  window.__env.DEV_PASSWORD2 = '@@DEV_PASSWORD2';
+  window.__env.DEV_USER3 = '@@DEV_USER3';
+  window.__env.DEV_PASSWORD3 = '@@DEV_PASSWORD3';
 
   /* TODO debug flags really need some work */
   // client common flags

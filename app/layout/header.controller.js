@@ -10,7 +10,8 @@ angular.module('canvassTrac')
     return {
       HOME: {},
       ABOUT: {},
-      CONTACT: {},
+      // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+      // CONTACT: {},
       CONFIG: {},
       CAMPAIGN: {},
       CRUMBS: []
@@ -59,11 +60,12 @@ angular.module('canvassTrac')
             name: 'About', sref: STATES.ABOUTUS
           };
           break;
-        case 'CONTACT':
-          tree = {
-            name: 'Contact', sref: STATES.CONTACTUS
-          };
-          break;
+        // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+        // case 'CONTACT':
+        //   tree = {
+        //     name: 'Contact', sref: STATES.CONTACTUS
+        //   };
+        //   break;
         case 'CONFIG':
           toCheck = [
             { sref: STATES.CONFIG,
@@ -220,7 +222,8 @@ angular.module('canvassTrac')
     tree = [
       { state: STATES.APP, name: 'Home' },
       { state: STATES.ABOUTUS, name: 'About' },
-      { state: STATES.CONTACTUS, name: 'Contact' }
+      // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+      // { state: STATES.CONTACTUS, name: 'Contact' }
     ];
     if (!STATES.ISDISABLED(STATES.CAMPAIGN)) {
       tree.push({ state: STATES.CAMPAIGN, name: campaign });
@@ -323,7 +326,8 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, userSe
 
   // Bindable Members Up Top, https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md#style-y033
   $scope.openLogin = openLogin;
-  $scope.openSupport = openSupport;
+  // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+  // $scope.openSupport = openSupport;
   $scope.logOut = logOut;
 
   if (CONFIG.DEV_MODE) {
@@ -336,7 +340,8 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, userSe
 
   $scope.homeMenu = MENUS.HOME;
   $scope.aboutMenu = MENUS.ABOUT;
-  $scope.contactMenu = MENUS.CONTACT;
+  // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+  // $scope.contactMenu = MENUS.CONTACT;
 
   makeBreadcrumb();
   setLoggedIn(CONFIG.NOAUTH ? false : true);
@@ -449,9 +454,10 @@ function HeaderController ($scope, $state, $rootScope, Idle, authFactory, userSe
     NgDialogFactory.open({ template: 'login/login.html', scope: $scope, className: 'ngdialog-theme-default', controller: 'LoginController' });
   }
 
-  function openSupport () {
-    $state.go(STATES.SUPPORT);
-  }
+  // Heroku SparkPost add-on shutdown 15/10/2020, disable email for the moment
+  // function openSupport () {
+  //   $state.go(STATES.SUPPORT);
+  // }
 
   function openIdleTimeout () {
 

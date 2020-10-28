@@ -28,7 +28,7 @@
   window.__env = window.__env || {};
 
   // server/management app common settings
-  window.__env.baseURL = "localhost";
+  window.__env.baseURL = 'localhost';
   window.__env.forceHttps = false;
   window.__env.httpPort = 4000;
   window.__env.httpsPortOffset = 443;
@@ -37,20 +37,20 @@
   window.__env.disableAuth = false;
 
   // management app settings
-  window.__env.mapsApiKey = "";
+  window.__env.mapsApiKey = '';
 
-  window.__env.autoLogout = "2000";
-  window.__env.autoLogoutCount = "10";
-  window.__env.tokenRefresh = "1000";
-  window.__env.reloadMargin = "60";
+  window.__env.autoLogout = '2000';
+  window.__env.autoLogoutCount = '10';
+  window.__env.tokenRefresh = '1000';
+  window.__env.reloadMargin = '60';
 
   window.__env.DEV_MODE = true;
-  window.__env.DEV_USER1 = "";
-  window.__env.DEV_PASSWORD1 = "";
-  window.__env.DEV_USER2 = "";
-  window.__env.DEV_PASSWORD2 = "";
-  window.__env.DEV_USER3 = "";
-  window.__env.DEV_PASSWORD3 = "";
+  window.__env.DEV_USER1 = '';
+  window.__env.DEV_PASSWORD1 = '';
+  window.__env.DEV_USER2 = '';
+  window.__env.DEV_PASSWORD2 = '';
+  window.__env.DEV_USER3 = '';
+  window.__env.DEV_PASSWORD3 = '';
 
   /* TODO debug flags really need some work */
   // client common flags
