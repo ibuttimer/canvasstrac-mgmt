@@ -1,7 +1,7 @@
 # canvasstrac-mgmt
 Web management application for CanvassTrac suite.
 
-**This repository is archived and no longe maintained.**
+> **This repository is archived and no longer maintained.**
 
 ## Development Environment
 The development environment:
