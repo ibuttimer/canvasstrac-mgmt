@@ -1,6 +1,8 @@
 # canvasstrac-mgmt
 Web management application for CanvassTrac suite.
 
+**This repository is archived and no longe maintained.**
+
 ## Development Environment
 The development environment:
 * Node.js v12.18.4
